@@ -11,7 +11,7 @@ interface Props {
 export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props) {
   return (
     <div>
-      <Link href="/" className="text-sm text-blue-600 hover:underline mb-4 inline-block">← 返回</Link>
+      <Link href="/" className="text-sm text-[#0969da] hover:underline mb-4 inline-block">← 返回</Link>
       <div className="flex gap-4 items-start">
         <img src={repo.owner_avatar} alt={repo.owner} className="w-12 h-12 rounded-full flex-shrink-0" />
         <div className="flex-1 min-w-0">
@@ -29,7 +29,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 py-1.5 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#24292f] text-white text-sm rounded-lg hover:bg-[#1b1f23] transition-colors"
             >
               ⭐ Star
             </a>
