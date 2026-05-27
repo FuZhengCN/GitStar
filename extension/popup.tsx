@@ -16,8 +16,6 @@ import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
 
-// ====== ErrorBoundary ======
-
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
     super(props);
@@ -32,7 +30,6 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
         <div style={{ width: POPUP_WIDTH, padding: 20, color: 'red', fontSize: 12, fontFamily: 'monospace' }}>
           <strong>Render Error:</strong>
           <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{this.state.error.message}</pre>
-          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 4, fontSize: 10, color: '#666' }}>{this.state.error.stack}</pre>
         </div>
       );
     }
@@ -40,26 +37,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
   }
 }
 
-// ====== DebugBar ======
-
-function DebugBar() {
-  const [hash, setHash] = useState(location.hash);
-  useEffect(() => {
-    const onHash = () => setHash(location.hash);
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
-  return (
-    <div style={{ background: '#111', color: '#0f0', fontSize: '9px', padding: '2px 6px', fontFamily: 'monospace' }}>
-      hash:{hash || '(empty)'} | path:{location.pathname}
-    </div>
-  );
-}
-
-// ====== HomePage ======
-
 function HomePage() {
-  console.log('[GitStar] HomePage render');
   const [search, setSearch] = useState('');
   const [language, setLanguage] = useState('');
   const [timeRange, setTimeRange] = useState('');
@@ -122,31 +100,25 @@ function HomePage() {
   );
 }
 
-// ====== DetailPage ======
-
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
-  console.log('[GitStar] DetailPage render', { owner, repo });
   const [detail, setDetail] = useState<RepoDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   useEffect(() => {
-    console.log('[GitStar] DetailPage useEffect', { owner, repo });
     let cancelled = false;
     setLoading(true);
     setError(null);
     getRepoDetail(owner, repo)
       .then(data => {
         if (cancelled) return;
-        console.log('[GitStar] DetailPage data loaded', data.full_name);
         setDetail(data);
         setLoading(false);
       })
       .catch((err: { message?: string; status?: number }) => {
         if (cancelled) return;
-        console.error('[GitStar] DetailPage error', err);
         if (err.status === 404) setError('仓库不存在');
         else setError(err.message || '加载失败');
         setLoading(false);
@@ -180,8 +152,6 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     );
   }
 
-  console.log('[GitStar] DetailPage about to render full, detail:', detail.full_name);
-
   return (
     <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
       <RepoHeader
@@ -200,25 +170,16 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   );
 }
 
-// ====== PopupIndex (root) ======
-
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
 
   useEffect(() => {
-    console.log('[GitStar] PopupIndex mounted');
-    loadToken().then(() => {
-      console.log('[GitStar] token loaded:', getToken() ? 'yes' : 'no');
-      setTokenReady(true);
-    });
+    loadToken().then(() => setTokenReady(true));
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
       if (changes.githubToken) setToken(changes.githubToken.newValue || null);
     };
     chrome.storage.onChanged.addListener(listener);
-    return () => {
-      console.log('[GitStar] PopupIndex unmounting');
-      chrome.storage.onChanged.removeListener(listener);
-    };
+    return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
 
   if (!tokenReady) {
@@ -232,14 +193,10 @@ export default function PopupIndex() {
   return (
     <ErrorBoundary>
       <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
-        <DebugBar />
         <div className="p-4">
           <Router hook={useHashLocation}>
             <Route path="/project/:owner/:repo">
-              {(params) => {
-                console.log('[GitStar] route matched, params:', params);
-                return <DetailPage params={params} />;
-              }}
+              {(params) => <DetailPage params={params} />}
             </Route>
             <Route path="/" component={HomePage} />
           </Router>
