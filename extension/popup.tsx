@@ -188,10 +188,10 @@ export default function PopupIndex() {
 
   return (
     <Router hook={useHashLocation}>
-      <Route path="/" component={HomePage} />
       <Route path="/project/:owner/:repo">
         {(params) => <DetailPage params={params} />}
       </Route>
+      <Route path="/" component={HomePage} />
     </Router>
   );
 }

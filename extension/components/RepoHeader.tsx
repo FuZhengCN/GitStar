@@ -1,4 +1,3 @@
-import { Link } from 'wouter';
 import { RepoDetail } from '../lib/types';
 
 interface Props {
@@ -11,7 +10,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
-        <Link href="/" className="text-[#3b82f6] hover:underline cursor-pointer">← 首页</Link>
+        <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">← 首页</a>
         <span className="text-[#9ca3af]">/</span>
         <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
         <span className="text-[#9ca3af]">/</span>

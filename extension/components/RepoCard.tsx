@@ -1,4 +1,3 @@
-import { Link } from 'wouter';
 import { Repo } from '../lib/types';
 
 interface Props {
@@ -12,12 +11,12 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
     <div className="border border-[#f3f4f6] rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
       <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
-        <Link
-          href={`/project/${repo.full_name}`}
+        <a
+          href={`#/project/${repo.full_name}`}
           className="text-sm font-semibold text-[#3b82f6] hover:underline cursor-pointer"
         >
           {repo.full_name}
-        </Link>
+        </a>
         <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-2">{repo.description || '暂无描述'}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-[#9ca3af]">
           <span className="text-[#f59e0b]">★ {repo.stargazers_count.toLocaleString()}</span>
