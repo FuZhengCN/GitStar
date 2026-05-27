@@ -30,7 +30,10 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://*/*"
+      "https://api.github.com/*"
+    ],
+    "permissions": [
+      "storage"
     ]
   }
 }
