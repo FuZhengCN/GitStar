@@ -180,22 +180,16 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     );
   }
 
-  console.log('[GitStar] DetailPage about to render RepoHeader, detail:', detail.full_name);
+  console.log('[GitStar] DetailPage about to render, detail:', detail.full_name);
 
+  // TEMP: minimal render to isolate crash
   return (
-    <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-      <RepoHeader
-        repo={detail}
-        isFavorite={loaded && (favorites || []).includes(detail.full_name)}
-        onToggleFavorite={toggleFavorite}
-      />
-      <div className="mt-4">
-        {detail.readme ? (
-          <ReadmeViewer content={detail.readme} />
-        ) : (
-          <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
-        )}
-      </div>
+    <div style={{ width: POPUP_WIDTH, minHeight: '500px', padding: 16, background: 'white' }}>
+      <a href="#/" style={{ color: '#3b82f6', fontSize: 12 }}>← 返回</a>
+      <h2 style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>{detail.full_name}</h2>
+      <p style={{ fontSize: 12, color: '#666' }}>{detail.description || '暂无描述'}</p>
+      <p style={{ fontSize: 12, color: '#f59e0b' }}>★ {detail.stargazers_count.toLocaleString()}</p>
+      {/* RepoHeader and ReadmeViewer disabled for isolation test */}
     </div>
   );
 }
