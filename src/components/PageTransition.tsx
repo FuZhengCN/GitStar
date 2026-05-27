@@ -1,14 +1,19 @@
 'use client';
-import { Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import LoadingBar from './LoadingBar';
 
 export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [loading, setLoading] = useState(false);
 
-  return (
-    <Suspense key={pathname} fallback={<LoadingBar loading />}>
-      {children}
-    </Suspense>
-  );
+  useEffect(() => {
+    setLoading(true);
+  }, [pathname]);
+
+  useEffect(() => {
+    setLoading(false);
+  }, [children]);
+
+  return <LoadingBar loading={loading} />;
 }
