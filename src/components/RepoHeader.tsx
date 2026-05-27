@@ -11,7 +11,13 @@ interface Props {
 export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props) {
   return (
     <div>
-      <Link href="/" className="text-sm text-[#0969da] hover:underline mb-4 inline-block">← 返回</Link>
+      <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#d0d7de]">
+        <Link href="/" className="text-[#0969da] hover:underline">← 首页</Link>
+        <span className="text-[#8b949e]">/</span>
+        <span className="text-[#1f2328] font-semibold">{repo.owner}</span>
+        <span className="text-[#8b949e]">/</span>
+        <span className="text-[#1f2328] font-semibold">{repo.name}</span>
+      </nav>
       <div className="flex gap-4 items-start">
         <img src={repo.owner_avatar} alt={repo.owner} className="w-12 h-12 rounded-full flex-shrink-0" />
         <div className="flex-1 min-w-0">
