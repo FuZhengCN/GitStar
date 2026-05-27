@@ -1,4 +1,5 @@
 'use client';
+import { useMemo } from 'react';
 
 const LANGUAGES = [
   { value: '', label: '全部语言' },
@@ -13,12 +14,19 @@ const LANGUAGES = [
   { value: 'Ruby', label: 'Ruby' },
 ];
 
-const TIME_RANGES = [
-  { value: '', label: '全部时间' },
-  { value: '>2026-05-20', label: '本周' },
-  { value: '>2026-04-27', label: '本月' },
-  { value: '>2025-05-27', label: '今年' },
-];
+function getTimeRanges() {
+  const now = new Date();
+  const week = new Date(now); week.setDate(week.getDate() - 7);
+  const month = new Date(now); month.setMonth(month.getMonth() - 1);
+  const year = new Date(now); year.setFullYear(year.getFullYear() - 1);
+  const fmt = (d: Date) => d.toISOString().split('T')[0];
+  return [
+    { value: '', label: '全部时间' },
+    { value: `>${fmt(week)}`, label: '本周' },
+    { value: `>${fmt(month)}`, label: '本月' },
+    { value: `>${fmt(year)}`, label: '今年' },
+  ];
+}
 
 const SORTS = [
   { value: 'stars', label: 'Star 数' },
@@ -58,10 +66,12 @@ interface Props {
 }
 
 export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange }: Props) {
+  const timeRanges = useMemo(() => getTimeRanges(), []);
+
   return (
     <div className="flex flex-wrap gap-2">
       <Select value={language} onChange={onLanguageChange} options={LANGUAGES} label="语言筛选" />
-      <Select value={timeRange} onChange={onTimeRangeChange} options={TIME_RANGES} label="时间范围" />
+      <Select value={timeRange} onChange={onTimeRangeChange} options={timeRanges} label="时间范围" />
       <Select value={sort} onChange={onSortChange} options={SORTS} label="排序方式" />
     </div>
   );

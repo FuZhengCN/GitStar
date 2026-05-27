@@ -17,11 +17,13 @@ export async function generateMetadata({ params }: { params: { owner: string; re
         title: repo.full_name,
         description: desc,
         type: 'website',
+        images: [repo.owner_avatar],
       },
       twitter: {
         card: 'summary',
         title: repo.full_name,
         description: desc,
+        images: [repo.owner_avatar],
       },
     };
   } catch {
