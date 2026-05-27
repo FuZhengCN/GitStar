@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Route, useLocation } from 'wouter';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
-import { searchRepos, getRepoDetail, loadToken, setToken } from './lib/github';
+import { searchRepos, getRepoDetail, loadToken, setToken, getToken } from './lib/github';
 import { useFavorites } from './hooks/useFavorites';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
@@ -88,6 +88,9 @@ function HomePage() {
         )}
         <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <div className="text-center text-xs text-gray-400 pt-2">
+          {getToken() ? 'Token 已配置' : '未配置 Token · 限流 60 次/小时'}
+        </div>
       </div>
     </div>
   );
@@ -163,8 +166,10 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 // ====== PopupIndex (root) ======
 
 export default function PopupIndex() {
+  const [tokenReady, setTokenReady] = useState(false);
+
   useEffect(() => {
-    loadToken();
+    loadToken().then(() => setTokenReady(true));
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
       if (changes.githubToken) {
         setToken(changes.githubToken.newValue || null);
@@ -173,6 +178,14 @@ export default function PopupIndex() {
     chrome.storage.onChanged.addListener(listener);
     return () => chrome.storage.onChanged.removeListener(listener);
   }, []);
+
+  if (!tokenReady) {
+    return (
+      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
+        <LoadingBar loading={true} />
+      </div>
+    );
+  }
 
   return (
     <>
