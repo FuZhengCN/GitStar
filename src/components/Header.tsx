@@ -5,9 +5,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-[#24292f] border-b border-[#30363d]">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-[#2da44e] hover:text-white transition-colors">
-          GitStar
+          ◈ GitStar
         </Link>
-        <span className="text-sm text-white/70">发现优质开源项目</span>
+        <span className="text-sm font-semibold text-white/70">发现优质开源项目</span>
       </div>
     </header>
   );
