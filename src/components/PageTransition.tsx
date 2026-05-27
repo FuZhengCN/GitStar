@@ -15,5 +15,10 @@ export default function PageTransition({ children }: { children: React.ReactNode
     setLoading(false);
   }, [children]);
 
-  return <LoadingBar loading={loading} />;
+  return (
+    <>
+      <LoadingBar loading={loading} />
+      {children}
+    </>
+  );
 }
