@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+// DEBUG VERSION — remove debug logs after fixing
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
@@ -18,7 +19,22 @@ const POPUP_WIDTH = '400px';
 
 // ====== HomePage ======
 
+function DebugBar() {
+  const [hash, setHash] = useState(location.hash);
+  useEffect(() => {
+    const onHash = () => setHash(location.hash);
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+  return (
+    <div style={{background:'#111',color:'#0f0',fontSize:'9px',padding:'2px 6px',fontFamily:'monospace'}}>
+      hash:{hash || '(empty)'} | path:{location.pathname}
+    </div>
+  );
+}
+
 function HomePage() {
+  console.log('[GitStar] HomePage render');
   const [search, setSearch] = useState('');
   const [language, setLanguage] = useState('');
   const [timeRange, setTimeRange] = useState('');
@@ -99,6 +115,7 @@ function HomePage() {
 
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
+  console.log('[GitStar] DetailPage render', { owner, repo });
   const [detail, setDetail] = useState<RepoDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,18 +181,54 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
 // ====== PopupIndex (root) ======
 
+function AppRoutes() {
+  console.log('[GitStar] AppRoutes render, hash:', location.hash);
+  useEffect(() => {
+    console.log('[GitStar] AppRoutes mounted, hash:', location.hash);
+  }, []);
+
+  const onHashChange = useCallback(() => {
+    console.log('[GitStar] hashchange event, new hash:', location.hash);
+  }, []);
+  useEffect(() => {
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [onHashChange]);
+
+  return (
+    <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
+      <DebugBar />
+      <div className="p-4">
+        <Router hook={useHashLocation}>
+          <Route path="/project/:owner/:repo">
+            {(params) => { console.log('[GitStar] DetailPage route matched', params); return <DetailPage params={params} />; }}
+          </Route>
+          <Route path="/" component={HomePage} />
+        </Router>
+      </div>
+    </div>
+  );
+}
+
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
 
   useEffect(() => {
-    loadToken().then(() => setTokenReady(true));
+    console.log('[GitStar] PopupIndex mounted');
+    loadToken().then(() => {
+      console.log('[GitStar] token loaded:', getToken() ? 'yes' : 'no');
+      setTokenReady(true);
+    });
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
       if (changes.githubToken) {
         setToken(changes.githubToken.newValue || null);
       }
     };
     chrome.storage.onChanged.addListener(listener);
-    return () => chrome.storage.onChanged.removeListener(listener);
+    return () => {
+      console.log('[GitStar] PopupIndex unmounting');
+      chrome.storage.onChanged.removeListener(listener);
+    };
   }, []);
 
   if (!tokenReady) {
@@ -186,12 +239,10 @@ export default function PopupIndex() {
     );
   }
 
-  return (
-    <Router hook={useHashLocation}>
-      <Route path="/project/:owner/:repo">
-        {(params) => <DetailPage params={params} />}
-      </Route>
-      <Route path="/" component={HomePage} />
-    </Router>
-  );
+  try {
+    return <AppRoutes />;
+  } catch (e) {
+    console.error('[GitStar] FATAL render error:', e);
+    return <div style={{width:POPUP_WIDTH,padding:16,color:'red'}}>Render Error: {String(e)}</div>;
+  }
 }
