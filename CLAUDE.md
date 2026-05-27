@@ -70,3 +70,25 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 ## Non-Goals
 
 无用户系统、无数据库、无 star 趋势图、无 i18n、无个性化推荐。
+
+## Extension
+
+浏览器扩展项目位于 `extension/` 目录，基于 Plasmo 框架。
+
+```bash
+cd extension
+npm run dev      # 开发（热更新，需手动刷新扩展）
+npm run build    # 生产构建
+```
+
+构建产物在 `extension/build/`，通过 Chrome `chrome://extensions/` → "加载已解压的扩展程序" 加载。
+
+### Extension Architecture
+
+| 入口 | 文件 | 说明 |
+|------|------|------|
+| Popup | `popup.tsx` | wouter hash 路由，首页列表 + 详情页 |
+| Content Script | `contents/github-sidebar.tsx` | GitHub 页面右侧注入推荐面板 |
+| Options | `options.tsx` | Token 配置 |
+
+数据流：`lib/github.ts` 直接调 GitHub API，Token (`githubToken`) 和收藏 (`gitstar-favorites`) 通过 `chrome.storage` 管理。
