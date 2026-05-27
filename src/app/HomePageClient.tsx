@@ -7,6 +7,7 @@ import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
 import RepoList from '@/components/RepoList';
 import Pagination from '@/components/Pagination';
+import LoadingBar from '@/components/LoadingBar';
 
 interface Props {
   initialRepos: Repo[];
@@ -85,6 +86,7 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
 
   return (
     <div className="space-y-4">
+      <LoadingBar loading={loading} />
       <SearchBar value={search} onChange={handleSearch} />
       <FilterBar
         language={language} onLanguageChange={handleLanguage}
