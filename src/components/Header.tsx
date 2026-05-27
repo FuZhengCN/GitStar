@@ -7,7 +7,7 @@ export default function Header() {
         <Link href="/" className="text-xl font-bold text-[#2da44e] hover:text-white transition-colors">
           GitStar
         </Link>
-        <span className="text-sm text-[#8b949e]">发现优质开源项目</span>
+        <span className="text-sm text-white/70">发现优质开源项目</span>
       </div>
     </header>
   );
