@@ -1,4 +1,4 @@
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { getRepoDetail } from '@/lib/github';
 import { RepoDetail } from '@/lib/types';
 import DetailPageClient from './DetailPageClient';
@@ -6,30 +6,9 @@ import DetailPageClient from './DetailPageClient';
 export const revalidate = 3600;
 export const dynamicParams = true;
 
-export async function generateMetadata({ params }: { params: { owner: string; repo: string } }): Promise<Metadata> {
-  try {
-    const repo = await getRepoDetail(params.owner, params.repo);
-    const desc = repo.description || `${repo.full_name} - GitHub 高星项目`;
-    return {
-      title: `${repo.full_name} - GitStar`,
-      description: desc,
-      openGraph: {
-        title: repo.full_name,
-        description: desc,
-        type: 'website',
-        images: [repo.owner_avatar],
-      },
-      twitter: {
-        card: 'summary',
-        title: repo.full_name,
-        description: desc,
-        images: [repo.owner_avatar],
-      },
-    };
-  } catch {
-    return { title: '项目未找到 - GitStar' };
-  }
-}
+export const metadata: Metadata = {
+  title: '项目详情 - GitStar',
+};
 
 export default async function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   let repo: RepoDetail | null = null;

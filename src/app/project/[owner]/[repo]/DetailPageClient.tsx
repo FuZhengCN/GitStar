@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { RepoDetail } from '@/lib/types';
 import { useFavorites } from '@/hooks/useFavorites';
 import RepoHeader from '@/components/RepoHeader';
@@ -12,6 +13,12 @@ interface Props {
 
 export default function DetailPageClient({ repo, error }: Props) {
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
+
+  useEffect(() => {
+    if (repo) {
+      document.title = `${repo.full_name} - GitStar`;
+    }
+  }, [repo]);
 
   if (error) {
     return <ErrorState title={error.title} message={error.message} />;
