@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Route, useLocation } from 'wouter';
+import { Router, Route } from 'wouter';
+import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
 import { searchRepos, getRepoDetail, loadToken, setToken, getToken } from './lib/github';
 import { useFavorites } from './hooks/useFavorites';
@@ -18,8 +19,6 @@ const POPUP_WIDTH = '400px';
 // ====== HomePage ======
 
 function HomePage() {
-  const [, setLocation] = useLocation();
-
   const [search, setSearch] = useState('');
   const [language, setLanguage] = useState('');
   const [timeRange, setTimeRange] = useState('');
@@ -188,11 +187,11 @@ export default function PopupIndex() {
   }
 
   return (
-    <>
+    <Router hook={useHashLocation}>
       <Route path="/" component={HomePage} />
       <Route path="/project/:owner/:repo">
         {(params) => <DetailPage params={params} />}
       </Route>
-    </>
+    </Router>
   );
 }
