@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
-// DEBUG VERSION — remove debug logs after fixing
+import { useState, useEffect, useCallback, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
@@ -17,7 +16,31 @@ import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
 
-// ====== HomePage ======
+// ====== ErrorBoundary ======
+
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ width: POPUP_WIDTH, padding: 20, color: 'red', fontSize: 12, fontFamily: 'monospace' }}>
+          <strong>Render Error:</strong>
+          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{this.state.error.message}</pre>
+          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 4, fontSize: 10, color: '#666' }}>{this.state.error.stack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ====== DebugBar ======
 
 function DebugBar() {
   const [hash, setHash] = useState(location.hash);
@@ -27,11 +50,13 @@ function DebugBar() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
   return (
-    <div style={{background:'#111',color:'#0f0',fontSize:'9px',padding:'2px 6px',fontFamily:'monospace'}}>
+    <div style={{ background: '#111', color: '#0f0', fontSize: '9px', padding: '2px 6px', fontFamily: 'monospace' }}>
       hash:{hash || '(empty)'} | path:{location.pathname}
     </div>
   );
 }
+
+// ====== HomePage ======
 
 function HomePage() {
   console.log('[GitStar] HomePage render');
@@ -47,7 +72,6 @@ function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
-
   const totalPages = Math.min(Math.ceil(total / 30), 34);
 
   const fetchRepos = useCallback(async () => {
@@ -58,30 +82,19 @@ function HomePage() {
       if (search) params.q = search;
       if (language) params.language = language;
       if (timeRange) params.created = timeRange;
-
       const data = await searchRepos(params);
       setRepos(data.items);
       setTotal(data.total_count);
     } catch (err: unknown) {
       const e = err as { message?: string; status?: number };
-      if (e.status === 403) {
-        setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
-      } else {
-        setError(e.message || '加载失败');
-      }
+      if (e.status === 403) setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
+      else setError(e.message || '加载失败');
     } finally {
       setLoading(false);
     }
   }, [search, language, timeRange, sort, page]);
 
-  useEffect(() => {
-    fetchRepos();
-  }, [fetchRepos]);
-
-  const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
-  const handleLanguage = useCallback((v: string) => { setLanguage(v); setPage(1); }, []);
-  const handleTimeRange = useCallback((v: string) => { setTimeRange(v); setPage(1); }, []);
-  const handleSort = useCallback((v: string) => { setSort(v); setPage(1); }, []);
+  useEffect(() => { fetchRepos(); }, [fetchRepos]);
 
   return (
     <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
@@ -90,16 +103,14 @@ function HomePage() {
           <h1 className="text-base font-bold text-[#1e1b4b]">⭐ GitStar</h1>
         </div>
         <LoadingBar loading={loading} />
-        <SearchBar value={search} onChange={handleSearch} />
+        <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
         <FilterBar
-          language={language} onLanguageChange={handleLanguage}
-          timeRange={timeRange} onTimeRangeChange={handleTimeRange}
-          sort={sort} onSortChange={handleSort}
+          language={language} onLanguageChange={v => { setLanguage(v); setPage(1); }}
+          timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
+          sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
         />
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{error}</div>
         )}
         <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
@@ -122,17 +133,25 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   useEffect(() => {
+    console.log('[GitStar] DetailPage useEffect', { owner, repo });
+    let cancelled = false;
     setLoading(true);
+    setError(null);
     getRepoDetail(owner, repo)
       .then(data => {
+        if (cancelled) return;
+        console.log('[GitStar] DetailPage data loaded', data.full_name);
         setDetail(data);
-        document.title = `${data.full_name} - GitStar`;
+        setLoading(false);
       })
       .catch((err: { message?: string; status?: number }) => {
+        if (cancelled) return;
+        console.error('[GitStar] DetailPage error', err);
         if (err.status === 404) setError('仓库不存在');
         else setError(err.message || '加载失败');
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [owner, repo]);
 
   if (error) {
@@ -161,6 +180,8 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     );
   }
 
+  console.log('[GitStar] DetailPage about to render RepoHeader, detail:', detail.full_name);
+
   return (
     <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
       <RepoHeader
@@ -181,35 +202,6 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
 // ====== PopupIndex (root) ======
 
-function AppRoutes() {
-  console.log('[GitStar] AppRoutes render, hash:', location.hash);
-  useEffect(() => {
-    console.log('[GitStar] AppRoutes mounted, hash:', location.hash);
-  }, []);
-
-  const onHashChange = useCallback(() => {
-    console.log('[GitStar] hashchange event, new hash:', location.hash);
-  }, []);
-  useEffect(() => {
-    window.addEventListener('hashchange', onHashChange);
-    return () => window.removeEventListener('hashchange', onHashChange);
-  }, [onHashChange]);
-
-  return (
-    <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
-      <DebugBar />
-      <div className="p-4">
-        <Router hook={useHashLocation}>
-          <Route path="/project/:owner/:repo">
-            {(params) => { console.log('[GitStar] DetailPage route matched', params); return <DetailPage params={params} />; }}
-          </Route>
-          <Route path="/" component={HomePage} />
-        </Router>
-      </div>
-    </div>
-  );
-}
-
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
 
@@ -220,9 +212,7 @@ export default function PopupIndex() {
       setTokenReady(true);
     });
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
-      if (changes.githubToken) {
-        setToken(changes.githubToken.newValue || null);
-      }
+      if (changes.githubToken) setToken(changes.githubToken.newValue || null);
     };
     chrome.storage.onChanged.addListener(listener);
     return () => {
@@ -239,10 +229,22 @@ export default function PopupIndex() {
     );
   }
 
-  try {
-    return <AppRoutes />;
-  } catch (e) {
-    console.error('[GitStar] FATAL render error:', e);
-    return <div style={{width:POPUP_WIDTH,padding:16,color:'red'}}>Render Error: {String(e)}</div>;
-  }
+  return (
+    <ErrorBoundary>
+      <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
+        <DebugBar />
+        <div className="p-4">
+          <Router hook={useHashLocation}>
+            <Route path="/project/:owner/:repo">
+              {(params) => {
+                console.log('[GitStar] route matched, params:', params);
+                return <DetailPage params={params} />;
+              }}
+            </Route>
+            <Route path="/" component={HomePage} />
+          </Router>
+        </div>
+      </div>
+    </ErrorBoundary>
+  );
 }
