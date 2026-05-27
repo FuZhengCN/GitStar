@@ -64,8 +64,10 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Design Spec & Plan
 
-- 设计文档：`docs/superpowers/specs/2026-05-27-gitstar-design.md`
-- 实现计划：`docs/superpowers/plans/2026-05-27-gitstar-plan.md`
+- Web 设计文档：`docs/superpowers/specs/2026-05-27-gitstar-design.md`
+- Web 实现计划：`docs/superpowers/plans/2026-05-27-gitstar-plan.md`
+- 扩展设计文档：`docs/superpowers/specs/2026-05-27-gitstar-extension-design.md`
+- 扩展实现计划：`docs/superpowers/plans/2026-05-27-gitstar-extension-plan.md`
 
 ## Non-Goals
 
@@ -73,22 +75,73 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Extension
 
-浏览器扩展项目位于 `extension/` 目录，基于 Plasmo 框架。
+浏览器扩展项目位于 `extension/` 目录，基于 Plasmo v0.90.5 + React 18 + TypeScript + Tailwind CSS 3。和原 Next.js 项目共用 git 仓库，`src/` 不动。
 
 ```bash
 cd extension
 npm run dev      # 开发（热更新，需手动刷新扩展）
 npm run build    # 生产构建
+node scripts/generate-icons.js  # 重新生成图标 PNG（修改 icon.svg 后）
 ```
 
-构建产物在 `extension/build/`，通过 Chrome `chrome://extensions/` → "加载已解压的扩展程序" 加载。
+构建产物在 `extension/build/chrome-mv3-prod/`，Chrome `chrome://extensions/` → "加载已解压的扩展程序" 指向该目录。
 
-### Extension Architecture
+### 文件结构（Plasmo 扁平约定）
+
+Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 
 | 入口 | 文件 | 说明 |
 |------|------|------|
-| Popup | `popup.tsx` | wouter hash 路由，首页列表 + 详情页 |
-| Content Script | `contents/github-sidebar.tsx` | GitHub 页面右侧注入推荐面板 |
-| Options | `options.tsx` | Token 配置 |
+| Popup | `extension/popup.tsx` | 工具栏弹窗，wouter hash 路由 |
+| Content Script | `extension/contents/github-sidebar.tsx` | GitHub 页面注入推荐面板 |
+| Options | `extension/options.tsx` | Token 配置页 |
 
-数据流：`lib/github.ts` 直接调 GitHub API，Token (`githubToken`) 和收藏 (`gitstar-favorites`) 通过 `chrome.storage` 管理。
+### Data Flow
+
+```
+GitHub REST API (api.github.com)
+  ↑ fetch + Bearer Token
+extension/lib/github.ts       ← 直接调 API（atob 解码 README，无缓存）
+  ↑ searchRepos() / getRepoDetail()
+Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
+  ↑ React state                  ↑ React state
+
+chrome.storage.sync  → githubToken（跨设备同步）
+chrome.storage.local → gitstar-favorites（本地收藏）
+```
+
+和原 Next.js 版的核心区别：无 API Route 代理、无服务端缓存、Token 由用户自己在 Options 页配置。
+
+### 路由（关键约束）
+
+Popup 使用 **wouter hash 路由**（`useHashLocation`），因为 Chrome 扩展 popup 的 URL pathname 固定为 `/popup.html`，不能用 pathname 路由。
+
+- `#/` → 首页（搜索/筛选/列表）
+- `#/project/:owner/:repo` → 详情页
+
+**重要：不要使用 wouter 的 `<Link>` 组件。** 它在 hash 路由下生成错误 href，会导致 popup 完整跳转到不存在的扩展页面（白块）。所有项目内导航用原生 `<a href="#/...">`，hashchange 事件会触发 wouter 自动匹配路由。
+
+**Route 必须按精确度排序**：`/project/:owner/:repo` 在前，`/` 在后。wouter 的 `path="/"` 是前缀匹配，会吃掉所有路径。
+
+### 已知陷阱
+
+- **`react-markdown` 不可用**：在 Plasmo/Parcel 打包下会触发 React `hasOwnProperty` 崩溃（`Cannot convert undefined or null to object`）。已替换为 `marked` + `dangerouslySetInnerHTML`。不要装回 `react-markdown`。
+- **wouter `<Link>` 不可用**：见上方路由说明。
+- **Plasmo 文件约定**：入口是 `popup.tsx` / `options.tsx`（根级），不是 `popup/index.tsx`。Content Script 放 `contents/` 目录。
+- **Content Script 样式隔离**：用内联 style，不要 import Tailwind CSS，避免污染 GitHub 页面。
+
+### 配色方案
+
+| 元素 | 色值 | 用途 |
+|------|------|------|
+| 主蓝 | `#3b82f6` | 按钮、链接、focus ring、icon 边框 |
+| 深蓝 hover | `#2563eb` | 按钮 hover |
+| 浅蓝底 | `#eff6ff` | 筛选标签激活态、收藏按钮激活 |
+| 琥珀 | `#f59e0b` | Star 数量 |
+| 灰白 | `#f3f4f6` | 卡片边框、icon 底色 |
+| 深色文字 | `#1e1b4b` | 标题 |
+| 灰色文字 | `#6b7280` | 描述 |
+
+### 图标
+
+`extension/assets/icon.svg` → `node scripts/generate-icons.js` → 生成 16/32/48/128px PNG。依赖 `sharp`。
