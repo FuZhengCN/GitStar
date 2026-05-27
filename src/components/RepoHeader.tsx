@@ -11,18 +11,18 @@ interface Props {
 export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props) {
   return (
     <div>
-      <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#d0d7de]">
-        <Link href="/" className="text-[#0969da] hover:underline">← 首页</Link>
-        <span className="text-[#8b949e]">/</span>
-        <span className="text-[#1f2328] font-semibold">{repo.owner}</span>
-        <span className="text-[#8b949e]">/</span>
-        <span className="text-[#1f2328] font-semibold">{repo.name}</span>
+      <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
+        <Link href="/" className="text-[#4f46e5] hover:underline">← 首页</Link>
+        <span className="text-[#9ca3af]">/</span>
+        <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
+        <span className="text-[#9ca3af]">/</span>
+        <span className="text-[#1e1b4b] font-semibold">{repo.name}</span>
       </nav>
       <div className="flex gap-4 items-start">
         <img src={repo.owner_avatar} alt={repo.owner} className="w-12 h-12 rounded-full flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold text-[#1f2328]">{repo.full_name}</h1>
-          <p className="text-sm text-[#656d76] mt-1">{repo.description || '暂无描述'}</p>
+          <h1 className="text-xl font-bold text-[#1e1b4b]">{repo.full_name}</h1>
+          <p className="text-sm text-[#6b7280] mt-1">{repo.description || '暂无描述'}</p>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
             <span>⭐ <strong>{repo.stargazers_count.toLocaleString()}</strong></span>
             <span>🍴 <strong>{repo.forks_count.toLocaleString()}</strong></span>
@@ -35,7 +35,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#24292f] text-white text-sm rounded-lg hover:bg-[#1b1f23] transition-colors"
+              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#6366f1] text-white text-sm rounded-lg hover:bg-[#4f46e5] transition-colors"
             >
               ⭐ Star
             </a>
@@ -43,13 +43,13 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 py-1.5 border border-[#d0d7de] text-sm rounded-lg hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-1 px-4 py-1.5 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors"
             >
               🔗 打开 GitHub
             </a>
             <button
               onClick={() => onToggleFavorite(repo.full_name)}
-              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#2da44e] bg-[#dafbe1] text-[#1a7f37]' : 'border-[#d0d7de] hover:bg-gray-50'}`}
+              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#6366f1] bg-[#eef2ff] text-[#4338ca]' : 'border-[#e5e7eb] hover:bg-gray-50'}`}
             >
               {isFavorite ? '★ 已收藏' : '☆ 收藏'}
             </button>

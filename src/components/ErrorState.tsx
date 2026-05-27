@@ -13,7 +13,7 @@ export default function ErrorState({
     <div className="text-center py-16">
       <p className="text-gray-400 text-lg mb-2">{title}</p>
       <p className="text-gray-300 text-sm mb-4">{message}</p>
-      <Link href="/" className="text-sm text-[#0969da] hover:underline">← 返回首页</Link>
+      <Link href="/" className="text-sm text-[#4f46e5] hover:underline">← 返回首页</Link>
     </div>
   );
 }

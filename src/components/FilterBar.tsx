@@ -43,7 +43,7 @@ function Select({ value, onChange, options, label }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         aria-label={label}
-        className="appearance-none px-3 py-2 pr-8 border border-[#d0d7de] rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#0969da] cursor-pointer"
+        className="appearance-none px-3 py-2 pr-8 border border-[#e5e7eb] rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6366f1] cursor-pointer"
       >
         {options.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>
