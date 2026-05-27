@@ -1,19 +1,21 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import Header from '@/components/Header';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "GitStar - GitHub Project Discovery",
-  description: "Discover trending and interesting GitHub projects",
+  title: 'GitStar - 发现优质开源项目',
+  description: '浏览 GitHub 上最受欢迎的开源项目，按语言、时间筛选，查看项目详情',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="zh-CN">
+      <body>
+        <Header />
+        <main className="max-w-6xl mx-auto px-4 py-6">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }
