@@ -14,20 +14,20 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
       <div className="flex-1 min-w-0">
         <Link
           href={`/project/${repo.full_name}`}
-          className="text-sm font-semibold text-[#4f46e5] hover:underline cursor-pointer"
+          className="text-sm font-semibold text-[#3b82f6] hover:underline cursor-pointer"
         >
           {repo.full_name}
         </Link>
         <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-2">{repo.description || '暂无描述'}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-[#9ca3af]">
-          <span>⭐ {repo.stargazers_count.toLocaleString()}</span>
+          <span className="text-[#f59e0b]">★ {repo.stargazers_count.toLocaleString()}</span>
           {repo.language && <span>🔤 {repo.language}</span>}
           {repo.license && <span>📄 {repo.license.name}</span>}
         </div>
       </div>
       <button
         onClick={() => onToggleFavorite(repo.full_name)}
-        className={`flex-shrink-0 text-lg leading-none mt-0.5 transition-colors ${isFavorite ? 'text-[#6366f1]' : 'text-[#e5e7eb] hover:text-[#6366f1]'}`}
+        className={`flex-shrink-0 text-lg leading-none mt-0.5 transition-colors ${isFavorite ? 'text-[#3b82f6]' : 'text-[#e5e7eb] hover:text-[#3b82f6]'}`}
         aria-label={isFavorite ? '取消收藏' : '收藏'}
       >
         {isFavorite ? '★' : '☆'}

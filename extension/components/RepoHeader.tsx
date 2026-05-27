@@ -11,7 +11,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
-        <Link href="/" className="text-[#4f46e5] hover:underline cursor-pointer">← 首页</Link>
+        <Link href="/" className="text-[#3b82f6] hover:underline cursor-pointer">← 首页</Link>
         <span className="text-[#9ca3af]">/</span>
         <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
         <span className="text-[#9ca3af]">/</span>
@@ -23,7 +23,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
           <h1 className="text-xl font-bold text-[#1e1b4b]">{repo.full_name}</h1>
           <p className="text-sm text-[#6b7280] mt-1">{repo.description || '暂无描述'}</p>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
-            <span>⭐ <strong>{repo.stargazers_count.toLocaleString()}</strong></span>
+            <span className="text-[#f59e0b]">★ <strong>{repo.stargazers_count.toLocaleString()}</strong></span>
             <span>🍴 <strong>{repo.forks_count.toLocaleString()}</strong></span>
             <span>👀 <strong>{repo.watchers_count.toLocaleString()}</strong></span>
             {repo.language && <span>🔤 {repo.language}</span>}
@@ -34,7 +34,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#6366f1] text-white text-sm rounded-lg hover:bg-[#4f46e5] transition-colors"
+              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors"
             >
               ⭐ Star
             </a>
@@ -48,7 +48,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
             </a>
             <button
               onClick={() => onToggleFavorite(repo.full_name)}
-              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#6366f1] bg-[#eef2ff] text-[#4338ca]' : 'border-[#e5e7eb] hover:bg-gray-50'}`}
+              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#3b82f6] bg-[#eff6ff] text-[#2563eb]' : 'border-[#e5e7eb] hover:bg-gray-50'}`}
             >
               {isFavorite ? '★ 已收藏' : '☆ 收藏'}
             </button>

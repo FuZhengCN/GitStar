@@ -28,32 +28,10 @@ function getTimeRanges() {
 }
 
 const SORTS = [
-  { value: 'stars', label: 'Star 数' },
-  { value: 'forks', label: 'Fork 数' },
+  { value: 'stars', label: '按 Star 排' },
+  { value: 'forks', label: '按 Fork 排' },
   { value: 'updated', label: '最近更新' },
 ];
-
-function Select({ value, onChange, options, label }: {
-  value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; label: string;
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        aria-label={label}
-        className="appearance-none px-3 py-2 pr-8 border border-[#e5e7eb] rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6366f1] cursor-pointer"
-      >
-        {options.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-      <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
-  );
-}
 
 interface Props {
   language: string;
@@ -67,11 +45,33 @@ interface Props {
 export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange }: Props) {
   const timeRanges = useMemo(() => getTimeRanges(), []);
 
+  const activeClass = 'bg-[#eff6ff] text-[#3b82f6]';
+  const inactiveClass = 'bg-[#f5f5f5] text-gray-600 hover:bg-gray-200';
+
+  function Pill({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+    return (
+      <button
+        onClick={onClick}
+        className={`px-3 py-1.5 text-xs rounded-full transition-colors ${active ? activeClass : inactiveClass}`}
+      >
+        {label}
+      </button>
+    );
+  }
+
   return (
-    <div className="flex flex-wrap gap-2">
-      <Select value={language} onChange={onLanguageChange} options={LANGUAGES} label="语言筛选" />
-      <Select value={timeRange} onChange={onTimeRangeChange} options={timeRanges} label="时间范围" />
-      <Select value={sort} onChange={onSortChange} options={SORTS} label="排序方式" />
+    <div className="flex flex-wrap gap-1.5">
+      {LANGUAGES.map(l => (
+        <Pill key={l.value} active={language === l.value} onClick={() => onLanguageChange(l.value)} label={l.label} />
+      ))}
+      <span className="mx-0.5" />
+      {timeRanges.map(t => (
+        <Pill key={t.value} active={timeRange === t.value} onClick={() => onTimeRangeChange(t.value)} label={t.label} />
+      ))}
+      <span className="mx-0.5" />
+      {SORTS.map(s => (
+        <Pill key={s.value} active={sort === s.value} onClick={() => onSortChange(s.value)} label={s.label} />
+      ))}
     </div>
   );
 }
