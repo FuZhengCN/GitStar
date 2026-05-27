@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { searchRepos } from '@/lib/github';
 import { Repo } from '@/lib/types';
 import HomePageClient from './HomePageClient';
@@ -17,5 +18,9 @@ export default async function HomePage() {
     error = (err as { message?: string }).message || 'Failed to load repositories';
   }
 
-  return <HomePageClient initialRepos={initialRepos} totalCount={totalCount} error={error} />;
+  return (
+    <Suspense fallback={<div className="text-center py-16 text-gray-400">加载中...</div>}>
+      <HomePageClient initialRepos={initialRepos} totalCount={totalCount} error={error} />
+    </Suspense>
+  );
 }
