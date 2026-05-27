@@ -14,8 +14,8 @@
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-markdown": "^10.1.0",
-    "remark-gfm": "^4.0.1",
+    "react-markdown": "^8.0.7",
+    "remark-gfm": "^3.0.1",
     "wouter": "^3.10.0"
   },
   "devDependencies": {
