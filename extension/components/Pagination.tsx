@@ -8,8 +8,8 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
   if (totalPages <= 1) return null;
 
   const pages: number[] = [];
-  const start = Math.max(1, page - 2);
-  const end = Math.min(totalPages, page + 2);
+  const start = Math.max(1, page - 1);
+  const end = Math.min(totalPages, page + 1);
   for (let i = start; i <= end; i++) pages.push(i);
 
   return (
@@ -19,7 +19,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         disabled={page <= 1}
         className="px-3 py-1.5 text-sm border rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
       >
-        ← 上一页
+        ←
       </button>
       {pages[0] > 1 && (
         <>
@@ -47,7 +47,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         disabled={page >= totalPages}
         className="px-3 py-1.5 text-sm border rounded-md disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
       >
-        下一页 →
+        →
       </button>
     </div>
   );

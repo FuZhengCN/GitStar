@@ -77,9 +77,6 @@ function HomePage() {
   return (
     <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h1 className="text-base font-bold text-[#1e1b4b]">⭐ GitStar</h1>
-        </div>
         <LoadingBar loading={loading} />
         <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
         <FilterBar
@@ -109,17 +106,23 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
   useEffect(() => {
     let cancelled = false;
+    console.log('[DetailPage] enter:', owner, repo);
+    const t0 = performance.now();
     setLoading(true);
     setError(null);
     getRepoDetail(owner, repo)
       .then(data => {
         if (cancelled) return;
+        console.log('[DetailPage] API done in', (performance.now() - t0).toFixed(0), 'ms, readme:', data.readme ? `${Math.round(data.readme.length / 1024)}KB` : 'none');
+        console.log('[DetailPage] setting detail state...');
         setDetail(data);
         setLoading(false);
+        console.log('[DetailPage] setDetail done');
       })
       .catch((err: { message?: string; status?: number }) => {
         if (cancelled) return;
         if (err.status === 404) setError('仓库不存在');
+        else if (err.status === 403) setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
         else setError(err.message || '加载失败');
         setLoading(false);
       });
@@ -161,7 +164,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
       />
       <div className="mt-4">
         {detail.readme ? (
-          <ReadmeViewer content={detail.readme} />
+          <ReadmeViewer content={detail.readme} owner={owner} repo={repo} branch={detail.default_branch} />
         ) : (
           <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
         )}
@@ -184,8 +187,14 @@ export default function PopupIndex() {
 
   if (!tokenReady) {
     return (
-      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-        <LoadingBar loading={true} />
+      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] bg-white">
+        <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
+          <h1 className="text-base font-bold text-white">⭐ GitStar</h1>
+          <span className="text-[10px] text-white/70">发现优质开源项目</span>
+        </div>
+        <div className="p-4">
+          <LoadingBar loading={true} />
+        </div>
       </div>
     );
   }
@@ -193,6 +202,10 @@ export default function PopupIndex() {
   return (
     <ErrorBoundary>
       <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
+        <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
+          <h1 className="text-base font-bold text-white">⭐ GitStar</h1>
+          <span className="text-[10px] text-white/70">发现优质开源项目</span>
+        </div>
         <div className="p-4">
           <Router hook={useHashLocation}>
             <Route path="/project/:owner/:repo">

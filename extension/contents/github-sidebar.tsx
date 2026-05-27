@@ -1,5 +1,5 @@
 import type { PlasmoCSConfig } from 'plasmo';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { searchRepos, getRepoDetail, loadToken, setToken } from '../lib/github';
 import { useFavorites } from '../hooks/useFavorites';
@@ -71,6 +71,36 @@ function SidebarPanel() {
     localStorage.setItem('gitstar-sidebar-collapsed', String(collapsed));
   }, [collapsed]);
 
+  const [floatPos, setFloatPos] = useState<{ x: number; y: number } | null>(null);
+  const dragRef = useRef<{ startX: number; startY: number; posX: number; posY: number } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!dragRef.current) return;
+      setFloatPos({
+        x: dragRef.current.posX + (e.clientX - dragRef.current.startX),
+        y: dragRef.current.posY + (e.clientY - dragRef.current.startY),
+      });
+    }
+    function onUp() { dragRef.current = null; }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  function onTitleMouseDown(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest('[data-action]')) return;
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const pos = floatPos ?? { x: rect.left, y: rect.top };
+    dragRef.current = { startX: e.clientX, startY: e.clientY, posX: pos.x, posY: pos.y };
+    if (!floatPos) setFloatPos(pos);
+  }
+
   // 检测 GitHub 深色模式
   const colorMode = document.documentElement.getAttribute('data-color-mode');
   const isDark = colorMode === 'dark';
@@ -113,12 +143,20 @@ function SidebarPanel() {
       }}
     >
       <div
+        ref={panelRef}
         style={{
           background: bgColor,
           border: `1px solid ${borderColor}`,
           borderRadius: '8px',
           overflow: 'hidden',
           marginBottom: '16px',
+          maxHeight: 'calc(100vh - 100px)',
+          display: 'flex',
+          flexDirection: 'column',
+          width: '220px',
+          ...(floatPos
+            ? { position: 'fixed', left: floatPos.x, top: floatPos.y, zIndex: 10000, marginBottom: 0 }
+            : {}),
         }}
       >
         <div
@@ -130,17 +168,22 @@ function SidebarPanel() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flexShrink: 0,
+            cursor: floatPos ? 'grabbing' : 'grab',
+            userSelect: 'none',
           }}
+          onMouseDown={onTitleMouseDown}
         >
           <span>⭐ GitStar · 同类热门</span>
           <span
+            data-action="collapse"
             onClick={() => setCollapsed(true)}
             style={{ cursor: 'pointer', opacity: 0.7, fontSize: '14px' }}
           >
             −
           </span>
         </div>
-        <div style={{ padding: '8px' }}>
+        <div style={{ padding: '8px', overflowY: 'auto', flex: 1 }}>
           {loading ? (
             <div style={{ textAlign: 'center', color: mutedColor, padding: '12px' }}>
               加载中...
