@@ -70,13 +70,18 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
     router.replace(qs ? `/?${qs}` : '/', { scroll: false });
   }, [search, language, timeRange, sort, page, router]);
 
-  // Fetch when filters change (skip initial load since server already fetched)
+  // Fetch when filters change; reset to server data when back to defaults
   const isInitial = useMemo(() => {
     return !search && !language && !timeRange && sort === 'stars' && page === 1;
   }, [search, language, timeRange, sort, page]);
 
   useEffect(() => {
-    if (!isInitial) fetchRepos();
+    if (isInitial) {
+      setRepos(initialRepos);
+      setTotal(totalCount);
+    } else {
+      fetchRepos();
+    }
   }, [isInitial, fetchRepos]);
 
   const handleSearch = useCallback((v: string) => { setSearch(v); setPage(1); }, []);
