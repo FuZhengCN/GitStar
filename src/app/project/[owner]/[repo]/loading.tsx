@@ -1,6 +1,9 @@
+import LoadingBar from '@/components/LoadingBar';
+
 export default function Loading() {
   return (
     <div className="space-y-4">
+      <LoadingBar loading />
       {/* Breadcrumb skeleton */}
       <div className="flex items-center gap-1.5 pb-3 border-b border-[#d0d7de] animate-pulse">
         <div className="h-3 bg-gray-200 rounded w-16" />

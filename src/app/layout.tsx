@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
 import Header from '@/components/Header';
-import PageTransition from '@/components/PageTransition';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -15,9 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Header />
         <main className="max-w-6xl mx-auto px-4 py-6">
-          <Suspense fallback={null}>
-            <PageTransition>{children}</PageTransition>
-          </Suspense>
+          {children}
         </main>
       </body>
     </html>
