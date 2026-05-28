@@ -5,6 +5,7 @@ import type { Repo, RepoDetail, SearchParams } from './lib/types';
 import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken, checkStarred, starRepo, unstarRepo } from './lib/github';
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
+import { useStaleCache } from './hooks/useStaleCache';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
 import RepoList from './components/RepoList';
@@ -53,35 +54,28 @@ function HomePage() {
   const [sort, setSort] = useState('stars');
   const [page, setPage] = useState(1);
 
-  const [repos, setRepos] = useState<Repo[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
-  const totalPages = Math.min(Math.ceil(total / 10), 100);
 
-  const fetchRepos = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${timeRange}:${sort}:${page}`;
+
+  const fetcher = useCallback(async () => {
     try {
       const params: SearchParams = { sort: sort as SearchParams['sort'], order: 'desc', page, per_page: 10 };
       if (search) params.q = search;
       if (language) params.language = language;
       if (timeRange) params.created = timeRange;
-      const data = await searchRepos(params);
-      setRepos(data.items);
-      setTotal(data.total_count);
+      return await searchRepos(params);
     } catch (err: unknown) {
       const e = err as { message?: string; status?: number };
-      if (e.status === 403) setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
-      else setError(e.message || '加载失败');
-    } finally {
-      setLoading(false);
+      if (e.status === 403) throw new Error('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
+      throw err;
     }
   }, [search, language, timeRange, sort, page]);
 
-  useEffect(() => { fetchRepos(); }, [fetchRepos]);
+  const { data: result, loading, error } = useStaleCache(cacheKey, fetcher, 2 * 60 * 1000);
+  const repos = result?.items ?? [];
+  const total = result?.total_count ?? 0;
+  const totalPages = Math.min(Math.ceil(total / 10), 100);
 
   useEffect(() => { window.scrollTo(0, 0); }, [page]);
 
