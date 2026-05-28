@@ -104,37 +104,44 @@ const README_PREVIEW = 60000;
 
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
-  const [detail, setDetail] = useState<RepoDetail | null>(null);
-  const [readmeContent, setReadmeContent] = useState('');
-  const [readmeHtml, setReadmeHtml] = useState('');
   const [readmeExpanded, setReadmeExpanded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [repoLoading, setRepoLoading] = useState(true);
-  const [readmeLoading, setReadmeLoading] = useState(true);
+  const [displayHtml, setDisplayHtml] = useState('');
   const [isStarred, setIsStarred] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
-  useEffect(() => {
-    let cancelled = false;
-    setRepoLoading(true);
-    setError(null);
-    getRepoInfo(owner, repo)
-      .then(data => {
-        if (cancelled) return;
-        setDetail(data);
-        setRepoLoading(false);
-      })
-      .catch((err: { message?: string; status?: number }) => {
-        if (cancelled) return;
-        if (err.status === 404) setError('仓库不存在');
-        else if (err.status === 403) setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
-        else setError(err.message || '加载失败');
-        setRepoLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [owner, repo]);
+  // Repo info cache (5 min TTL)
+  const repoFetcher = useCallback(() => getRepoInfo(owner, repo), [owner, repo]);
+  const { data: detail, loading: repoLoading, error } = useStaleCache(
+    `repo:${owner}/${repo}`,
+    repoFetcher,
+    5 * 60 * 1000
+  );
 
+  // README cache (10 min TTL), gated on detail availability
+  const readmeCacheKey = detail ? `readme:${owner}/${repo}` : null;
+  const readmeFetcher = useCallback(async () => {
+    const content = await getRepoReadme(owner, repo);
+    if (!content) return { content: '', html: '' };
+    const branch = detail?.default_branch || 'main';
+    const src = content.length > README_PREVIEW ? content.slice(0, README_PREVIEW) : content;
+    const html = await parseMarkdown(src, owner, repo, branch);
+    return { content, html };
+  }, [owner, repo, detail?.default_branch]);
+  const { data: readmeData, loading: readmeLoading } = useStaleCache(
+    readmeCacheKey, readmeFetcher, 10 * 60 * 1000
+  );
+
+  const readmeContent = readmeData?.content ?? '';
+
+  // Sync display HTML from cache (preview HTML)
+  useEffect(() => {
+    if (readmeData?.html && !readmeExpanded) {
+      setDisplayHtml(readmeData.html);
+    }
+  }, [readmeData?.html, readmeExpanded]);
+
+  // Star check (not cached — always fetch current state)
   useEffect(() => {
     if (!detail) return;
     checkStarred(owner, repo).then(setIsStarred).catch(() => {});
@@ -157,28 +164,10 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     }
   }, [isStarred, owner, repo]);
 
-  useEffect(() => {
-    if (!detail) return;
-    let cancelled = false;
-    setReadmeLoading(true);
-    getRepoReadme(owner, repo).then(content => {
-      if (cancelled) return;
-      if (!content) { setReadmeLoading(false); return; }
-      setReadmeContent(content);
-      const src = content.length > README_PREVIEW ? content.slice(0, README_PREVIEW) : content;
-      parseMarkdown(src, owner, repo, detail.default_branch).then(html => {
-        if (cancelled) return;
-        setReadmeHtml(html);
-        setReadmeLoading(false);
-      });
-    });
-    return () => { cancelled = true; };
-  }, [detail, owner, repo]);
-
   const handleExpand = () => {
     setReadmeExpanded(true);
     parseMarkdown(readmeContent, owner, repo, detail!.default_branch).then(html => {
-      setReadmeHtml(html);
+      setDisplayHtml(html);
     });
   };
 
@@ -218,7 +207,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
             {readmeContent ? (
               <ReadmeViewer
                 content={readmeContent}
-                html={readmeHtml}
+                html={displayHtml}
                 expanded={readmeExpanded}
                 onExpand={handleExpand}
                 loading={readmeLoading}
