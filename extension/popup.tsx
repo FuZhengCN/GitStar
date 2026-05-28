@@ -137,7 +137,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     const html = await parseMarkdown(src, owner, repo, branch);
     return { content, html };
   }, [owner, repo, detail?.default_branch]);
-  const { data: readmeData, loading: readmeLoading } = useStaleCache(
+  const { data: readmeData, loading: readmeLoading, error: readmeError } = useStaleCache(
     readmeCacheKey, readmeFetcher, 10 * 60 * 1000
   );
 
@@ -155,6 +155,11 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     if (!detail) return;
     checkStarred(owner, repo).then(setIsStarred).catch(() => {});
   }, [detail, owner, repo]);
+
+  // Reset expand state when navigating to a different repo
+  useEffect(() => {
+    setReadmeExpanded(false);
+  }, [owner, repo]);
 
   const handleToggleStar = useCallback(async () => {
     setStarLoading(true);
@@ -175,7 +180,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
   const handleExpand = () => {
     setReadmeExpanded(true);
-    parseMarkdown(readmeContent, owner, repo, detail!.default_branch).then(html => {
+    parseMarkdown(readmeContent, owner, repo, detail?.default_branch || 'main').then(html => {
       setDisplayHtml(html);
     });
   };
@@ -232,6 +237,8 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
                   <div className="h-4 bg-gray-200 rounded w-4/6" />
                 </div>
               </div>
+            ) : readmeError && !readmeContent ? (
+              <p className="text-red-500 text-center py-8 text-sm">{readmeError}</p>
             ) : (
               <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
             )}
