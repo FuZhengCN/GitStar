@@ -88,9 +88,9 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ```bash
 cd extension
-npm run dev      # 开发（热更新，需手动刷新扩展）
-npm run build    # 生产构建
-node scripts/generate-icons.js  # 重新生成图标 PNG（修改 icon.svg 后）
+npm run dev      # 开发（热更新，需手动刷新扩展；图标有色偏，验证功能用）
+npm run build    # 生产构建（图标颜色正确，验证图标和最终效果用）
+node scripts/generate-icons.js  # 从 icon.svg 生成各尺寸 PNG 备用
 ```
 
 构建产物在 `extension/build/chrome-mv3-prod/`，Chrome `chrome://extensions/` → "加载已解压的扩展程序" 指向该目录。
@@ -104,6 +104,8 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 | Popup | `extension/popup.tsx` | 工具栏弹窗，wouter hash 路由 |
 | Content Script | `extension/contents/github-sidebar.tsx` | GitHub 页面注入推荐面板 |
 | Options | `extension/options.tsx` | Token 配置页 |
+
+`extension/components/` 和 `extension/hooks/` 存放 Web 版复用的 UI 组件和 hooks（SearchBar、FilterBar、RepoList、RepoCard、Pagination、LoadingBar、RepoHeader、ReadmeViewer、ErrorState、EmptyState、useFavorites、useDebounce）。类型定义在 `extension/lib/types.ts`。
 
 ### Data Flow
 
@@ -166,7 +168,7 @@ Popindex 最外层渲染共享的**蓝底顶栏**（`bg-[#3b82f6] px-4 py-3 shad
 - **Plasmo 文件约定**：入口是 `popup.tsx` / `options.tsx`（根级），不是 `popup/index.tsx`。Content Script 放 `contents/` 目录。
 - **Content Script 样式隔离**：用内联 style，不要 import Tailwind CSS，避免污染 GitHub 页面。
 - **大型 README 卡顿**：已通过双管齐下解决——① `Promise.all` 拆分为 `getRepoInfo` + `getRepoReadme`，RepoHeader 不等 README 立即渲染；② `marked.parse()` 移入 Web Worker 后台线程（`extension/workers/markdown-worker.ts`），避免阻塞主线程。Worker 创建失败自动回退主线程解析。`ReadmeViewer` 已简化为纯渲染组件，接收预解析 HTML。
-- **Plasmo 图标生成**：构建时 Plasmo 从 `icon.svg` 渲染 `.plasmo.` 前缀图标。**Plasmo 内部 SVG 渲染器不支持 `<radialGradient>`、`<linearGradient>`，甚至路径上的纯色填充也会产生色偏（金色→灰色）。** `generate-icons.js` 用 sharp 生成的正确 PNG 被 Plasmo 忽略——manifest 始终引用 Plasmo 自己渲染的 `.plasmo.` 版本。根因是 Plasmo 渲染管线缺陷，绕过方案是让 Plasmo 直接使用预生成 PNG（需调整文件名约定或构建流程）。
+- **Plasmo 图标渲染**：Plasmo dev 模式的 gen-assets 管线存在色偏问题——同一份 `icon.svg` 在 `npm run build` 下颜色正确（`#3b82f6`），在 `npm run dev` 下被渲染为灰色（`#8b8b8b`）。根因在 dev 的 gen-assets 中间文件生成阶段，与 prod 的直接渲染路径不同。**验证图标变更只用 prod 构建**（`npm run build`），Chrome 加载 `build/chrome-mv3-prod/`。
 
 ### 配色方案
 
@@ -182,6 +184,6 @@ Popindex 最外层渲染共享的**蓝底顶栏**（`bg-[#3b82f6] px-4 py-3 shad
 
 ### 图标
 
-`extension/assets/icon.svg` → `node scripts/generate-icons.js` → 生成 16/32/48/128px PNG。依赖 `sharp`。
+源文件 `extension/assets/icon.svg`（蓝底 `#3b82f6` + 白色粗体 G + 右上金色星标 `#f59e0b`），纯色设计。Plasmo 标准方式直接使用 `icon.svg`。`node scripts/generate-icons.js` → 生成 16/32/48/64/128px PNG 备用。设计文档：`docs/superpowers/specs/2026-05-28-gitstar-icon-design.md`
 
-**已知问题**：Plasmo 构建时不使用预生成的 `assets/icon*.png`，而是从 `icon.svg` 重新渲染自己的 `.plasmo.` 前缀图标。Plasmo 内部 SVG 渲染器不支持渐变（`<radialGradient>` / `<linearGradient>`），且纯色填充在路径元素上也会出现色偏。结果：金色星标被渲染为灰色。删除 `.plasmo/gen-assets/` 缓存后重建可复现。
+**注意：** 图标颜色验证只用 prod 构建（`npm run build`），dev 模式有 gen-assets 色偏问题（见已知陷阱）。

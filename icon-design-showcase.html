@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitStar Icon 设计方案对比</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #f8fafc;
+    color: #1e1b4b;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1e1b4b;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    margin-bottom: 40px;
+    font-size: 15px;
+  }
+
+  /* 方案卡片 */
+  .design-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    border: 1px solid #e5e7eb;
+  }
+  .design-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .design-badge {
+    background: #3b82f6;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .design-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e1b4b;
+  }
+
+  /* 图标展示行 */
+  .icon-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .icon-row:last-child { border-bottom: none; }
+  .icon-label {
+    font-size: 13px;
+    color: #6b7280;
+    width: 70px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .icon-set {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .icon-size-label {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  /* SVG 容器 */
+  .svg-wrap {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  /* 设计说明 */
+  .design-notes {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .note {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #6b7280;
+  }
+  .note-icon { font-size: 14px; }
+
+  /* 推荐标记 */
+  .recommend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-left: 8px;
+  }
+
+  /* 对比网格 */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .compare-cell {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid #e5e7eb;
+  }
+  .compare-label {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 10px;
+  }
+
+  /* 当前图标 */
+  .current-badge {
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>GitStar 图标设计方案</h1>
+<p class="subtitle">三个方案 × 四种尺寸对比 · G字母 + 金色星标</p>
+
+<!-- ============ 方案 1 ============ -->
+<div class="design-card">
+  <div class="design-header">
+    <span class="design-badge">方案 A</span>
+    <span class="design-name">蓝底白G + 金星徽章</span>
+    <span class="recommend">&#9733; 推荐</span>
+  </div>
+
+  <!-- 128px -->
+  <div class="icon-row">
+    <span class="icon-label">原始尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <div class="svg-wrap">
+          <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="aStarGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#ffd166"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <!-- 圆角方底 -->
+            <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+            <!-- G 字母 - 加粗几何风格 -->
+            <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+            <!-- 右上角金色星标徽章 -->
+            <circle cx="101" cy="33" r="24" fill="#fff" opacity="0.15"/>
+            <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="url(#aStarGrad)"/>
+          </svg>
+        </div>
+        <span class="icon-size-label">设计稿 128px</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 各尺寸 -->
+  <div class="icon-row">
+    <span class="icon-label">多尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <svg width="16" height="16" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+        </svg>
+        <span class="icon-size-label">16px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+        </svg>
+        <span class="icon-size-label">32px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="48" height="48" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+        </svg>
+        <span class="icon-size-label">48px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+        </svg>
+        <span class="icon-size-label">128px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="design-notes">
+    <div class="note"><span class="note-icon">&#127912;</span> 品牌蓝底，与 popup 顶栏统一 #3b82f6</div>
+    <div class="note"><span class="note-icon">&#9997;</span> 粗体白色 G，几何无衬线，醒目</div>
+    <div class="note"><span class="note-icon">&#9733;</span> 右上金星徽章点缀，画龙点睛</div>
+    <div class="note"><span class="note-icon">&#128065;</span> 16px 极小尺寸下 G 字母仍可辨识</div>
+  </div>
+</div>
+
+<!-- ============ 方案 2 ============ -->
+<div class="design-card">
+  <div class="design-header">
+    <span class="design-badge">方案 B</span>
+    <span class="design-name">星形底台 + G 字嵌入</span>
+  </div>
+
+  <div class="icon-row">
+    <span class="icon-label">原始尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <div class="svg-wrap">
+          <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="bStarGrad" cx="45%" cy="35%" r="65%">
+                <stop offset="0%" stop-color="#ffd166"/>
+                <stop offset="60%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </radialGradient>
+            </defs>
+            <!-- 圆角方底 -->
+            <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+            <!-- 大星形 -->
+            <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="url(#bStarGrad)" opacity="0.9"/>
+            <!-- G 字嵌入星中 -->
+            <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+          </svg>
+        </div>
+        <span class="icon-size-label">设计稿 128px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="icon-row">
+    <span class="icon-label">多尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <svg width="16" height="16" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+          <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="#f59e0b" opacity="0.9"/>
+          <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+        </svg>
+        <span class="icon-size-label">16px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+          <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="#f59e0b" opacity="0.9"/>
+          <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+        </svg>
+        <span class="icon-size-label">32px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="48" height="48" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+          <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="#f59e0b" opacity="0.9"/>
+          <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+        </svg>
+        <span class="icon-size-label">48px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+          <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="#f59e0b" opacity="0.9"/>
+          <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+        </svg>
+        <span class="icon-size-label">128px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="design-notes">
+    <div class="note"><span class="note-icon">&#127912;</span> 深色底台 (#1e1b4b)，金色大星为主体</div>
+    <div class="note"><span class="note-icon">&#9997;</span> G 字嵌入星形内部，两者融为一体</div>
+    <div class="note"><span class="note-icon">&#9888;</span> 16px 时 G 字较小，辨识度下降</div>
+    <div class="note"><span class="note-icon">&#128065;</span> 大尺寸效果出彩，适合 48px+ 场景</div>
+  </div>
+</div>
+
+<!-- ============ 方案 3 ============ -->
+<div class="design-card">
+  <div class="design-header">
+    <span class="design-badge">方案 C</span>
+    <span class="design-name">浅色分区 · G 星并列</span>
+  </div>
+
+  <div class="icon-row">
+    <span class="icon-label">原始尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <div class="svg-wrap">
+          <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="cStarGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffd166"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <!-- 圆角方底 -->
+            <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+            <!-- 左侧 G -->
+            <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+            <!-- 分隔线 -->
+            <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+            <!-- 右侧星标 -->
+            <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="url(#cStarGrad)" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span class="icon-size-label">设计稿 128px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="icon-row">
+    <span class="icon-label">多尺寸</span>
+    <div class="icon-set">
+      <div class="icon-item">
+        <svg width="16" height="16" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+          <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+          <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+          <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-size-label">16px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+          <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+          <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+          <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-size-label">32px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="48" height="48" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+          <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+          <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+          <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-size-label">48px</span>
+      </div>
+      <div class="icon-item">
+        <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+          <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+          <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+          <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+          <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="icon-size-label">128px</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="design-notes">
+    <div class="note"><span class="note-icon">&#127912;</span> 浅灰底 + 蓝色 G + 金色星，轻量清爽</div>
+    <div class="note"><span class="note-icon">&#9997;</span> G 和星左右对等分布，两者权重相当</div>
+    <div class="note"><span class="note-icon">&#9888;</span> 元素较多，16px 时略显拥挤</div>
+    <div class="note"><span class="note-icon">&#128065;</span> 适合偏好低调、浅色系的场景</div>
+  </div>
+</div>
+
+<!-- ============ 并排对比: 工具栏实际效果 ============ -->
+<h2 style="font-size:20px; font-weight:700; margin: 36px 0 20px; text-align:center;">工具栏实际效果对比（32px）</h2>
+<div class="compare-grid">
+  <div class="compare-cell">
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+        <polygon points="64,16 79.8,48.1 115,53.2 89.5,78.2 95.5,113 64,96.5 32.5,113 38.5,78.2 13,53.2 48.2,48.1" fill="#f59e0b" stroke="#f59e0b" stroke-width="14" stroke-linejoin="round" transform="matrix(0.65 0 0 0.65 22.4 22.4)"/>
+      </svg>
+      <span style="font-weight:700;font-size:15px;">当前</span>
+    </div>
+    <div class="compare-label">旧版图标</div>
+  </div>
+  <div class="compare-cell">
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <rect width="128" height="128" rx="28" fill="#3b82f6"/>
+        <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#ffffff" letter-spacing="-2">G</text>
+        <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+      </svg>
+      <span style="font-weight:700;font-size:15px;">方案 A</span>
+    </div>
+    <div class="compare-label">蓝底白G+星徽章</div>
+  </div>
+  <div class="compare-cell">
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <rect width="128" height="128" rx="28" fill="#1e1b4b"/>
+        <polygon points="64,18 74.8,47.4 106,47.4 81.2,66.0 90.5,95.5 64,77 37.5,95.5 46.8,66.0 22,47.4 53.2,47.4" fill="#f59e0b" opacity="0.9"/>
+        <text x="64" y="74" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="900" fill="#1e1b4b" letter-spacing="-1">G</text>
+      </svg>
+      <span style="font-weight:700;font-size:15px;">方案 B</span>
+    </div>
+    <div class="compare-label">星形底台+G字嵌入</div>
+  </div>
+  <div class="compare-cell">
+    <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+      <svg width="32" height="32" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <rect width="128" height="128" rx="28" fill="#f3f4f6"/>
+        <text x="40" y="88" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="58" font-weight="900" fill="#3b82f6" letter-spacing="-1">G</text>
+        <line x1="68" y1="28" x2="68" y2="100" stroke="#e5e7eb" stroke-width="2"/>
+        <polygon points="98,48 105.2,65.6 124,68 109.5,81 113,100 98,91.5 83,100 86.5,81 72,68 90.8,65.6" fill="#f59e0b" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <span style="font-weight:700;font-size:15px;">方案 C</span>
+    </div>
+    <div class="compare-label">浅色分区·G星并列</div>
+  </div>
+</div>
+
+<!-- ============ 推荐理由 ============ -->
+<div style="background:#eff6ff;border-radius:16px;padding:28px 32px;margin-top:32px;border:1px solid #bfdbfe;">
+  <h3 style="font-size:17px;font-weight:700;color:#1e40af;margin-bottom:12px;">推荐方案 A 的理由</h3>
+  <ul style="color:#1e3a5f;font-size:14px;line-height:2;padding-left:20px;">
+    <li><strong>品牌一致</strong> — 蓝色 (#3b82f6) 与 popup 顶栏、按钮、链接颜色统一，形成视觉体系</li>
+    <li><strong>主次分明</strong> — G 为主体（GitHub），星标为点缀（优质项目），不是平分秋色</li>
+    <li><strong>小尺寸最优</strong> — 16px 工具栏图标仍能清晰识别白 G 字母，星标细节丢失也不影响辨识</li>
+    <li><strong>专业清爽</strong> — 纯色底 + 单一白色字母 + 一点金色点缀，无多余装饰</li>
+    <li><strong>SVG 纯色填充</strong> — 背景和文字都是纯色，不依赖渐变，避免 Plasmo SVG 渲染器的色偏问题</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>
