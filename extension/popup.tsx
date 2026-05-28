@@ -267,7 +267,7 @@ export default function PopupIndex() {
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <HeaderIcon />
-            GitStar
+            <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
         </div>
@@ -284,7 +284,7 @@ export default function PopupIndex() {
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <HeaderIcon />
-            GitStar
+            <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
         </div>
