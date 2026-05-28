@@ -118,18 +118,23 @@ function SidebarPanel() {
           right: '16px',
           top: '80px',
           zIndex: 9999,
-          background: cardBg,
-          border: `1px solid ${borderColor}`,
-          borderRadius: '8px',
-          padding: '8px 12px',
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: '#3b82f6',
           cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          fontSize: '12px',
-          color: textColor,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
         onClick={() => setCollapsed(false)}
       >
-        ⭐ GitStar
+        <svg width="28" height="28" viewBox="0 0 128 128" style={{ display: 'block' }}>
+          <circle cx="64" cy="64" r="64" fill="#ffffff"/>
+          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
+          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+        </svg>
       </div>
     );
   }
@@ -174,7 +179,14 @@ function SidebarPanel() {
           }}
           onMouseDown={onTitleMouseDown}
         >
-          <span>⭐ GitStar · 同类热门</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="14" height="14" viewBox="0 0 128 128" style={{ flexShrink: 0 }}>
+              <circle cx="64" cy="64" r="64" fill="#ffffff"/>
+              <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
+              <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+            </svg>
+            GitStar · 同类热门
+          </span>
           <span
             data-action="collapse"
             onClick={() => setCollapsed(true)}
