@@ -234,7 +234,7 @@ function SidebarPanel() {
                           marginLeft: '8px',
                           cursor: 'pointer',
                           color: (favorites || []).includes(repo.full_name)
-                            ? '#6366f1'
+                            ? '#f59e0b'
                             : isDark
                               ? '#484f58'
                               : '#e5e7eb',

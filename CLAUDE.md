@@ -208,6 +208,7 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[600px]` + `flex fle
 - **缓存静默降级**：cache.ts 所有 chrome.storage 调用包裹 try/catch，失败只打 `console.debug`，不影响功能。不要依赖缓存一定可用。
 - **`@keyframes loadingBar`**：动画定义在 `extension/assets/tailwind.css`，不在 Tailwind config 中。LoadingBar 使用 `animate-[loadingBar_1s_ease-in-out_infinite]` 引用。如果只改组件不改 CSS，动画不会生效。
 - **骨架屏样式一致性**：popup.tsx 中的加载骨架屏（标题字号、头像尺寸、内边距）必须和实际渲染组件保持一致，否则 `loading → loaded` 切换时会产生视觉跳变。修改组件样式时同步检查对应的骨架屏。
+- **配色严格遵循方案**：所有硬编码色值（`bg-[#...]`、`text-[#...]`、`border-[#...]` 等）必须来自上方配色方案表。常见违规：indigo（`#6366f1`/`#4f46e5`）应为主蓝（`#3b82f6`/`#2563eb`），`#22c55e` 应为 `#16a34a`。新增 UI 时对照配色表检查，不要用 Tailwind 默认色系。
 - **GitHub Star API scope**：`PUT/DELETE /user/starred/:owner/:repo` 需要 Token 有 `public_repo`（经典）或 `star`（细粒度）scope。只读 Token 会返回 403/404，`checkStarred()` 会静默失败（catch 空函数）。
 
 ### 配色方案

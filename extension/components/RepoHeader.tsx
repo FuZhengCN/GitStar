@@ -48,7 +48,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
         <button
           onClick={onToggleStar}
           disabled={starLoading}
-          className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 ${isStarred ? 'bg-[#f0fdf4] border border-[#22c55e] text-[#16a34a]' : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'}`}
+          className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 ${isStarred ? 'bg-[#f0fdf4] border border-[#16a34a] text-[#16a34a]' : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'}`}
         >
           {starLoading ? '...' : isStarred ? '★ Starred' : '⭐ Star'}
         </button>

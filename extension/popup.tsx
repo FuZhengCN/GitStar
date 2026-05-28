@@ -228,7 +228,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
               />
             ) : readmeLoading ? (
               <div className="border border-[#f3f4f6] rounded-lg bg-white">
-                <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#fafafa]">
+                <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb]">
                   <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
                 </div>
                 <div className="px-6 py-4 animate-pulse space-y-3">

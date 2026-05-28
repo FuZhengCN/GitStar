@@ -70,7 +70,7 @@ export default function OptionsIndex() {
             value={token}
             onChange={e => { setToken(e.target.value); setStatus('idle'); setMessage(''); }}
             placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-            className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6366f1] focus:border-transparent"
+            className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
           />
           <p className="text-xs text-gray-400 mt-1">
             在{' '}
@@ -78,7 +78,7 @@ export default function OptionsIndex() {
               href="https://github.com/settings/tokens"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#4f46e5] hover:underline"
+              className="text-[#3b82f6] hover:underline"
             >
               github.com/settings/tokens
             </a>{' '}
@@ -90,7 +90,7 @@ export default function OptionsIndex() {
           <button
             onClick={handleSave}
             disabled={status === 'saving'}
-            className="px-4 py-2 bg-[#6366f1] text-white text-sm rounded-lg hover:bg-[#4f46e5] transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50"
           >
             {status === 'saving' ? '验证中...' : '保存'}
           </button>
