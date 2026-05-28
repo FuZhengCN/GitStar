@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
-import { getCache, setCache } from '../lib/cache';
+import { getCache, setCache, isFresh } from '../lib/cache';
 
+/**
+ * Stale-while-revalidate cache hook. Shows cached data instantly, refreshes in background.
+ *
+ * @param cacheKey - Cache key (null to skip). Params should be encodeURIComponent-encoded.
+ * @param fetcher - Data fetcher. **Must be wrapped in useCallback** with stable deps.
+ * @param ttlMs - Cache TTL in ms. Fresh cache skips fetch entirely.
+ */
 export function useStaleCache<T>(
   cacheKey: string | null,
   fetcher: () => Promise<T>,
@@ -20,13 +27,16 @@ export function useStaleCache<T>(
 
     let cancelled = false;
 
+    const key = cacheKey;
+
     async function run() {
-      const cached = await getCache<T>(cacheKey!);
+      const cached = await getCache<T>(key);
       if (cancelled) return;
 
       if (cached) {
         setData(cached.data);
         setLoading(false);
+        if (isFresh(cached, ttlMs)) return; // Cache fresh, skip background refresh
       } else {
         setLoading(true);
       }
@@ -36,7 +46,7 @@ export function useStaleCache<T>(
         if (cancelled) return;
         setData(fresh);
         setError(null);
-        setCache(cacheKey!, fresh).catch(() => {});
+        setCache(key, fresh).catch(() => {});
       } catch (err: unknown) {
         if (cancelled) return;
         const e = err as { message?: string };
