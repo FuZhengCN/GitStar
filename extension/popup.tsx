@@ -111,7 +111,16 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   // Repo info cache (5 min TTL)
-  const repoFetcher = useCallback(() => getRepoInfo(owner, repo), [owner, repo]);
+  const repoFetcher = useCallback(async () => {
+    try {
+      return await getRepoInfo(owner, repo);
+    } catch (err: unknown) {
+      const e = err as { message?: string; status?: number };
+      if (e.status === 404) throw new Error('仓库不存在');
+      if (e.status === 403) throw new Error('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
+      throw err;
+    }
+  }, [owner, repo]);
   const { data: detail, loading: repoLoading, error } = useStaleCache(
     `repo:${owner}/${repo}`,
     repoFetcher,
