@@ -46,9 +46,15 @@ function SidebarPanel() {
       ) {
         const [, owner, repo] = match;
         const detail = await getRepoDetail(owner, repo);
-        const lang = detail.language;
-        if (lang) {
-          const result = await searchRepos({ q: lang, sort: 'stars', per_page: 6 });
+        const topics = detail.topics as string[] | undefined;
+        if (topics && topics.length > 0) {
+          const q = topics.slice(0, 3).map((t) => `topic:${t}`).join(' ');
+          const result = await searchRepos({ q, sort: 'stars', per_page: 6 });
+          setRepos(
+            result.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5)
+          );
+        } else if (detail.language) {
+          const result = await searchRepos({ q: detail.language, sort: 'stars', per_page: 6 });
           setRepos(
             result.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5)
           );
@@ -260,20 +266,6 @@ function SidebarPanel() {
               </div>
             ))
           )}
-          <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '10px' }}>
-            <span
-              onClick={() => {
-                try {
-                  chrome.action.openPopup();
-                } catch {
-                  /* fallback */
-                }
-              }}
-              style={{ color: '#3b82f6', cursor: 'pointer' }}
-            >
-              在 Popup 中打开 →
-            </span>
-          </div>
         </div>
       </div>
     </div>
