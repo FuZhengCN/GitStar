@@ -199,7 +199,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
           <div className="animate-pulse space-y-4 mt-4">
             <div className="h-4 bg-gray-200 rounded w-24" />
             <div className="flex gap-4">
-              <div className="w-12 h-12 rounded-full bg-gray-200" />
+              <div className="w-10 h-10 rounded-full bg-gray-200" />
               <div className="flex-1 space-y-2">
                 <div className="h-5 bg-gray-200 rounded w-2/3" />
                 <div className="h-4 bg-gray-200 rounded w-full" />
@@ -229,9 +229,9 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
             ) : readmeLoading ? (
               <div className="border border-[#f3f4f6] rounded-lg bg-white">
                 <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#fafafa]">
-                  <h2 className="text-sm font-semibold text-gray-700">📖 README.md</h2>
+                  <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
                 </div>
-                <div className="px-6 py-8 animate-pulse space-y-3">
+                <div className="px-6 py-4 animate-pulse space-y-3">
                   <div className="h-4 bg-gray-200 rounded w-full" />
                   <div className="h-4 bg-gray-200 rounded w-5/6" />
                   <div className="h-4 bg-gray-200 rounded w-4/6" />

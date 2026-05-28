@@ -77,6 +77,9 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 - Web 实现计划：`docs/superpowers/plans/2026-05-27-gitstar-plan.md`
 - 扩展设计文档：`docs/superpowers/specs/2026-05-27-gitstar-extension-design.md`
 - 扩展实现计划：`docs/superpowers/plans/2026-05-27-gitstar-extension-plan.md`
+- 图标设计文档：`docs/superpowers/specs/2026-05-28-gitstar-icon-design.md`
+- 缓存优化设计：`docs/superpowers/specs/2026-05-28-gitstar-popup-cache-design.md`
+- 缓存优化计划：`docs/superpowers/plans/2026-05-28-gitstar-popup-cache-plan.md`
 
 ## Non-Goals
 
@@ -105,16 +108,20 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 | Content Script | `extension/contents/github-sidebar.tsx` | GitHub 页面注入推荐面板 |
 | Options | `extension/options.tsx` | Token 配置页 |
 
-`extension/components/` 和 `extension/hooks/` 存放 Web 版复用的 UI 组件和 hooks（SearchBar、FilterBar、RepoList、RepoCard、Pagination、LoadingBar、RepoHeader、ReadmeViewer、ErrorState、EmptyState、useFavorites、useDebounce）。类型定义在 `extension/lib/types.ts`。
+`extension/components/` 和 `extension/hooks/` 存放 UI 组件和 hooks。类型定义在 `extension/lib/types.ts`，缓存层在 `extension/lib/cache.ts`，SWR hook 在 `extension/hooks/useStaleCache.ts`。
 
 ### Data Flow
 
 ```
 GitHub REST API (api.github.com)
   ↑ fetch + Bearer Token
-extension/lib/github.ts       ← 直接调 API（atob 解码 README，无缓存）
+extension/lib/github.ts       ← 直接调 API（atob 解码 README），不掺和缓存
   ↑ searchRepos() / getRepoInfo() / getRepoReadme()
   ↑ checkStarred() / starRepo() / unstarRepo()  ← GitHub Star API（需 Token scope）
+extension/lib/cache.ts        ← chrome.storage.local 缓存读写（getCache/setCache/isFresh）
+  ↑
+extension/hooks/useStaleCache.ts  ← SWR hook：缓存秒出 → 后台刷新 → 错误保留旧数据
+  ↑ useStaleCache(cacheKey, fetcher, ttlMs)
 extension/lib/markdown.ts     ← Worker 通信封装（<10KB 主线程解析，≥10KB Worker 解析）
   ↑ parseMarkdown()
 extension/workers/markdown-worker.ts  ← Worker 线程执行 marked.parse()
@@ -122,19 +129,30 @@ Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
   ↑ React state                  ↑ React state
 
 chrome.storage.sync  → githubToken（跨设备同步）
-chrome.storage.local → gitstar-favorites（本地收藏）
+chrome.storage.local → gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）
 ```
 
 Star API（`PUT/DELETE /user/starred/:owner/:repo`）需要用户 Token 有 `public_repo` 或 `star` scope，否则返回 403/404。
 
 和原 Next.js 版的核心区别：无 API Route 代理、无服务端缓存、Token 由用户自己在 Options 页配置。
 
-**DetailPage 加载流程（双阶段）：**
+**DetailPage 加载流程（双阶段 + 缓存）：**
 
-1. `getRepoInfo()` → RepoHeader 立即渲染（不等 README）
-2. `getRepoReadme()` → `parseMarkdown()` 在 Worker 后台解析 → `ReadmeViewer` 接收预解析 HTML 直接渲染
+1. `useStaleCache(repo:${owner}/${repo}, ...)` → 缓存命中秒出 RepoHeader，否则调 `getRepoInfo()`
+2. RepoHeader 渲染后 `readmeCacheKey` 从 null 变为有效值，触发 README `useStaleCache`
+3. `getRepoReadme()` → `parseMarkdown()` 在 Worker 后台解析 → `ReadmeViewer` 接收预解析 HTML
 
 Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
+
+**缓存策略（stale-while-revalidate）：**
+
+| 数据 | 缓存键 | TTL | 行为 |
+|------|--------|-----|------|
+| 搜索列表 | `search:<encodeURI(q)>:<encodeURI(lang)>:<time>:<sort>:<page>` | 2min | 缓存命中秒出，后台刷新；未过期跳过请求 |
+| 仓库信息 | `repo:<owner>/<repo>` | 5min | 同上 |
+| README | `readme:<owner>/<repo>` | 10min | 同上，cacheKey 为 null 直到 repo info 就绪 |
+
+缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中用户输入参数（`q`、`language`）必须用 `encodeURIComponent` 编码，避免参数字符（如 `:`）导致键冲突。
 
 ### 路由（关键约束）
 
@@ -184,7 +202,12 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[600px]` + `flex fle
 - **Content Script 样式隔离**：用内联 style，不要 import Tailwind CSS，避免污染 GitHub 页面。
 - **大型 README 卡顿**：已通过双管齐下解决——① `Promise.all` 拆分为 `getRepoInfo` + `getRepoReadme`，RepoHeader 不等 README 立即渲染；② `marked.parse()` 移入 Web Worker 后台线程（`extension/workers/markdown-worker.ts`），避免阻塞主线程。Worker 创建失败自动回退主线程解析。`ReadmeViewer` 已简化为纯渲染组件，接收预解析 HTML。
 - **Plasmo 图标渲染**：Plasmo dev 模式的 gen-assets 管线存在色偏问题——同一份 `icon.svg` 在 `npm run build` 下颜色正确（`#3b82f6`），在 `npm run dev` 下被渲染为灰色（`#8b8b8b`）。根因在 dev 的 gen-assets 中间文件生成阶段，与 prod 的直接渲染路径不同。**验证图标变更只用 prod 构建**（`npm run build`），Chrome 加载 `build/chrome-mv3-prod/`。
+- **Popup JS 上下文生命周期**：popup 每次打开是全新的 JS 上下文，关闭即销毁。所有 React state 丢失，不能依赖内存跨打开持久化。数据持久化只能用 `chrome.storage`。
+- **缓存键编码**：缓存键中用户输入参数（`search`、`language`）必须用 `encodeURIComponent` 编码。参数值可能含 `:`（如 `org:vue`），直接用 `:` 拼接会导致键冲突。下拉选择值（`timeRange`、`sort`）和数字（`page`）目前安全，但建议统一编码。
+- **chrome.storage.local 异步**：所有读写是 async，在 React 中必须用 `cancelled` 标记或 AbortController 防止组件卸载后 setState。
+- **缓存静默降级**：cache.ts 所有 chrome.storage 调用包裹 try/catch，失败只打 `console.debug`，不影响功能。不要依赖缓存一定可用。
 - **`@keyframes loadingBar`**：动画定义在 `extension/assets/tailwind.css`，不在 Tailwind config 中。LoadingBar 使用 `animate-[loadingBar_1s_ease-in-out_infinite]` 引用。如果只改组件不改 CSS，动画不会生效。
+- **骨架屏样式一致性**：popup.tsx 中的加载骨架屏（标题字号、头像尺寸、内边距）必须和实际渲染组件保持一致，否则 `loading → loaded` 切换时会产生视觉跳变。修改组件样式时同步检查对应的骨架屏。
 - **GitHub Star API scope**：`PUT/DELETE /user/starred/:owner/:repo` 需要 Token 有 `public_repo`（经典）或 `star`（细粒度）scope。只读 Token 会返回 403/404，`checkStarred()` 会静默失败（catch 空函数）。
 
 ### 配色方案
