@@ -111,7 +111,10 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 GitHub REST API (api.github.com)
   ↑ fetch + Bearer Token
 extension/lib/github.ts       ← 直接调 API（atob 解码 README，无缓存）
-  ↑ searchRepos() / getRepoDetail()
+  ↑ searchRepos() / getRepoInfo() / getRepoReadme()
+extension/lib/markdown.ts     ← Worker 通信封装（<10KB 主线程解析，≥10KB Worker 解析）
+  ↑ parseMarkdown()
+extension/workers/markdown-worker.ts  ← Worker 线程执行 marked.parse()
 Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
   ↑ React state                  ↑ React state
 
@@ -120,6 +123,13 @@ chrome.storage.local → gitstar-favorites（本地收藏）
 ```
 
 和原 Next.js 版的核心区别：无 API Route 代理、无服务端缓存、Token 由用户自己在 Options 页配置。
+
+**DetailPage 加载流程（双阶段）：**
+
+1. `getRepoInfo()` → RepoHeader 立即渲染（不等 README）
+2. `getRepoReadme()` → `parseMarkdown()` 在 Worker 后台解析 → `ReadmeViewer` 接收预解析 HTML 直接渲染
+
+Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
 
 ### 路由（关键约束）
 
@@ -155,8 +165,8 @@ Popindex 最外层渲染共享的**蓝底顶栏**（`bg-[#3b82f6] px-4 py-3 shad
 - **wouter `<Link>` 不可用**：见上方路由说明。
 - **Plasmo 文件约定**：入口是 `popup.tsx` / `options.tsx`（根级），不是 `popup/index.tsx`。Content Script 放 `contents/` 目录。
 - **Content Script 样式隔离**：用内联 style，不要 import Tailwind CSS，避免污染 GitHub 页面。
-- **大型 README 卡顿**：`dangerouslySetInnerHTML` 一次性插入 HTML，浏览器同步解析数千 DOM 节点阻塞主线程。`ReadmeViewer` 当前对超过 60KB 的 README 截断显示 + "展开全部"按钮。下一步方案是按 `##` 标题分段 + `requestAnimationFrame` 渐进渲染。
-- **Plasmo 图标生成**：构建时 Plasmo 从 `icon.svg` 重新生成 `.plasmo.` 前缀的图标。SVG 的 `<radialGradient>` 等特性不被 Plasmo 渲染器支持，会导致颜色丢失。修改图标后用 `node scripts/generate-icons.js` 重新生成源 PNG，再 `npm run build`。
+- **大型 README 卡顿**：已通过双管齐下解决——① `Promise.all` 拆分为 `getRepoInfo` + `getRepoReadme`，RepoHeader 不等 README 立即渲染；② `marked.parse()` 移入 Web Worker 后台线程（`extension/workers/markdown-worker.ts`），避免阻塞主线程。Worker 创建失败自动回退主线程解析。`ReadmeViewer` 已简化为纯渲染组件，接收预解析 HTML。
+- **Plasmo 图标生成**：构建时 Plasmo 从 `icon.svg` 渲染 `.plasmo.` 前缀图标。**Plasmo 内部 SVG 渲染器不支持 `<radialGradient>`、`<linearGradient>`，甚至路径上的纯色填充也会产生色偏（金色→灰色）。** `generate-icons.js` 用 sharp 生成的正确 PNG 被 Plasmo 忽略——manifest 始终引用 Plasmo 自己渲染的 `.plasmo.` 版本。根因是 Plasmo 渲染管线缺陷，绕过方案是让 Plasmo 直接使用预生成 PNG（需调整文件名约定或构建流程）。
 
 ### 配色方案
 
@@ -173,3 +183,5 @@ Popindex 最外层渲染共享的**蓝底顶栏**（`bg-[#3b82f6] px-4 py-3 shad
 ### 图标
 
 `extension/assets/icon.svg` → `node scripts/generate-icons.js` → 生成 16/32/48/128px PNG。依赖 `sharp`。
+
+**已知问题**：Plasmo 构建时不使用预生成的 `assets/icon*.png`，而是从 `icon.svg` 重新渲染自己的 `.plasmo.` 前缀图标。Plasmo 内部 SVG 渲染器不支持渐变（`<radialGradient>` / `<linearGradient>`），且纯色填充在路径元素上也会出现色偏。结果：金色星标被渲染为灰色。删除 `.plasmo/gen-assets/` 缓存后重建可复现。

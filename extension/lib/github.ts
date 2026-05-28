@@ -81,6 +81,40 @@ export async function searchRepos(params: SearchParams): Promise<SearchResponse>
   return { items, total_count: raw.total_count as number };
 }
 
+export async function getRepoInfo(owner: string, repo: string): Promise<RepoDetail> {
+  if (!VALID_OWNER_REPO.test(owner) || !VALID_OWNER_REPO.test(repo)) {
+    throw Object.assign(new Error('Invalid owner or repo name'), { status: 400 });
+  }
+
+  const repoRes = await fetch(`${GITHUB_API}/repos/${owner}/${repo}`, { headers: headers() });
+
+  if (!repoRes.ok) {
+    if (repoRes.status === 404) throw Object.assign(new Error('Repository not found'), { status: 404 });
+    throw Object.assign(new Error('GitHub API error'), { status: repoRes.status });
+  }
+
+  const raw = await repoRes.json() as Record<string, unknown>;
+
+  return {
+    id: raw.id as number,
+    owner: (raw.owner as Record<string, string>).login,
+    name: raw.name as string,
+    full_name: raw.full_name as string,
+    description: raw.description as string | null,
+    html_url: raw.html_url as string,
+    stargazers_count: raw.stargazers_count as number,
+    forks_count: raw.forks_count as number,
+    watchers_count: raw.watchers_count as number,
+    language: raw.language as string | null,
+    license: raw.license as { name: string } | null,
+    owner_avatar: (raw.owner as Record<string, string>).avatar_url,
+    topics: raw.topics as string[],
+    updated_at: raw.updated_at as string,
+    readme: '',
+    default_branch: raw.default_branch as string,
+  };
+}
+
 export async function getRepoDetail(owner: string, repo: string): Promise<RepoDetail> {
   if (!VALID_OWNER_REPO.test(owner) || !VALID_OWNER_REPO.test(repo)) {
     throw Object.assign(new Error('Invalid owner or repo name'), { status: 400 });
@@ -121,4 +155,11 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
     readme,
     default_branch: raw.default_branch as string,
   };
+}
+
+export async function getRepoReadme(owner: string, repo: string): Promise<string> {
+  const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, { headers: headers() });
+  if (!res.ok) return '';
+  const raw = await res.json() as Record<string, unknown>;
+  return atob(raw.content as string);
 }

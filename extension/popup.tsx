@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
-import { searchRepos, getRepoDetail, loadToken, setToken, getToken } from './lib/github';
+import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken } from './lib/github';
+import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
@@ -97,37 +98,63 @@ function HomePage() {
   );
 }
 
+const README_PREVIEW = 60000;
+
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
   const [detail, setDetail] = useState<RepoDetail | null>(null);
+  const [readmeContent, setReadmeContent] = useState('');
+  const [readmeHtml, setReadmeHtml] = useState('');
+  const [readmeExpanded, setReadmeExpanded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [repoLoading, setRepoLoading] = useState(true);
+  const [readmeLoading, setReadmeLoading] = useState(true);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   useEffect(() => {
     let cancelled = false;
-    console.log('[DetailPage] enter:', owner, repo);
-    const t0 = performance.now();
-    setLoading(true);
+    setRepoLoading(true);
     setError(null);
-    getRepoDetail(owner, repo)
+    getRepoInfo(owner, repo)
       .then(data => {
         if (cancelled) return;
-        console.log('[DetailPage] API done in', (performance.now() - t0).toFixed(0), 'ms, readme:', data.readme ? `${Math.round(data.readme.length / 1024)}KB` : 'none');
-        console.log('[DetailPage] setting detail state...');
         setDetail(data);
-        setLoading(false);
-        console.log('[DetailPage] setDetail done');
+        setRepoLoading(false);
       })
       .catch((err: { message?: string; status?: number }) => {
         if (cancelled) return;
         if (err.status === 404) setError('仓库不存在');
         else if (err.status === 403) setError('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
         else setError(err.message || '加载失败');
-        setLoading(false);
+        setRepoLoading(false);
       });
     return () => { cancelled = true; };
   }, [owner, repo]);
+
+  useEffect(() => {
+    if (!detail) return;
+    let cancelled = false;
+    setReadmeLoading(true);
+    getRepoReadme(owner, repo).then(content => {
+      if (cancelled) return;
+      if (!content) { setReadmeLoading(false); return; }
+      setReadmeContent(content);
+      const src = content.length > README_PREVIEW ? content.slice(0, README_PREVIEW) : content;
+      parseMarkdown(src, owner, repo, detail.default_branch).then(html => {
+        if (cancelled) return;
+        setReadmeHtml(html);
+        setReadmeLoading(false);
+      });
+    });
+    return () => { cancelled = true; };
+  }, [detail, owner, repo]);
+
+  const handleExpand = () => {
+    setReadmeExpanded(true);
+    parseMarkdown(readmeContent, owner, repo, detail!.default_branch).then(html => {
+      setReadmeHtml(html);
+    });
+  };
 
   if (error) {
     return (
@@ -137,38 +164,55 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     );
   }
 
-  if (loading || !detail) {
-    return (
-      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-        <LoadingBar loading={true} />
-        <div className="animate-pulse space-y-4 mt-4">
-          <div className="h-4 bg-gray-200 rounded w-24" />
-          <div className="flex gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-200" />
-            <div className="flex-1 space-y-2">
-              <div className="h-5 bg-gray-200 rounded w-2/3" />
-              <div className="h-4 bg-gray-200 rounded w-full" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-      <RepoHeader
-        repo={detail}
-        isFavorite={loaded && (favorites || []).includes(detail.full_name)}
-        onToggleFavorite={toggleFavorite}
-      />
-      <div className="mt-4">
-        {detail.readme ? (
-          <ReadmeViewer content={detail.readme} owner={owner} repo={repo} branch={detail.default_branch} />
-        ) : (
-          <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
-        )}
-      </div>
+      {repoLoading || !detail ? (
+        <>
+          <LoadingBar loading={true} />
+          <div className="animate-pulse space-y-4 mt-4">
+            <div className="h-4 bg-gray-200 rounded w-24" />
+            <div className="flex gap-4">
+              <div className="w-12 h-12 rounded-full bg-gray-200" />
+              <div className="flex-1 space-y-2">
+                <div className="h-5 bg-gray-200 rounded w-2/3" />
+                <div className="h-4 bg-gray-200 rounded w-full" />
+              </div>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <RepoHeader
+            repo={detail}
+            isFavorite={loaded && (favorites || []).includes(detail.full_name)}
+            onToggleFavorite={toggleFavorite}
+          />
+          <div className="mt-4">
+            {readmeContent ? (
+              <ReadmeViewer
+                content={readmeContent}
+                html={readmeHtml}
+                expanded={readmeExpanded}
+                onExpand={handleExpand}
+                loading={readmeLoading}
+              />
+            ) : readmeLoading ? (
+              <div className="border border-[#f3f4f6] rounded-lg bg-white">
+                <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#fafafa]">
+                  <h2 className="text-sm font-semibold text-gray-700">📖 README.md</h2>
+                </div>
+                <div className="px-6 py-8 animate-pulse space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-full" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                  <div className="h-4 bg-gray-200 rounded w-4/6" />
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
