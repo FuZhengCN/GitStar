@@ -8,12 +8,12 @@ interface Props {
 
 export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) {
   return (
-    <div className="border border-[#f3f4f6] rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
+    <div className="border border-[#f3f4f6] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-2.5 items-start">
       <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <a
           href={`#/project/${repo.full_name}`}
-          className="text-sm font-semibold text-[#3b82f6] hover:underline cursor-pointer"
+          className="text-[13px] font-semibold text-[#3b82f6] hover:underline cursor-pointer"
         >
           {repo.full_name}
         </a>
@@ -26,7 +26,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
       </div>
       <button
         onClick={() => onToggleFavorite(repo.full_name)}
-        className={`flex-shrink-0 text-lg leading-none mt-0.5 transition-colors ${isFavorite ? 'text-[#3b82f6]' : 'text-[#e5e7eb] hover:text-[#3b82f6]'}`}
+        className={`flex-shrink-0 text-base leading-none mt-0.5 transition-colors ${isFavorite ? 'text-[#f59e0b]' : 'text-[#e5e7eb] hover:text-[#f59e0b]'}`}
         aria-label={isFavorite ? '取消收藏' : '收藏'}
       >
         {isFavorite ? '★' : '☆'}

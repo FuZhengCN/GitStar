@@ -163,3 +163,30 @@ export async function getRepoReadme(owner: string, repo: string): Promise<string
   const raw = await res.json() as Record<string, unknown>;
   return atob(raw.content as string);
 }
+
+// GitHub Star API
+
+export async function checkStarred(owner: string, repo: string): Promise<boolean> {
+  const res = await fetch(`${GITHUB_API}/user/starred/${owner}/${repo}`, { headers: headers() });
+  return res.status === 204;
+}
+
+export async function starRepo(owner: string, repo: string): Promise<void> {
+  const res = await fetch(`${GITHUB_API}/user/starred/${owner}/${repo}`, {
+    method: 'PUT',
+    headers: { ...headers(), 'Content-Length': '0' },
+  });
+  if (!res.ok && res.status !== 204) {
+    throw Object.assign(new Error('Star failed'), { status: res.status });
+  }
+}
+
+export async function unstarRepo(owner: string, repo: string): Promise<void> {
+  const res = await fetch(`${GITHUB_API}/user/starred/${owner}/${repo}`, {
+    method: 'DELETE',
+    headers: headers(),
+  });
+  if (!res.ok && res.status !== 204) {
+    throw Object.assign(new Error('Unstar failed'), { status: res.status });
+  }
+}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
-import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken } from './lib/github';
+import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken, checkStarred, starRepo, unstarRepo } from './lib/github';
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
 import SearchBar from './components/SearchBar';
@@ -16,6 +16,14 @@ import ErrorState from './components/ErrorState';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
+
+const HeaderIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+    <circle cx="64" cy="64" r="64" fill="#ffffff"/>
+    <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
+    <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
+  </svg>
+);
 
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
@@ -51,13 +59,13 @@ function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
-  const totalPages = Math.min(Math.ceil(total / 30), 34);
+  const totalPages = Math.min(Math.ceil(total / 10), 100);
 
   const fetchRepos = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const params: SearchParams = { sort: sort as SearchParams['sort'], order: 'desc', page, per_page: 30 };
+      const params: SearchParams = { sort: sort as SearchParams['sort'], order: 'desc', page, per_page: 10 };
       if (search) params.q = search;
       if (language) params.language = language;
       if (timeRange) params.created = timeRange;
@@ -75,24 +83,24 @@ function HomePage() {
 
   useEffect(() => { fetchRepos(); }, [fetchRepos]);
 
+  useEffect(() => { window.scrollTo(0, 0); }, [page]);
+
   return (
-    <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-      <div className="space-y-3">
-        <LoadingBar loading={loading} />
-        <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
-        <FilterBar
-          language={language} onLanguageChange={v => { setLanguage(v); setPage(1); }}
-          timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
-          sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
-        />
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{error}</div>
-        )}
-        <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        <div className="text-center text-xs text-gray-400 pt-2">
-          {getToken() ? 'Token 已配置' : '未配置 Token · 限流 60 次/小时'}
-        </div>
+    <div className="space-y-3">
+      <LoadingBar loading={loading} />
+      <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
+      <FilterBar
+        language={language} onLanguageChange={v => { setLanguage(v); setPage(1); }}
+        timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
+        sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
+      />
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{error}</div>
+      )}
+      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <div className="text-center text-xs text-gray-400 pt-2">
+        {getToken() ? <span className="text-[#16a34a]">Token 已配置</span> : '未配置 Token · 限流 60 次/小时'}
       </div>
     </div>
   );
@@ -109,6 +117,8 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [repoLoading, setRepoLoading] = useState(true);
   const [readmeLoading, setReadmeLoading] = useState(true);
+  const [isStarred, setIsStarred] = useState(false);
+  const [starLoading, setStarLoading] = useState(false);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   useEffect(() => {
@@ -130,6 +140,28 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
       });
     return () => { cancelled = true; };
   }, [owner, repo]);
+
+  useEffect(() => {
+    if (!detail) return;
+    checkStarred(owner, repo).then(setIsStarred).catch(() => {});
+  }, [detail, owner, repo]);
+
+  const handleToggleStar = useCallback(async () => {
+    setStarLoading(true);
+    try {
+      if (isStarred) {
+        await unstarRepo(owner, repo);
+        setIsStarred(false);
+      } else {
+        await starRepo(owner, repo);
+        setIsStarred(true);
+      }
+    } catch {
+      // keep current state on failure
+    } finally {
+      setStarLoading(false);
+    }
+  }, [isStarred, owner, repo]);
 
   useEffect(() => {
     if (!detail) return;
@@ -158,14 +190,12 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
   if (error) {
     return (
-      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
-        <ErrorState title="出错了" message={error} onBack={() => window.history.back()} />
-      </div>
+      <ErrorState title="出错了" message={error} onBack={() => window.history.back()} />
     );
   }
 
   return (
-    <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] p-4 bg-white">
+    <div>
       {repoLoading || !detail ? (
         <>
           <LoadingBar loading={true} />
@@ -186,6 +216,9 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
             repo={detail}
             isFavorite={loaded && (favorites || []).includes(detail.full_name)}
             onToggleFavorite={toggleFavorite}
+            isStarred={isStarred}
+            onToggleStar={handleToggleStar}
+            starLoading={starLoading}
           />
           <div className="mt-4">
             {readmeContent ? (
@@ -231,12 +264,15 @@ export default function PopupIndex() {
 
   if (!tokenReady) {
     return (
-      <div style={{ width: POPUP_WIDTH }} className="min-h-[500px] bg-white">
+      <div style={{ width: POPUP_WIDTH }} className="min-h-[600px] bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
-          <h1 className="text-base font-bold text-white">⭐ GitStar</h1>
-          <span className="text-[10px] text-white/70">发现优质开源项目</span>
+          <h1 className="text-base font-bold text-white flex items-center gap-2">
+            <HeaderIcon />
+            GitStar
+          </h1>
+          <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
         </div>
-        <div className="p-4">
+        <div className="p-4 flex-1">
           <LoadingBar loading={true} />
         </div>
       </div>
@@ -245,12 +281,15 @@ export default function PopupIndex() {
 
   return (
     <ErrorBoundary>
-      <div style={{ width: POPUP_WIDTH, minHeight: '500px' }} className="bg-white">
+      <div style={{ width: POPUP_WIDTH, minHeight: '600px' }} className="bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
-          <h1 className="text-base font-bold text-white">⭐ GitStar</h1>
-          <span className="text-[10px] text-white/70">发现优质开源项目</span>
+          <h1 className="text-base font-bold text-white flex items-center gap-2">
+            <HeaderIcon />
+            GitStar
+          </h1>
+          <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
         </div>
-        <div className="p-4">
+        <div className="p-4 flex-1">
           <Router hook={useHashLocation}>
             <Route path="/project/:owner/:repo">
               {(params) => <DetailPage params={params} />}

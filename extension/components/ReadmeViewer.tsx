@@ -14,7 +14,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, loadin
   return (
     <div className="border border-[#f3f4f6] rounded-lg bg-white">
       <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#fafafa]">
-        <h2 className="text-sm font-semibold text-gray-700">📖 README.md</h2>
+        <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
       </div>
       {loading ? (
         <div className="px-6 py-8 animate-pulse space-y-3">
