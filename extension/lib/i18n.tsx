@@ -22,15 +22,22 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(() => normalizeLang(navigator.language));
+  const [ready, setReady] = useState(false);
 
-  // Async read stored preference
+  // Async read stored preference; gate children on readiness to prevent flash
   useEffect(() => {
-    if (!chrome?.storage) return;
+    if (!chrome?.storage) {
+      setReady(true);
+      return;
+    }
     chrome.storage.local.get(STORAGE_KEY).then(result => {
       if (result[STORAGE_KEY] === 'zh' || result[STORAGE_KEY] === 'en') {
         setLangState(result[STORAGE_KEY]);
       }
-    }).catch(() => {});
+      setReady(true);
+    }).catch(() => {
+      setReady(true);
+    });
   }, []);
 
   // Cross-context sync via onChanged
@@ -64,6 +71,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       return key;
     };
   }, [lang]);
+
+  if (!ready) return null;
 
   return (
     <I18nContext.Provider value={{ t, lang, setLang }}>

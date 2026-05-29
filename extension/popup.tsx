@@ -441,7 +441,7 @@ function FavoritesPage() {
   const pageRepos = orderedRepos.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
-    <div>
+    <div className="pb-14">
       <nav className="text-xs mb-3">
         <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">{t('backToDiscover')}</a>
       </nav>
@@ -473,17 +473,21 @@ function FavoritesPage() {
           ))}
         </div>
       )}
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-      {failedCount > 0 && !error && (
-        <div className="text-center text-xs text-[#9ca3af] mt-3">
-          {t('itemsLoadFailed').replace('{n}', String(failedCount))}
-          {' '}
-          <button
-            onClick={() => setRetryKey(k => k + 1)}
-            className="text-[#3b82f6] hover:underline"
-          >
-            {t('retry')}
-          </button>
+      {(totalPages > 1 || (failedCount > 0 && !error)) && (
+        <div className="fixed bottom-0 left-0 right-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1">
+          <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+          {failedCount > 0 && !error && (
+            <div className="text-center text-[10px] text-[#9ca3af] pt-0.5">
+              {t('itemsLoadFailed').replace('{n}', String(failedCount))}
+              {' '}
+              <button
+                onClick={() => setRetryKey(k => k + 1)}
+                className="text-[#3b82f6] hover:underline"
+              >
+                {t('retry')}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
