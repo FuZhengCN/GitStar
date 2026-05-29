@@ -47,7 +47,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
           <p className="text-xs text-[#6b7280] mt-1">{repo.description || t('noDescription')}</p>
         </div>
       </div>
-      <div className="flex items-center gap-3 mt-3 py-2.5 px-3 bg-[#f9fafb] border border-[#f3f4f6] rounded-lg">
+      <div className="flex items-center gap-3 mt-3 py-2.5 px-3 bg-white rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
         <button
           onClick={onToggleStar}
           disabled={starLoading}
