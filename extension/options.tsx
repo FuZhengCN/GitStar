@@ -107,7 +107,7 @@ function OptionsForm() {
           <button
             onClick={handleSave}
             disabled={status === 'saving'}
-            className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[110px] text-center"
           >
             {status === 'saving' ? t('verifying') : t('save')}
           </button>

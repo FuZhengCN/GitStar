@@ -38,7 +38,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
               </a>
               <button
                 onClick={() => onToggleFavorite(repo.full_name)}
-                className={`px-2 py-0.5 text-[11px] border rounded-md transition-colors ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#6b7280] hover:bg-gray-50'}`}
+                className={`px-2 py-0.5 text-[11px] border rounded-md transition-colors min-w-[58px] text-center ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#6b7280] hover:bg-gray-50'}`}
               >
                 {isFavorite ? t('favorited') : t('favorite')}
               </button>
@@ -51,7 +51,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
         <button
           onClick={onToggleStar}
           disabled={starLoading}
-          className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 ${isStarred ? 'bg-[#f0fdf4] border border-[#16a34a] text-[#16a34a]' : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'}`}
+          className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 min-w-[92px] text-center ${isStarred ? 'bg-[#f0fdf4] border border-[#16a34a] text-[#16a34a]' : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'}`}
         >
           {starLoading ? '...' : isStarred ? t('starredButton') : t('starButton')}
         </button>
