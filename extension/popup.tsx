@@ -440,6 +440,9 @@ export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const hash = useCurrentHash();
+  const { favorites, loaded: favLoaded } = useFavorites();
+  const favCount = favLoaded ? (favorites || []).length : 0;
+  const isFavPage = hash === '#/favorites';
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
@@ -464,7 +467,7 @@ export default function PopupIndex() {
           </h1>
           <div className="flex items-center gap-2.5">
             <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
-            <span className="text-lg leading-none text-white/50">★</span>
+            <span className="text-[11px] font-semibold text-white/40 bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.15)] rounded-md px-2 py-1">★ 收藏</span>
           </div>
         </div>
         <div className="p-4 flex-1">
@@ -486,10 +489,13 @@ export default function PopupIndex() {
             <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
             <a
               href="#/favorites"
-              className={`text-lg leading-none no-underline transition-colors ${hash === '#/favorites' ? 'text-[#f59e0b]' : 'text-white/85 hover:text-white'}`}
+              className={`flex items-center gap-1 text-[11px] font-semibold no-underline rounded-md px-2 py-1 border transition-colors ${isFavPage ? 'text-[#f59e0b] bg-[rgba(245,158,11,0.15)] border-[rgba(245,158,11,0.3)]' : 'text-white bg-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.2)]'}`}
               title="我的收藏"
             >
-              ★
+              ★ 收藏
+              {favCount > 0 && (
+                <span className={`rounded-full min-w-[16px] h-4 flex items-center justify-center text-[10px] px-1 ${isFavPage ? 'bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(255,255,255,0.2)]'}`}>{favCount}</span>
+              )}
             </a>
           </div>
         </div>
