@@ -1,4 +1,5 @@
 import { README_PREVIEW_BYTES } from '../lib/constants';
+import { useI18n } from '../lib/i18n';
 
 interface Props {
   content: string;
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function ReadmeViewer({ content, html, expanded, onExpand, loading }: Props) {
+  const { t } = useI18n();
   const needsTruncation = content.length > README_PREVIEW_BYTES && !expanded;
 
   return (
@@ -34,7 +36,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, loadin
             onClick={onExpand}
             className="text-xs text-[#3b82f6] hover:text-[#2563eb] cursor-pointer"
           >
-            展开全部 README（{Math.round(content.length / 1024)}KB，可能较慢）
+            {t('expandReadme').replace('{size}', String(Math.round(content.length / 1024)))}
           </button>
         </div>
       )}

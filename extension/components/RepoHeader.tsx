@@ -1,4 +1,5 @@
 import { RepoDetail } from '../lib/types';
+import { useI18n } from '../lib/i18n';
 
 interface Props {
   repo: RepoDetail;
@@ -10,10 +11,12 @@ interface Props {
 }
 
 export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarred, onToggleStar, starLoading }: Props) {
+  const { t } = useI18n();
+
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
-        <a href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }} className="text-[#3b82f6] hover:underline cursor-pointer">← 返回</a>
+        <a href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }} className="text-[#3b82f6] hover:underline cursor-pointer">{t('back')}</a>
         <span className="text-[#9ca3af]">/</span>
         <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
         <span className="text-[#9ca3af]">/</span>
@@ -31,17 +34,17 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
                 rel="noopener noreferrer"
                 className="px-2 py-0.5 text-[11px] border border-[#e5e7eb] rounded-md text-[#6b7280] hover:bg-gray-50 transition-colors"
               >
-                🔗 打开
+                {t('openOnGitHub')}
               </a>
               <button
                 onClick={() => onToggleFavorite(repo.full_name)}
                 className={`px-2 py-0.5 text-[11px] border rounded-md transition-colors ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#6b7280] hover:bg-gray-50'}`}
               >
-                {isFavorite ? '★ 已收藏' : '☆ 收藏'}
+                {isFavorite ? t('favorited') : t('favorite')}
               </button>
             </div>
           </div>
-          <p className="text-xs text-[#6b7280] mt-1">{repo.description || '暂无描述'}</p>
+          <p className="text-xs text-[#6b7280] mt-1">{repo.description || t('noDescription')}</p>
         </div>
       </div>
       <div className="flex items-center gap-3 mt-3 py-2.5 px-3 bg-[#f9fafb] border border-[#f3f4f6] rounded-lg">

@@ -1,8 +1,12 @@
+import { useI18n } from '../lib/i18n';
+
 export default function EmptyState() {
+  const { t } = useI18n();
+
   return (
     <div className="text-center py-16">
-      <p className="text-gray-400 text-lg mb-2">没有找到匹配的项目</p>
-      <p className="text-gray-300 text-sm">尝试调整筛选条件或搜索关键词</p>
+      <p className="text-gray-400 text-lg mb-2">{t('noResults')}</p>
+      <p className="text-gray-300 text-sm">{t('noResultsHint')}</p>
     </div>
   );
 }

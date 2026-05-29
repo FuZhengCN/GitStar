@@ -1,4 +1,5 @@
 import { Repo } from '../lib/types';
+import { useI18n } from '../lib/i18n';
 
 interface Props {
   repo: Repo;
@@ -7,6 +8,8 @@ interface Props {
 }
 
 export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) {
+  const { t } = useI18n();
+
   return (
     <div className="border border-[#f3f4f6] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-2.5 items-start">
       <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
@@ -17,7 +20,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
         >
           {repo.full_name}
         </a>
-        <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-2">{repo.description || '暂无描述'}</p>
+        <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-2">{repo.description || t('noDescription')}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-[#9ca3af]">
           <span className="text-[#f59e0b]">★ {repo.stargazers_count.toLocaleString()}</span>
           {repo.language && <span>🔤 {repo.language}</span>}
@@ -28,7 +31,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
         onClick={() => onToggleFavorite(repo.full_name)}
         className={`flex-shrink-0 text-xs border rounded-md px-1.5 py-0.5 mt-0.5 transition-colors flex items-center gap-0.5 ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#9ca3af] hover:text-[#f59e0b] hover:border-[#f59e0b]'}`}
       >
-        {isFavorite ? '★ 已收藏' : '☆ 收藏'}
+        {isFavorite ? t('favorited') : t('favorite')}
       </button>
     </div>
   );
