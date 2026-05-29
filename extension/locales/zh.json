@@ -51,5 +51,7 @@
   "sidebarEmpty": "暂无推荐",
   "expandReadme": "展开全部 README（{size}KB，可能较慢）",
   "favoritesLoadFailed": "无法获取收藏项目信息",
+  "sidebarToggle": "GitHub 侧边栏推荐",
+  "sidebarToggleDesc": "在 GitHub 仓库页面右侧显示基于 topic 相似度的热门项目推荐",
   "languageLabel": "语言 / Language"
 }

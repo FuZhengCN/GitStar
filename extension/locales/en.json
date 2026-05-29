@@ -51,5 +51,7 @@
   "sidebarEmpty": "No recommendations",
   "expandReadme": "Expand full README ({size}KB, may be slow)",
   "favoritesLoadFailed": "Failed to load favorites",
+  "sidebarToggle": "GitHub Sidebar Recommendations",
+  "sidebarToggleDesc": "Show similar popular projects based on topic similarity in the GitHub repository sidebar",
   "languageLabel": "语言 / Language"
 }
