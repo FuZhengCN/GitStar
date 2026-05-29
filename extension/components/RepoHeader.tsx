@@ -1,5 +1,6 @@
 import { RepoDetail } from '../lib/types';
 import { useI18n } from '../lib/i18n';
+import AvatarImg from './AvatarImg';
 
 interface Props {
   repo: RepoDetail;
@@ -23,7 +24,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
         <span className="text-[#1e1b4b] font-semibold">{repo.name}</span>
       </nav>
       <div className="flex gap-4 items-start">
-        <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0" />
+        <AvatarImg src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="text-[15px] font-bold text-[#1e1b4b] truncate">{repo.full_name}</h1>

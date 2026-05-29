@@ -1,5 +1,6 @@
 import { Repo } from '../lib/types';
 import { useI18n } from '../lib/i18n';
+import AvatarImg from './AvatarImg';
 
 interface Props {
   repo: Repo;
@@ -12,7 +13,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
 
   return (
     <div className="border border-[#f3f4f6] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-2.5 items-start">
-      <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
+      <AvatarImg src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <a
           href={`#/project/${repo.full_name}`}
