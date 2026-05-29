@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
+import { README_PREVIEW_BYTES } from './lib/constants';
 import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken, checkStarred, starRepo, unstarRepo } from './lib/github';
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
@@ -14,17 +15,10 @@ import LoadingBar from './components/LoadingBar';
 import RepoHeader from './components/RepoHeader';
 import ReadmeViewer from './components/ReadmeViewer';
 import ErrorState from './components/ErrorState';
+import GitStarIcon from './components/GitStarIcon';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
-
-const HeaderIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-    <circle cx="64" cy="64" r="64" fill="#ffffff"/>
-    <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
-    <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
-  </svg>
-);
 
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
@@ -47,7 +41,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
   }
 }
 
-function HomePage() {
+function HomePage({ hasToken }: { hasToken: boolean }) {
   const [search, setSearch] = useState('');
   const [language, setLanguage] = useState('');
   const [timeRange, setTimeRange] = useState('');
@@ -56,7 +50,7 @@ function HomePage() {
 
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
 
-  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${timeRange}:${sort}:${page}`;
+  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(sort)}:${page}`;
 
   const fetcher = useCallback(async () => {
     try {
@@ -94,13 +88,13 @@ function HomePage() {
       <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       <div className="text-center text-xs text-gray-400 pt-2">
-        {getToken() ? <span className="text-[#16a34a]">Token 已配置</span> : '未配置 Token · 限流 60 次/小时'}
+        {hasToken ? <span className="text-[#16a34a]">Token 已配置</span> : '未配置 Token · 限流 60 次/小时'}
       </div>
     </div>
   );
 }
 
-const README_PREVIEW = 60000;
+
 
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
@@ -133,7 +127,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     const content = await getRepoReadme(owner, repo);
     if (!content) return { content: '', html: '' };
     const branch = detail?.default_branch || 'main';
-    const src = content.length > README_PREVIEW ? content.slice(0, README_PREVIEW) : content;
+	const src = content.length > README_PREVIEW_BYTES ? content.slice(0, README_PREVIEW_BYTES) : content;
     const html = await parseMarkdown(src, owner, repo, branch);
     return { content, html };
   }, [owner, repo, detail?.default_branch]);
@@ -251,11 +245,16 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
-    loadToken().then(() => setTokenReady(true));
+    loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
-      if (changes.githubToken) setToken(changes.githubToken.newValue || null);
+      if (changes.githubToken) {
+        const val = changes.githubToken.newValue || null;
+        setToken(val);
+        setHasToken(!!val);
+      }
     };
     chrome.storage.onChanged.addListener(listener);
     return () => chrome.storage.onChanged.removeListener(listener);
@@ -263,10 +262,10 @@ export default function PopupIndex() {
 
   if (!tokenReady) {
     return (
-      <div style={{ width: POPUP_WIDTH }} className="min-h-[600px] bg-white flex flex-col">
+      <div style={{ width: POPUP_WIDTH }} className="min-h-[720px] bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
-            <HeaderIcon />
+            <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
@@ -280,10 +279,10 @@ export default function PopupIndex() {
 
   return (
     <ErrorBoundary>
-      <div style={{ width: POPUP_WIDTH, minHeight: '600px' }} className="bg-white flex flex-col">
+      <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
-            <HeaderIcon />
+            <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
@@ -293,7 +292,7 @@ export default function PopupIndex() {
             <Route path="/project/:owner/:repo">
               {(params) => <DetailPage params={params} />}
             </Route>
-            <Route path="/" component={HomePage} />
+            <Route path="/" component={() => <HomePage hasToken={hasToken} />} />
           </Router>
         </div>
       </div>

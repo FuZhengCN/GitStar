@@ -113,7 +113,7 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 | Content Script | `extension/contents/github-sidebar.tsx` | GitHub 页面注入推荐面板 |
 | Options | `extension/options.tsx` | Token 配置页 |
 
-`extension/components/`（含 `ErrorState.tsx` 等）和 `extension/hooks/` 存放 UI 组件和 hooks。类型定义在 `extension/lib/types.ts`，缓存层在 `extension/lib/cache.ts`，SWR hook 在 `extension/hooks/useStaleCache.ts`，Worker 在 `extension/workers/markdown-worker.ts`。
+`extension/components/`（含 `ErrorState.tsx`、`GitStarIcon.tsx` 等）和 `extension/hooks/` 存放 UI 组件和 hooks。类型定义在 `extension/lib/types.ts`，共享常量在 `extension/lib/constants.ts`，缓存层在 `extension/lib/cache.ts`，SWR hook 在 `extension/hooks/useStaleCache.ts`，Worker 在 `extension/workers/markdown-worker.ts`。
 
 ### Data Flow
 
@@ -123,13 +123,13 @@ GitHub REST API (api.github.com)
 extension/lib/github.ts       ← 直接调 API（atob 解码 README），不掺和缓存
   ↑ searchRepos() / getRepoInfo() / getRepoReadme()
   ↑ checkStarred() / starRepo() / unstarRepo()  ← GitHub Star API（需 Token scope）
-extension/lib/cache.ts        ← chrome.storage.local 缓存读写（getCache/setCache/isFresh）
+extension/lib/cache.ts        ← chrome.storage.local 缓存读写，MAX_ENTRIES=30 自动淘汰最旧条目
   ↑
 extension/hooks/useStaleCache.ts  ← SWR hook：缓存秒出 → 后台刷新 → 错误保留旧数据
   ↑ useStaleCache(cacheKey, fetcher, ttlMs)
-extension/lib/markdown.ts     ← Worker 通信封装（<10KB 主线程解析，≥10KB Worker 解析）
+extension/lib/markdown.ts     ← Worker 通信 + DOMPurify 净化（<10KB 主线程解析，≥10KB Worker 解析）
   ↑ parseMarkdown()
-extension/workers/markdown-worker.ts  ← Worker 线程执行 marked.parse()
+extension/workers/markdown-worker.ts  ← Worker 线程执行 marked.parse()（不做净化，无 DOM）
 Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
   ↑ React state                  ↑ React state
 
@@ -153,11 +153,11 @@ Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
 
 | 数据 | 缓存键 | TTL | 行为 |
 |------|--------|-----|------|
-| 搜索列表 | `search:<encodeURI(q)>:<encodeURI(lang)>:<time>:<sort>:<page>` | 2min | 缓存命中秒出，后台刷新；未过期跳过请求 |
+| 搜索列表 | `search:<encodeURI(q)>:<encodeURI(lang)>:<encodeURI(timeRange)>:<encodeURI(sort)>:<page>` | 2min | 缓存命中秒出，后台刷新；未过期跳过请求 |
 | 仓库信息 | `repo:<owner>/<repo>` | 5min | 同上 |
 | README | `readme:<owner>/<repo>` | 10min | 同上，cacheKey 为 null 直到 repo info 就绪 |
 
-缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中用户输入参数（`q`、`language`）必须用 `encodeURIComponent` 编码，避免参数字符（如 `:`）导致键冲突。
+缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中所有用户输入参数（`q`、`language`、`timeRange`、`sort`）用 `encodeURIComponent` 编码，避免参数字符（如 `:`、`>`）导致键冲突。
 
 ### 路由（关键约束）
 
@@ -201,7 +201,8 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **可拖拽**：标题栏 `onMouseDown` 启动拖拽，首次拖动后切为 `position: fixed`，跟随鼠标。折叠按钮 `data-action="collapse"` 忽略拖拽。
 - **限高滚动**：`maxHeight: calc(100vh - 100px)` + `overflow-y: auto`，标题栏 `flexShrink: 0` 固定顶部。
 - **深色模式**：读取 `data-color-mode` 属性切换配色。
-- **手动挂载 + SPA 适配**：Content Script 不依赖 Plasmo 自动注入，而是 `mountPanel()` 手动挂载。必须提供 `export default`（返回 null）避免 Plasmo 自动渲染报 Error #130（见已知陷阱）。通过 `setInterval` 500ms 轮询 `location.href` 检测 GitHub SPA 导航，自动 `cleanup()` → 重新挂载。优先查 `#repo-details-container` → `.Layout-sidebar` → `aside`，未找到时用 `MutationObserver` 等待 DOM 出现，10 秒超时后回退为 `position: fixed` 浮动面板。
+- **手动挂载 + SPA 适配**：Content Script 不依赖 Plasmo 自动注入，而是 `mountPanel()` 手动挂载。必须提供 `export default`（返回 null）避免 Plasmo 自动渲染报 Error #130（见已知陷阱）。通过 `setInterval` 500ms 轮询 `location.href` 检测 GitHub SPA 导航（`document.hidden` 时跳过），自动 `cleanup()` → 重新挂载。优先查 `#repo-details-container` → `.Layout-sidebar` → `aside`，未找到时用 `MutationObserver` 等待 DOM 出现，10 秒超时后回退为 `position: fixed` 浮动面板。
+213	- **推荐缓存**：推荐结果按 `owner/repo` 做 60 秒内存缓存（`recsCache` Map），同一仓库内快速切换不会重复请求 API。
 
 ### 已知陷阱
 
@@ -212,13 +213,15 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **大型 README 卡顿**：已通过双管齐下解决——① `Promise.all` 拆分为 `getRepoInfo` + `getRepoReadme`，RepoHeader 不等 README 立即渲染；② `marked.parse()` 移入 Web Worker 后台线程（`extension/workers/markdown-worker.ts`），避免阻塞主线程。Worker 创建失败自动回退主线程解析。`ReadmeViewer` 已简化为纯渲染组件，接收预解析 HTML。
 - **Plasmo 图标渲染**：Plasmo dev 模式的 gen-assets 管线存在色偏问题——同一份 `icon.svg` 在 `npm run build` 下颜色正确（`#3b82f6`），在 `npm run dev` 下被渲染为灰色（`#8b8b8b`）。根因在 dev 的 gen-assets 中间文件生成阶段，与 prod 的直接渲染路径不同。**验证图标变更只用 prod 构建**（`npm run build`），Chrome 加载 `build/chrome-mv3-prod/`。
 - **Popup JS 上下文生命周期**：popup 每次打开是全新的 JS 上下文，关闭即销毁。所有 React state 丢失，不能依赖内存跨打开持久化。数据持久化只能用 `chrome.storage`。
-- **缓存键编码**：缓存键中用户输入参数（`search`、`language`）必须用 `encodeURIComponent` 编码。参数值可能含 `:`（如 `org:vue`），直接用 `:` 拼接会导致键冲突。下拉选择值（`timeRange`、`sort`）和数字（`page`）目前安全，但建议统一编码。
+- **缓存键编码**：缓存键中所有用户输入参数（`search`、`language`、`timeRange`、`sort`）用 `encodeURIComponent` 编码。参数值可能含 `:`（如 `org:vue`）或 `>`（如时间范围 `>2026-05-22`），直接用 `:` 拼接会导致键冲突。
 - **chrome.storage.local 异步**：所有读写是 async，在 React 中必须用 `cancelled` 标记或 AbortController 防止组件卸载后 setState。
 - **缓存静默降级**：cache.ts 所有 chrome.storage 调用包裹 try/catch，失败只打 `console.debug`，不影响功能。不要依赖缓存一定可用。
 - **`@keyframes loadingBar`**：动画定义在 `extension/assets/tailwind.css`，不在 Tailwind config 中。LoadingBar 使用 `animate-[loadingBar_1s_ease-in-out_infinite]` 引用。如果只改组件不改 CSS，动画不会生效。
 - **骨架屏样式一致性**：popup.tsx 中的加载骨架屏（标题字号、头像尺寸、内边距）必须和实际渲染组件保持一致，否则 `loading → loaded` 切换时会产生视觉跳变。修改组件样式时同步检查对应的骨架屏。
 - **配色严格遵循方案**：所有硬编码色值（`bg-[#...]`、`text-[#...]`、`border-[#...]` 等）必须来自上方配色方案表。常见违规：indigo（`#6366f1`/`#4f46e5`）应为主蓝（`#3b82f6`/`#2563eb`），`#22c55e` 应为 `#16a34a`。新增 UI 时对照配色表检查，不要用 Tailwind 默认色系。
 - **GitHub Star API scope**：`PUT/DELETE /user/starred/:owner/:repo` 需要 Token 有 `public_repo`（经典）或 `star`（细粒度）scope。只读 Token 会返回 403/404，`checkStarred()` 会静默失败（catch 空函数）。
+222	- **DOMPurify 净化**：`markdown.ts` 中 `parseMarkdown()` 使用 DOMPurify 净化 marked 输出（`ADD_ATTR: ['class']` 保留代码高亮）。Worker 线程不做净化（无 DOM），HTML 回到主线程后统一净化。不要移除净化步骤或用其他库替换而不评估安全性。
+223	- **缓存淘汰**：`cache.ts` 中 `setCache()` 写入后触发 `evictOldest()`（fire-and-forget），超过 30 条时按时间戳删除最旧条目。`evictOldest` 失败静默降级，不影响写入。修改缓存逻辑时保持淘汰机制有效。
 
 ### 配色方案
 

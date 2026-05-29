@@ -35,7 +35,4 @@ export interface SearchResponse {
   total_count: number;
 }
 
-export interface ApiError {
-  status: number;
-  message: string;
-}
+

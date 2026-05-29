@@ -8,6 +8,7 @@ interface Props {
 
 export default function SearchBar({ value, onChange }: Props) {
   const [input, setInput] = useState(value);
+  useEffect(() => { setInput(value); }, [value]);
   const debounced = useDebounce(input, 300);
 
   useEffect(() => {

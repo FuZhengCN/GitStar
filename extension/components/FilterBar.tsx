@@ -1,5 +1,3 @@
-import { useMemo } from 'react';
-
 const LANGUAGES = [
   { value: '', label: '全部语言' },
   { value: 'JavaScript', label: 'JavaScript' },
@@ -51,7 +49,7 @@ const Chevron = () => (
 );
 
 export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange }: Props) {
-  const timeRanges = useMemo(() => getTimeRanges(), []);
+  const timeRanges = getTimeRanges();
 
   return (
     <div className="flex gap-2">

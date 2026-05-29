@@ -1,3 +1,5 @@
+import { README_PREVIEW_BYTES } from '../lib/constants';
+
 interface Props {
   content: string;
   html: string;
@@ -6,10 +8,8 @@ interface Props {
   loading: boolean;
 }
 
-const PREVIEW_LENGTH = 60000;
-
 export default function ReadmeViewer({ content, html, expanded, onExpand, loading }: Props) {
-  const needsTruncation = content.length > PREVIEW_LENGTH && !expanded;
+  const needsTruncation = content.length > README_PREVIEW_BYTES && !expanded;
 
   return (
     <div className="border border-[#f3f4f6] rounded-lg bg-white">

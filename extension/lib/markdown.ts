@@ -3,6 +3,11 @@ const WORKER_MIN_SIZE = 10240;
 let workerCtorFailed = false;
 
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, { ADD_ATTR: ['class'] });
+}
 
 function parseInMainThread(content: string, owner: string, repo: string, branch: string): string {
   const raw = marked.parse(content, { gfm: true, breaks: true }) as string;
@@ -17,7 +22,7 @@ export function parseMarkdown(
   branch: string,
 ): Promise<string> {
   if (workerCtorFailed || content.length < WORKER_MIN_SIZE) {
-    return Promise.resolve(parseInMainThread(content, owner, repo, branch));
+    return Promise.resolve(sanitizeHtml(parseInMainThread(content, owner, repo, branch)));
   }
 
   return new Promise((resolve) => {
@@ -29,17 +34,17 @@ export function parseMarkdown(
       );
     } catch {
       workerCtorFailed = true;
-      resolve(parseInMainThread(content, owner, repo, branch));
+      resolve(sanitizeHtml(parseInMainThread(content, owner, repo, branch)));
       return;
     }
 
     worker.onmessage = (e: MessageEvent<{ html: string }>) => {
-      resolve(e.data.html);
+      resolve(sanitizeHtml(e.data.html));
       worker.terminate();
     };
     worker.onerror = () => {
       workerCtorFailed = true;
-      resolve(parseInMainThread(content, owner, repo, branch));
+      resolve(sanitizeHtml(parseInMainThread(content, owner, repo, branch)));
       worker.terminate();
     };
     worker.postMessage({ type: 'parse', content, owner, repo, branch });

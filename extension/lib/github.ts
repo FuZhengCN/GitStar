@@ -39,6 +39,7 @@ function buildSearchQuery(params: SearchParams): string {
   if (params.q) parts.push(params.q);
   if (params.language) parts.push(`language:"${params.language}"`);
   if (params.created && /^>\d{4}-\d{2}-\d{2}$/.test(params.created)) parts.push(`created:${params.created}`);
+  // 过滤掉 <=100 stars 的低热度仓库，减少噪音
   parts.push('stars:>100');
   return parts.join(' ');
 }
@@ -134,7 +135,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
   let readme = '';
   if (readmeRes.ok) {
     const readmeRaw = await readmeRes.json() as Record<string, unknown>;
-    readme = atob(readmeRaw.content as string);
+    if (typeof readmeRaw.content === 'string') readme = atob(readmeRaw.content);
   }
 
   return {
@@ -161,7 +162,7 @@ export async function getRepoReadme(owner: string, repo: string): Promise<string
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, { headers: headers() });
   if (!res.ok) return '';
   const raw = await res.json() as Record<string, unknown>;
-  return atob(raw.content as string);
+  return typeof raw.content === 'string' ? atob(raw.content) : '';
 }
 
 // GitHub Star API

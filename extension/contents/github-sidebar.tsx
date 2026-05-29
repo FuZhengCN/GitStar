@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { searchRepos, getRepoDetail, loadToken, setToken } from '../lib/github';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Repo } from '../lib/types';
+import GitStarIcon from '../components/GitStarIcon';
 
 export const config: PlasmoCSConfig = {
   matches: ['https://github.com/*'],
@@ -20,6 +21,9 @@ let reactRoot: ReturnType<typeof createRoot> | null = null;
 let mountTimeout: ReturnType<typeof setTimeout> | null = null;
 let mountObserver: MutationObserver | null = null;
 let lastUrl = location.href;
+
+const recsCache = new Map<string, { data: Repo[]; ts: number }>();
+const RECS_CACHE_TTL = 60000;
 
 function cleanup() {
   if (mountTimeout) { clearTimeout(mountTimeout); mountTimeout = null; }
@@ -54,38 +58,43 @@ function SidebarPanel() {
   }, []);
 
   async function loadRecommendations() {
+    const path = window.location.pathname;
+    const match = path.match(/^\/([^/]+)\/([^/]+)/);
+    const key = match && !['search', 'explore', 'settings', 'notifications'].includes(match[1])
+      ? `${match[1]}/${match[2]}`
+      : '_global';
+    const cached = recsCache.get(key);
+    if (cached && Date.now() - cached.ts < RECS_CACHE_TTL) {
+      setRepos(cached.data);
+      return;
+    }
+
     setLoading(true);
     try {
-      const path = window.location.pathname;
-      const match = path.match(/^\/([^/]+)\/([^/]+)/);
-      if (
-        match &&
-        match[1] &&
-        match[2] &&
-        !['search', 'explore', 'settings', 'notifications'].includes(match[1])
-      ) {
+      let result: Repo[];
+
+      if (match && match[1] && match[2] && key !== '_global') {
         const [, owner, repo] = match;
         const detail = await getRepoDetail(owner, repo);
         const topics = detail.topics as string[] | undefined;
         if (topics && topics.length > 0) {
           const q = topics.slice(0, 3).map((t) => `topic:${t}`).join(' ');
-          const result = await searchRepos({ q, sort: 'stars', per_page: 6 });
-          setRepos(
-            result.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5)
-          );
+          const sr = await searchRepos({ q, sort: 'stars', per_page: 6 });
+          result = sr.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5);
         } else if (detail.language) {
-          const result = await searchRepos({ q: detail.language, sort: 'stars', per_page: 6 });
-          setRepos(
-            result.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5)
-          );
+          const sr = await searchRepos({ q: detail.language, sort: 'stars', per_page: 6 });
+          result = sr.items.filter((r) => r.full_name !== `${owner}/${repo}`).slice(0, 5);
         } else {
-          const result = await searchRepos({ sort: 'stars', per_page: 5 });
-          setRepos(result.items);
+          const sr = await searchRepos({ sort: 'stars', per_page: 5 });
+          result = sr.items;
         }
       } else {
-        const result = await searchRepos({ sort: 'stars', per_page: 5 });
-        setRepos(result.items);
+        const sr = await searchRepos({ sort: 'stars', per_page: 5 });
+        result = sr.items;
       }
+
+      setRepos(result);
+      recsCache.set(key, { data: result, ts: Date.now() });
     } catch {
       // 静默失败，不影响 GitHub 页面
     } finally {
@@ -156,11 +165,7 @@ function SidebarPanel() {
         }}
         onClick={() => setCollapsed(false)}
       >
-        <svg width="28" height="28" viewBox="0 0 128 128" style={{ display: 'block' }}>
-          <circle cx="64" cy="64" r="64" fill="#ffffff"/>
-          <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
-          <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
-        </svg>
+        <GitStarIcon size={28} style={{ display: 'block' }} />
       </div>
     );
   }
@@ -206,11 +211,7 @@ function SidebarPanel() {
           onMouseDown={onTitleMouseDown}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="14" height="14" viewBox="0 0 128 128" style={{ flexShrink: 0 }}>
-              <circle cx="64" cy="64" r="64" fill="#ffffff"/>
-              <text x="54" y="104" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="88" font-weight="900" fill="#3b82f6" letter-spacing="-2">G</text>
-              <polygon points="101,13 106.5,25.5 120,27.5 109.5,37.5 112,51 101,45 90,51 92.5,37.5 82,27.5 95.5,25.5" fill="#f59e0b"/>
-            </svg>
+            <GitStarIcon size={14} />
             GitStar · 同类热门
           </span>
           <span
@@ -346,7 +347,9 @@ function mountPanel() {
 mountPanel();
 
 // 监听 URL 变化（GitHub SPA 导航），自动清理并重新挂载
+// 页面隐藏时跳过检查，减少后台轮询开销
 setInterval(() => {
+  if (document.hidden) return;
   const currentUrl = location.href;
   if (currentUrl !== lastUrl) {
     lastUrl = currentUrl;

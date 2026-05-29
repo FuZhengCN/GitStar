@@ -1,0 +1,1 @@
+export const README_PREVIEW_BYTES = 60000;

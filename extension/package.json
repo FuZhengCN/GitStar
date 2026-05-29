@@ -11,6 +11,7 @@
     "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {
+    "dompurify": "^3.4.7",
     "marked": "^18.0.4",
     "plasmo": "0.90.5",
     "react": "18.2.0",
@@ -19,7 +20,7 @@
   },
   "devDependencies": {
     "@types/chrome": "0.0.258",
-    "@types/marked": "^5.0.2",
+    "@types/dompurify": "^3.0.5",
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
