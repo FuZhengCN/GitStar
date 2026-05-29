@@ -16,6 +16,8 @@ import RepoHeader from './components/RepoHeader';
 import ReadmeViewer from './components/ReadmeViewer';
 import ErrorState from './components/ErrorState';
 import GitStarIcon from './components/GitStarIcon';
+import RepoCard from './components/RepoCard';
+import { getCache, setCache, isFresh } from './lib/cache';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
@@ -243,9 +245,201 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   );
 }
 
+function useCurrentHash() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const handler = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', handler);
+    return () => window.removeEventListener('hashchange', handler);
+  }, []);
+  return hash;
+}
+
+function FavoritesPage() {
+  const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
+  const [repos, setRepos] = useState<(Repo | null)[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [failedCount, setFailedCount] = useState(0);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => {
+    if (!loaded) return;
+    if (!favorites || favorites.length === 0) {
+      setRepos([]);
+      setLoading(false);
+      setError(false);
+      return;
+    }
+
+    let cancelled = false;
+    const CACHE_TTL = 5 * 60 * 1000;
+    const BATCH_SIZE = 5;
+    const BATCH_DELAY = 200;
+
+    const fetchRepos = async () => {
+      setLoading(true);
+      setError(false);
+      setFailedCount(0);
+
+      const results: (Repo | null)[] = new Array(favorites.length).fill(null);
+      const missIndices: number[] = [];
+
+      for (let i = 0; i < favorites.length; i++) {
+        if (cancelled) return;
+        const cached = await getCache<Repo>(`repo:${favorites[i]}`);
+        if (cached && isFresh(cached, CACHE_TTL)) {
+          results[i] = cached.data;
+        } else {
+          missIndices.push(i);
+        }
+      }
+
+      if (missIndices.length > 0) {
+        setRepos([...results]);
+      }
+
+      let failures = 0;
+      for (let b = 0; b < missIndices.length; b += BATCH_SIZE) {
+        if (cancelled) return;
+        const batch = missIndices.slice(b, b + BATCH_SIZE);
+        const batchResults = await Promise.allSettled(
+          batch.map(idx => {
+            const [owner, repo] = favorites[idx].split('/');
+            return getRepoInfo(owner, repo);
+          })
+        );
+        batchResults.forEach((r, j) => {
+          if (cancelled) return;
+          const idx = batch[j];
+          if (r.status === 'fulfilled') {
+            results[idx] = r.value;
+            setCache(`repo:${favorites[idx]}`, r.value);
+          } else {
+            failures++;
+          }
+        });
+        setRepos([...results]);
+        setFailedCount(failures);
+
+        if (b + BATCH_SIZE < missIndices.length) {
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+        }
+      }
+
+      if (!cancelled) {
+        setRepos([...results]);
+        setFailedCount(failures);
+        if (failures === favorites.length) {
+          setError(true);
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchRepos();
+    return () => { cancelled = true; };
+  }, [favorites, loaded, retryKey]);
+
+  if (!loaded || favorites === null) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="border border-[#f3f4f6] rounded-lg p-3 bg-white animate-pulse">
+            <div className="flex gap-2.5 items-start">
+              <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+              <div className="flex-1">
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+                <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (favorites.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-[#6b7280] text-base mb-2">暂无收藏项目</p>
+        <p className="text-[#9ca3af] text-sm mb-4">去首页探索优质开源项目吧</p>
+        <a href="#/" className="text-sm text-[#3b82f6] hover:underline">← 返回发现</a>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="加载失败"
+        message="无法获取收藏项目信息"
+        onRetry={() => setRetryKey(k => k + 1)}
+        onBack={() => { window.location.hash = '#/'; }}
+      />
+    );
+  }
+
+  const reversedFavorites = [...favorites].reverse();
+  const validRepos = repos.filter((r): r is Repo => r !== null);
+  const orderedRepos = reversedFavorites
+    .map(fn => validRepos.find(r => r.full_name === fn))
+    .filter((r): r is Repo => r !== undefined);
+
+  return (
+    <div>
+      <nav className="text-xs mb-3">
+        <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">← 返回发现</a>
+      </nav>
+      <h2 className="text-[15px] font-bold text-[#1e1b4b] mb-3">★ 我的收藏 ({favorites.length})</h2>
+      {loading && orderedRepos.length === 0 ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="border border-[#f3f4f6] rounded-lg p-3 bg-white animate-pulse">
+              <div className="flex gap-2.5 items-start">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-full mb-1" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {orderedRepos.map(repo => (
+            <RepoCard
+              key={repo.id}
+              repo={repo}
+              isFavorite={true}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </div>
+      )}
+      {failedCount > 0 && !error && (
+        <div className="text-center text-xs text-[#9ca3af] mt-3">
+          {failedCount} 个项目加载失败
+          {' '}
+          <button
+            onClick={() => setRetryKey(k => k + 1)}
+            className="text-[#3b82f6] hover:underline"
+          >
+            重试
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const hash = useCurrentHash();
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
@@ -285,10 +479,20 @@ export default function PopupIndex() {
             <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
-          <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
+            <a
+              href="#/favorites"
+              className={`text-lg leading-none no-underline transition-colors ${hash === '#/favorites' ? 'text-[#f59e0b]' : 'text-white/85 hover:text-white'}`}
+              title="我的收藏"
+            >
+              ★
+            </a>
+          </div>
         </div>
         <div className="p-4 flex-1">
           <Router hook={useHashLocation}>
+            <Route path="/favorites" component={FavoritesPage} />
             <Route path="/project/:owner/:repo">
               {(params) => <DetailPage params={params} />}
             </Route>
