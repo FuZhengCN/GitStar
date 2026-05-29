@@ -131,7 +131,7 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
       <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       <div className="text-center text-xs text-gray-400 pt-2">
-        {hasToken ? <span className="text-[#16a34a]">Token 已配置</span> : '未配置 Token · 限流 60 次/小时'}
+        {hasToken ? <span className="text-[#16a34a]">{t('tokenConfigured')}</span> : t('tokenNotConfigured')}
       </div>
     </div>
   );
@@ -279,7 +279,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
             ) : readmeError && !readmeContent ? (
               <p className="text-red-500 text-center py-8 text-sm">{readmeError.message}</p>
             ) : (
-              <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
+              <p className="text-gray-400 text-center py-8 text-sm">{t('noReadme')}</p>
             )}
           </div>
         </>
@@ -299,6 +299,7 @@ function useCurrentHash() {
 }
 
 function FavoritesPage() {
+  const { t } = useI18n();
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
   const [repos, setRepos] = useState<(Repo | null)[]>([]);
   const [loading, setLoading] = useState(false);
@@ -411,9 +412,9 @@ function FavoritesPage() {
   if (favorites.length === 0) {
     return (
       <div className="text-center py-16">
-        <p className="text-[#6b7280] text-base mb-2">暂无收藏项目</p>
-        <p className="text-[#9ca3af] text-sm mb-4">去首页探索优质开源项目吧</p>
-        <a href="#/" className="text-sm text-[#3b82f6] hover:underline">← 返回发现</a>
+        <p className="text-[#6b7280] text-base mb-2">{t('noFavorites')}</p>
+        <p className="text-[#9ca3af] text-sm mb-4">{t('goDiscover')}</p>
+        <a href="#/" className="text-sm text-[#3b82f6] hover:underline">{t('backToDiscover')}</a>
       </div>
     );
   }
@@ -421,8 +422,8 @@ function FavoritesPage() {
   if (error) {
     return (
       <ErrorState
-        title="加载失败"
-        message="无法获取收藏项目信息"
+        title={t('loadFailed')}
+        message={t('favoritesLoadFailed')}
         onRetry={() => setRetryKey(k => k + 1)}
         onBack={() => { window.location.hash = '#/'; }}
       />
@@ -440,9 +441,9 @@ function FavoritesPage() {
   return (
     <div>
       <nav className="text-xs mb-3">
-        <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">← 返回发现</a>
+        <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">{t('backToDiscover')}</a>
       </nav>
-      <h2 className="text-[15px] font-bold text-[#1e1b4b] mb-3">★ 我的收藏 ({favorites.length})</h2>
+      <h2 className="text-[15px] font-bold text-[#1e1b4b] mb-3">{t('myFavorites').replace('{count}', String(favorites.length))}</h2>
       {loading && orderedRepos.length === 0 ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -473,13 +474,13 @@ function FavoritesPage() {
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       {failedCount > 0 && !error && (
         <div className="text-center text-xs text-[#9ca3af] mt-3">
-          {failedCount} 个项目加载失败
+          {t('itemsLoadFailed').replace('{n}', String(failedCount))}
           {' '}
           <button
             onClick={() => setRetryKey(k => k + 1)}
             className="text-[#3b82f6] hover:underline"
           >
-            重试
+            {t('retry')}
           </button>
         </div>
       )}
@@ -488,6 +489,15 @@ function FavoritesPage() {
 }
 
 export default function PopupIndex() {
+  return (
+    <I18nProvider>
+      <PopupIndexInner />
+    </I18nProvider>
+  );
+}
+
+function PopupIndexInner() {
+  const { t } = useI18n();
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const hash = useCurrentHash();
@@ -511,7 +521,6 @@ export default function PopupIndex() {
 
   if (!tokenReady) {
     return (
-      <I18nProvider>
       <div style={{ width: POPUP_WIDTH }} className="min-h-[720px] bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
@@ -519,21 +528,19 @@ export default function PopupIndex() {
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <div className="flex items-center gap-2.5">
-            <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
-            <span className="text-[11px] font-semibold text-white/40 bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.15)] rounded-md px-2 py-1">★ 收藏</span>
+            <span className="text-[11px] text-white/85 font-medium">{t('discoverProjects')}</span>
+            <span className="text-[11px] font-semibold text-white/40 bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.15)] rounded-md px-2 py-1">{t('navFavorites')}</span>
           </div>
         </div>
         <div className="p-4 flex-1">
           <LoadingBar loading={true} />
         </div>
       </div>
-      </I18nProvider>
     );
   }
 
   return (
     <ErrorBoundary>
-      <I18nProvider>
       <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
@@ -541,13 +548,13 @@ export default function PopupIndex() {
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <div className="flex items-center gap-2.5">
-            <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
+            <span className="text-[11px] text-white/85 font-medium">{t('discoverProjects')}</span>
             <a
               href="#/favorites"
               className={`flex items-center gap-1 text-[11px] font-semibold no-underline rounded-md px-2 py-1 border transition-colors ${isFavPage ? 'text-[#f59e0b] bg-[rgba(245,158,11,0.15)] border-[rgba(245,158,11,0.3)]' : 'text-white bg-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.2)]'}`}
-              title="我的收藏"
+              title={t('navFavoritesTitle')}
             >
-              ★ 收藏
+              {t('navFavorites')}
               {favCount > 0 && (
                 <span className={`rounded-full min-w-[16px] h-4 flex items-center justify-center text-[10px] px-1 ${isFavPage ? 'bg-[rgba(245,158,11,0.2)]' : 'bg-[rgba(255,255,255,0.2)]'}`}>{favCount}</span>
               )}
@@ -564,7 +571,6 @@ export default function PopupIndex() {
           </Router>
         </div>
       </div>
-      </I18nProvider>
     </ErrorBoundary>
   );
 }
