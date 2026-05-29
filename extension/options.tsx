@@ -17,6 +17,14 @@ function OptionsForm() {
     });
   }, []);
 
+  const [sidebarEnabled, setSidebarEnabled] = useState(true);
+
+  useEffect(() => {
+    chrome.storage.local.get('gitstar-sidebar-enabled').then(result => {
+      setSidebarEnabled(result['gitstar-sidebar-enabled'] !== false);
+    }).catch(() => {});
+  }, []);
+
   async function handleSave() {
     if (!token.trim()) {
       setStatus('error');
@@ -57,6 +65,12 @@ function OptionsForm() {
     setMessage(t('tokenCleared'));
   }
 
+  function handleSidebarToggle() {
+    const next = !sidebarEnabled;
+    setSidebarEnabled(next);
+    chrome.storage.local.set({ 'gitstar-sidebar-enabled': next }).catch(() => {});
+  }
+
   return (
     <div className="max-w-lg mx-auto p-6">
       <h1 className="text-xl font-bold text-[#1e1b4b] mb-6">{t('configTitle')}</h1>
@@ -74,6 +88,26 @@ function OptionsForm() {
           <option value="zh">中文</option>
           <option value="en">English</option>
         </select>
+      </div>
+
+      {/* Sidebar toggle */}
+      <div className="mb-4">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <div className="relative">
+            <div
+              onClick={handleSidebarToggle}
+              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${sidebarEnabled ? 'bg-[#3b82f6]' : 'bg-gray-300'}`}
+            >
+              <div
+                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${sidebarEnabled ? 'translate-x-[22px]' : 'translate-x-[2px]'}`}
+              />
+            </div>
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-800">{t('sidebarToggle')}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{t('sidebarToggleDesc')}</div>
+          </div>
+        </label>
       </div>
 
       <div className="space-y-4">
