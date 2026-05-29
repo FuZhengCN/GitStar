@@ -53,7 +53,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
           disabled={starLoading}
           className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 ${isStarred ? 'bg-[#f0fdf4] border border-[#16a34a] text-[#16a34a]' : 'bg-[#3b82f6] text-white hover:bg-[#2563eb]'}`}
         >
-          {starLoading ? '...' : isStarred ? '★ Starred' : '⭐ Star'}
+          {starLoading ? '...' : isStarred ? t('starredButton') : t('starButton')}
         </button>
         <div>
           <div className="text-[13px] text-[#f59e0b] font-semibold">★ {repo.stargazers_count.toLocaleString()} stars</div>

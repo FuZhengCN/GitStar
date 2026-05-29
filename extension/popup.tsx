@@ -100,7 +100,7 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
       return await searchRepos(params);
     } catch (err: unknown) {
       const e = err as { message?: string; status?: number };
-      if (e.status === 403) throw new Error('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
+      if (e.status === 403) throw new AppError('RATE_LIMIT');
       throw err;
     }
   }, [search, language, timeRange, sort, page]);
@@ -154,8 +154,8 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
       return await getRepoInfo(owner, repo);
     } catch (err: unknown) {
       const e = err as { message?: string; status?: number };
-      if (e.status === 404) throw new Error('仓库不存在');
-      if (e.status === 403) throw new Error('GitHub API 限流。请前往 Options 页配置 Personal Access Token');
+      if (e.status === 404) throw new AppError('REPO_NOT_FOUND');
+      if (e.status === 403) throw new AppError('RATE_LIMIT');
       throw err;
     }
   }, [owner, repo]);

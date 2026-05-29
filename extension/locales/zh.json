@@ -25,6 +25,8 @@
   "favorite": "☆ 收藏",
   "favorited": "★ 已收藏",
   "openOnGitHub": "🔗 打开",
+  "starButton": "⭐ Star",
+  "starredButton": "★ Starred",
   "retry": "重试",
   "loadFailed": "加载失败",
   "errorOccurred": "出错了",

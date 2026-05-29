@@ -25,6 +25,8 @@
   "favorite": "☆ Save",
   "favorited": "★ Saved",
   "openOnGitHub": "🔗 Open",
+  "starButton": "⭐ Star",
+  "starredButton": "★ Starred",
   "retry": "Retry",
   "loadFailed": "Failed to load",
   "errorOccurred": "Something went wrong",
