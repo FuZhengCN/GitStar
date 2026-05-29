@@ -13,7 +13,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
-        <a href="#/" className="text-[#3b82f6] hover:underline cursor-pointer">← 首页</a>
+        <a href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }} className="text-[#3b82f6] hover:underline cursor-pointer">← 返回</a>
         <span className="text-[#9ca3af]">/</span>
         <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
         <span className="text-[#9ca3af]">/</span>
