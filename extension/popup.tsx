@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, Component } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
@@ -176,9 +176,10 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
     checkStarred(owner, repo).then(setIsStarred).catch(() => {});
   }, [detail, owner, repo]);
 
-  // Reset expand state when navigating to a different repo
-  useEffect(() => {
+  // Reset state when navigating to a different repo (before paint to avoid flicker)
+  useLayoutEffect(() => {
     setReadmeExpanded(false);
+    window.scrollTo(0, 0);
   }, [owner, repo]);
 
   const handleToggleStar = useCallback(async () => {
