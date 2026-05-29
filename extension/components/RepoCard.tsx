@@ -11,7 +11,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
   const { t } = useI18n();
 
   return (
-    <div className="border border-[#f3f4f6] rounded-lg p-3 bg-white shadow-sm hover:shadow-md transition-shadow flex gap-2.5 items-start">
+    <div className="rounded-xl p-3 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.06)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1)] transition-shadow flex gap-2.5 items-start">
       <img src={repo.owner_avatar} alt={repo.owner} className="w-10 h-10 rounded-full flex-shrink-0 mt-0.5" />
       <div className="flex-1 min-w-0">
         <a
