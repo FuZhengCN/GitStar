@@ -32,8 +32,7 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://api.github.com/*",
-      "https://avatars.githubusercontent.com/*"
+      "https://api.github.com/*"
     ],
     "permissions": [
       "storage"
