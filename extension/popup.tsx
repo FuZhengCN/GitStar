@@ -262,6 +262,11 @@ function FavoritesPage() {
   const [error, setError] = useState(false);
   const [failedCount, setFailedCount] = useState(0);
   const [retryKey, setRetryKey] = useState(0);
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 10;
+
+  useEffect(() => { setPage(1); }, [favorites, retryKey]);
+  useEffect(() => { window.scrollTo(0, 0); }, [page]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -386,6 +391,8 @@ function FavoritesPage() {
   const orderedRepos = reversedFavorites
     .map(fn => validRepos.find(r => r.full_name === fn))
     .filter((r): r is Repo => r !== undefined);
+  const totalPages = Math.ceil(orderedRepos.length / PER_PAGE);
+  const pageRepos = orderedRepos.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div>
@@ -410,7 +417,7 @@ function FavoritesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {orderedRepos.map(repo => (
+          {pageRepos.map(repo => (
             <RepoCard
               key={repo.id}
               repo={repo}
@@ -420,6 +427,7 @@ function FavoritesPage() {
           ))}
         </div>
       )}
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       {failedCount > 0 && !error && (
         <div className="text-center text-xs text-[#9ca3af] mt-3">
           {failedCount} 个项目加载失败
