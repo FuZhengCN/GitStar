@@ -53,7 +53,10 @@
 | 属性 | 当前 | 改为 |
 |------|------|------|
 | 边框 | `border border-[#f3f4f6]` | 移除 |
+| 背景 | `bg-[#f9fafb]` | `bg-white` |
 | 阴影 | 无 | `shadow-[0_1px_4px_rgba(0,0,0,0.04)]` |
+
+背景改为 `bg-white` 的原因：外层容器已改为 `bg-slate-50`（`#f8fafc`），`#f9fafb` 与 `#f8fafc` 色差极小，阴影不足以产生浮起效果。
 
 ### 7. README 卡片 `ReadmeViewer.tsx`
 
@@ -64,13 +67,14 @@
 
 ### 8. 骨架屏卡片 `popup.tsx` / `RepoList.tsx`
 
-同 RepoCard 处理：去边框 → 加阴影，`rounded-lg` → `rounded-xl`，`bg-white` 保留（骨架屏白色卡片在 slate-50 背景上自然浮起）。
+去边框 → 加阴影，`bg-white` 保留（白色卡片在 slate-50 背景上自然浮起）。**圆角按对应真实组件分别处理，保持骨架屏与真实组件一致：**
 
-涉及位置：
-- `popup.tsx` L397（FavoritesPage 未就绪骨架屏）
-- `popup.tsx` L450（FavoritesPage 加载中骨架屏）
-- `popup.tsx` L269（DetailPage README 加载骨架屏）
-- `RepoList.tsx` L17（首页列表骨架屏）
+| 位置 | 对应组件 | 圆角 | 阴影 |
+|------|----------|------|------|
+| `popup.tsx` L397（FavoritesPage 未就绪） | RepoCard | `rounded-lg` → `rounded-xl` | `shadow-[0_1px_4px_rgba(0,0,0,0.06)]` |
+| `popup.tsx` L450（FavoritesPage 加载中） | RepoCard | `rounded-lg` → `rounded-xl` | `shadow-[0_1px_4px_rgba(0,0,0,0.06)]` |
+| `popup.tsx` L269（DetailPage README 加载） | ReadmeViewer | 保持 `rounded-lg` | `shadow-[0_1px_4px_rgba(0,0,0,0.04)]` |
+| `RepoList.tsx` L17（首页列表骨架） | RepoCard | `rounded-lg` → `rounded-xl` | `shadow-[0_1px_4px_rgba(0,0,0,0.06)]` |
 
 ### 9. 不改动的部分
 
@@ -89,3 +93,9 @@
 - `extension/components/RepoHeader.tsx`
 - `extension/components/ReadmeViewer.tsx`
 - `extension/components/RepoList.tsx`
+
+## 验证注意事项
+
+- **低对比度场景**：`bg-slate-50`（`#f8fafc`）与 `bg-white` 色差极小，在低端显示器或强光环境下卡片分隔可能不够明显。如果实际效果不佳，可将容器底色加深到 `slate-100` 或上调阴影透明度 0.02。
+- **骨架屏 pulse 与阴影交互**：`animate-pulse` 通过 opacity 循环，阴影会跟随"呼吸"。这是正常的 loading 表达，但需在验证时确认视觉效果符合预期。
+- **README 标题栏分隔线**：移除容器边框后，标题栏底部的 `border-b` 失去两端闭合的视觉锚点。需在实际效果中确认是否协调，不协调则为标题栏加 `rounded-t-lg`。
