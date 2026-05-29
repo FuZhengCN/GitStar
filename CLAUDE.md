@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 本项目包含两个独立子项目：Next.js Web 应用（根目录）和 Chrome 扩展（`extension/` 目录）。两者的构建脚本不可混用。
 
 ```bash
-npm run dev      # Web 开发服务器（热更新，不要同时跑 build）
+npm run dev      # Web 开发服务器（热更新，默认 :3000，不要同时跑 build）
 npm run build    # Web 生产构建
 npm run start    # Web 启动生产服务（需先 build）
 npm run lint     # Web ESLint
@@ -77,19 +77,19 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Design Spec & Plan
 
-- Web 设计文档：`docs/superpowers/specs/2026-05-27-gitstar-design.md`
-- Web 实现计划：`docs/superpowers/plans/2026-05-27-gitstar-plan.md`
-- 扩展设计文档：`docs/superpowers/specs/2026-05-27-gitstar-extension-design.md`
-- 扩展实现计划：`docs/superpowers/plans/2026-05-27-gitstar-extension-plan.md`
-- 图标设计文档：`docs/superpowers/specs/2026-05-28-gitstar-icon-design.md`
-- 缓存优化设计：`docs/superpowers/specs/2026-05-28-gitstar-popup-cache-design.md`
-- 缓存优化计划：`docs/superpowers/plans/2026-05-28-gitstar-popup-cache-plan.md`
-- 收藏页设计：`docs/superpowers/specs/2026-05-29-gitstar-favorites-page-design.md`
-- 收藏页计划：`docs/superpowers/plans/2026-05-29-gitstar-favorites-page-plan.md`
-- i18n 设计：`docs/superpowers/specs/2026-05-29-gitstar-i18n-design.md`
-- i18n 计划：`docs/superpowers/plans/2026-05-29-gitstar-i18n-plan.md`
-- 视觉柔化设计：`docs/superpowers/specs/2026-05-29-gitstar-popup-softening-design.md`
-- 视觉柔化计划：`docs/superpowers/plans/2026-05-29-gitstar-popup-softening-plan.md`
+所有设计和计划文档位于 `docs/superpowers/` 下。每个功能 {specs,plans} 各一份，文件名按日期+功能命名：
+
+| 功能 | 日期 | spec（设计） | plan（计划） |
+|------|------|-------------|-------------|
+| Web 应用 | 05-27 | `specs/2026-05-27-gitstar-design.md` | `plans/2026-05-27-gitstar-plan.md` |
+| 扩展基础 | 05-27 | `specs/2026-05-27-gitstar-extension-design.md` | `plans/2026-05-27-gitstar-extension-plan.md` |
+| 图标 | 05-28 | `specs/2026-05-28-gitstar-icon-design.md` | — |
+| 缓存优化 | 05-28 | `specs/2026-05-28-gitstar-popup-cache-design.md` | `plans/2026-05-28-gitstar-popup-cache-plan.md` |
+| 收藏页 | 05-29 | `specs/2026-05-29-gitstar-favorites-page-design.md` | `plans/2026-05-29-gitstar-favorites-page-plan.md` |
+| i18n | 05-29 | `specs/2026-05-29-gitstar-i18n-design.md` | `plans/2026-05-29-gitstar-i18n-plan.md` |
+| 视觉柔化 | 05-29 | `specs/2026-05-29-gitstar-popup-softening-design.md` | `plans/2026-05-29-gitstar-popup-softening-plan.md` |
+
+新增功能时在此表追加一行，保持按日期排序。
 
 ## Non-Goals
 
@@ -160,7 +160,7 @@ Star API（`PUT/DELETE /user/starred/:owner/:repo`）需要用户 Token 有 `pub
 2. RepoHeader 渲染后 `readmeCacheKey` 从 null 变为有效值，触发 README `useStaleCache`
 3. `getRepoReadme()` → `parseMarkdown()` 在 Worker 后台解析 → `ReadmeViewer` 接收预解析 HTML
 
-Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
+README 首次只解析前 60KB（`README_PREVIEW_BYTES`，定义在 `extension/lib/constants.ts`），用户点击"展开全部"后在主线程解析完整内容。Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
 
 **FavoritesPage 加载流程（缓存优先 + 分批请求）：**
 
