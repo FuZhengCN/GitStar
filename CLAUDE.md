@@ -137,7 +137,10 @@ Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
 
 chrome.storage.sync  → githubToken（跨设备同步）
 chrome.storage.local → gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）
+sessionStorage        → 搜索参数（同一 popup 会话内导航恢复，关闭即清除）
 ```
+
+**搜索状态持久化：** HomePage 的搜索/筛选/分页参数在 `useState` 初始化时从 `sessionStorage` 读取，变化时写回。用户从详情页返回时自动恢复搜索结果（缓存命中秒出）。popup 关闭后 sessionStorage 清除，下次打开是干净首页。
 
 Star API（`PUT/DELETE /user/starred/:owner/:repo`）需要用户 Token 有 `public_repo` 或 `star` scope，否则返回 403/404。
 
@@ -245,6 +248,8 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **详情页面包屑不要硬编码回首页**：`RepoHeader` 的面包屑使用 `window.history.back()` 而非 `<a href="#/">`，确保从收藏页进入详情页时能正确返回收藏页。
 - **收藏按钮与 GitHub Star 分离**：`useFavorites` hook 的收藏/取消收藏只操作 `chrome.storage.local`，不调 GitHub API。详情页的 Star 按钮才调 `starRepo()`/`unstarRepo()`。两者是完全独立的功能。
 - **FavoritesPage 骨架屏一致性**：FavoritesPage 中有两处骨架屏——`favorites === null`（storage 未就绪，3 个占位）和 `loading`（repo 数据加载中，5 个占位）。修改 RepoCard 样式时必须同步更新这两处骨架屏。
+- **Popup 视口是所有路由共享的**：Chrome popup 是单一可滚动视口，不同 wouter 路由页面共享同一个滚动位置。导航到新页面时如果不显式 `window.scrollTo(0, 0)`，视口会停留在上一页的滚动位置。用 `useLayoutEffect` 而非 `useEffect`，确保在浏览器绘制前同步执行，避免视觉闪烁。
+- **搜索状态用 sessionStorage 持久化**：HomePage 的搜索参数（`search`、`language`、`timeRange`、`sort`、`page`）在 `useState` 初始化时从 `sessionStorage` 读取，参数变化时写回。这样用户从详情页返回时搜索结果自动恢复，而 popup 关闭后 `sessionStorage` 自动清除，下次打开是全新状态。
 
 ### 配色方案
 
