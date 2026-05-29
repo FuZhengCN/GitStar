@@ -266,7 +266,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
                 loading={readmeLoading}
               />
             ) : readmeLoading ? (
-              <div className="border border-[#f3f4f6] rounded-lg bg-white">
+              <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
                 <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb]">
                   <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
                 </div>
@@ -394,7 +394,7 @@ function FavoritesPage() {
     return (
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="border border-[#f3f4f6] rounded-lg p-3 bg-white animate-pulse">
+          <div key={i} className="rounded-xl p-3 bg-white animate-pulse shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
             <div className="flex gap-2.5 items-start">
               <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
               <div className="flex-1">
@@ -447,7 +447,7 @@ function FavoritesPage() {
       {loading && orderedRepos.length === 0 ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="border border-[#f3f4f6] rounded-lg p-3 bg-white animate-pulse">
+            <div key={i} className="rounded-xl p-3 bg-white animate-pulse shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
               <div className="flex gap-2.5 items-start">
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
                 <div className="flex-1">
