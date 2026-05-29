@@ -166,6 +166,10 @@ function OptionsForm() {
             {message}
           </div>
         )}
+
+        <div className="mt-8 pt-4 border-t border-[#e5e7eb] text-center text-xs text-[#9ca3af]">
+          v1.0.0
+        </div>
       </div>
     </div>
   );
