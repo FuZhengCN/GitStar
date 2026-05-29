@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
+import { I18nProvider, useI18n } from './lib/i18n';
 import './assets/tailwind.css';
-import { I18nProvider } from './lib/i18n';
 
-export default function OptionsIndex() {
+function OptionsForm() {
   const [token, setToken] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const { t, lang, setLang } = useI18n();
 
   useEffect(() => {
     chrome.storage.sync.get('githubToken').then(result => {
@@ -19,7 +20,7 @@ export default function OptionsIndex() {
   async function handleSave() {
     if (!token.trim()) {
       setStatus('error');
-      setMessage('Token 不能为空');
+      setMessage(t('tokenEmpty'));
       return;
     }
 
@@ -36,16 +37,16 @@ export default function OptionsIndex() {
 
       if (!res.ok) {
         setStatus('error');
-        setMessage('Token 无效，请检查后重试');
+        setMessage(t('tokenInvalid'));
         return;
       }
 
       await chrome.storage.sync.set({ githubToken: token.trim() });
       setStatus('success');
-      setMessage('Token 验证成功，已保存');
+      setMessage(t('tokenSaved'));
     } catch {
       setStatus('error');
-      setMessage('网络错误，请检查网络连接');
+      setMessage(t('tokenNetworkError'));
     }
   }
 
@@ -53,13 +54,27 @@ export default function OptionsIndex() {
     await chrome.storage.sync.remove('githubToken');
     setToken('');
     setStatus('idle');
-    setMessage('Token 已清除');
+    setMessage(t('tokenCleared'));
   }
 
   return (
-    <I18nProvider>
     <div className="max-w-lg mx-auto p-6">
-      <h1 className="text-xl font-bold text-[#1e1b4b] mb-6">GitStar 配置</h1>
+      <h1 className="text-xl font-bold text-[#1e1b4b] mb-6">{t('configTitle')}</h1>
+
+      {/* Language selector */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('languageLabel')}
+        </label>
+        <select
+          value={lang}
+          onChange={e => setLang(e.target.value as 'zh' | 'en')}
+          className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+        >
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
+      </div>
 
       <div className="space-y-4">
         <div>
@@ -75,7 +90,7 @@ export default function OptionsIndex() {
             className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
           />
           <p className="text-xs text-gray-400 mt-1">
-            在{' '}
+            {t('createTokenAt')}{' '}
             <a
               href="https://github.com/settings/tokens"
               target="_blank"
@@ -84,7 +99,7 @@ export default function OptionsIndex() {
             >
               github.com/settings/tokens
             </a>{' '}
-            创建，只需勾选 <code className="bg-gray-100 px-1 rounded">public_repo</code> 权限
+            {t('createTokenHint')}
           </p>
         </div>
 
@@ -94,14 +109,14 @@ export default function OptionsIndex() {
             disabled={status === 'saving'}
             className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50"
           >
-            {status === 'saving' ? '验证中...' : '保存'}
+            {status === 'saving' ? t('verifying') : t('save')}
           </button>
           {token && (
             <button
               onClick={handleClear}
               className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors"
             >
-              清除
+              {t('clear')}
             </button>
           )}
         </div>
@@ -119,6 +134,13 @@ export default function OptionsIndex() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OptionsIndex() {
+  return (
+    <I18nProvider>
+      <OptionsForm />
     </I18nProvider>
   );
 }

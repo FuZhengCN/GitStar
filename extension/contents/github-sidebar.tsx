@@ -2,7 +2,7 @@ import type { PlasmoCSConfig } from 'plasmo';
 import { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { searchRepos, getRepoDetail, loadToken, setToken } from '../lib/github';
-import { I18nProvider } from '../lib/i18n';
+import { I18nProvider, useI18n } from '../lib/i18n';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Repo } from '../lib/types';
 import GitStarIcon from '../components/GitStarIcon';
@@ -42,6 +42,7 @@ function SidebarPanel() {
       return false;
     }
   });
+  const { t } = useI18n();
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
 
   useEffect(() => {
@@ -213,7 +214,7 @@ function SidebarPanel() {
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <GitStarIcon size={14} />
-            GitStar · 同类热门
+            {t('sidebarTitle')}
           </span>
           <span
             data-action="collapse"
@@ -226,11 +227,11 @@ function SidebarPanel() {
         <div style={{ padding: '8px', overflowY: 'auto', flex: 1 }}>
           {loading ? (
             <div style={{ textAlign: 'center', color: mutedColor, padding: '12px' }}>
-              加载中...
+              {t('sidebarLoading')}
             </div>
           ) : repos.length === 0 ? (
             <div style={{ textAlign: 'center', color: mutedColor, padding: '12px' }}>
-              暂无推荐
+              {t('sidebarEmpty')}
             </div>
           ) : (
             repos.map((repo) => (
@@ -260,7 +261,7 @@ function SidebarPanel() {
                       margin: '2px 0',
                     }}
                   >
-                    {repo.description || '暂无描述'}
+                    {repo.description || t('noDescription')}
                   </div>
                   <div style={{ fontSize: '10px', color: '#f59e0b' }}>
                     ★ {repo.stargazers_count.toLocaleString()}
