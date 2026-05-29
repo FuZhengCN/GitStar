@@ -14,7 +14,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, loadin
   const needsTruncation = content.length > README_PREVIEW_BYTES && !expanded;
 
   return (
-    <div className="border border-[#f3f4f6] rounded-lg bg-white">
+    <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
       <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb]">
         <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
       </div>
