@@ -22,6 +22,7 @@ let reactRoot: ReturnType<typeof createRoot> | null = null;
 let mountTimeout: ReturnType<typeof setTimeout> | null = null;
 let mountObserver: MutationObserver | null = null;
 let lastUrl = location.href;
+let sidebarEnabled = true;
 
 const recsCache = new Map<string, { data: Repo[]; ts: number }>();
 const RECS_CACHE_TTL = 60000;
@@ -296,6 +297,7 @@ function SidebarPanel() {
 
 // 手动 DOM 挂载到 GitHub 侧边栏位置
 function mountPanel() {
+  if (!sidebarEnabled) return;
   cleanup();
 
   const selectors = [
@@ -345,7 +347,26 @@ function mountPanel() {
   }, 10000);
 }
 
-mountPanel();
+// Initialize: read sidebar toggle state, default enabled
+chrome.storage.local.get('gitstar-sidebar-enabled').then(result => {
+  sidebarEnabled = result['gitstar-sidebar-enabled'] !== false;
+  if (sidebarEnabled) mountPanel();
+}).catch(() => {
+  mountPanel(); // read failure defaults to enabled
+});
+
+// Listen for toggle changes from options page
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes['gitstar-sidebar-enabled']) {
+    const enabled = changes['gitstar-sidebar-enabled'].newValue !== false;
+    sidebarEnabled = enabled;
+    if (enabled) {
+      mountPanel();
+    } else {
+      cleanup();
+    }
+  }
+});
 
 // 监听 URL 变化（GitHub SPA 导航），自动清理并重新挂载
 // 页面隐藏时跳过检查，减少后台轮询开销
