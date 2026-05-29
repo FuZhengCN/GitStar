@@ -202,7 +202,7 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[720px]` + `flex fle
 
 **共享结构：** 蓝底顶栏（`bg-[#3b82f6] px-4 py-3`）+ 统一 16px 内边距内容区（`p-4`）。`HomePage` 和 `DetailPage` 各自渲染内容，不重复顶栏和 padding。
 
-**首页：** 每页 10 条（`per_page: 10`），翻页自动 `scrollTo(0, 0)`。搜索按钮为图标（34×34px），输入框 + 下拉筛选框统一样式（`rounded-md`、`border-[#e5e7eb]`）。
+**首页：** 每页 10 条（`per_page: 10`），翻页自动 `scrollTo(0, 0)`。搜索框使用 debounce 自动触发（300ms），Enter 键立即触发，无搜索按钮。输入框 + 下拉筛选框统一样式（`rounded-md`、`border-[#e5e7eb]`）。
 
 **详情页（方案 C 布局）：**
 - 标题行：仓库名 + 右上"打开"/"收藏"小按钮（`text-[11px] px-2 py-0.5`）
