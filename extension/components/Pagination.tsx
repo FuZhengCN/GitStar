@@ -13,7 +13,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
   for (let i = start; i <= end; i++) pages.push(i);
 
   return (
-    <div className="flex items-center justify-center gap-1 mt-6">
+    <div className="flex items-center justify-center gap-1">
       <button
         onClick={() => onChange(page - 1)}
         disabled={page <= 1}

@@ -117,7 +117,7 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
   useEffect(() => { window.scrollTo(0, 0); }, [page]);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 pb-14">
       <LoadingBar loading={loading} />
       <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
       <FilterBar
@@ -129,9 +129,11 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{errorMessageText(error, t)}</div>
       )}
       <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-      <div className="text-center text-xs text-gray-400 pt-2">
-        {hasToken ? <span className="text-[#16a34a]">{t('tokenConfigured')}</span> : t('tokenNotConfigured')}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1">
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+        <div className="text-center text-[10px] text-gray-400 pt-0.5">
+          {hasToken ? <span className="text-[#16a34a]">{t('tokenConfigured')}</span> : t('tokenNotConfigured')}
+        </div>
       </div>
     </div>
   );
@@ -522,7 +524,7 @@ function PopupIndexInner() {
   if (!tokenReady) {
     return (
       <div style={{ width: POPUP_WIDTH }} className="min-h-[720px] bg-slate-50 flex flex-col">
-        <div className="bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
+        <div style={{ width: POPUP_WIDTH }} className="fixed top-0 z-30 bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
@@ -532,7 +534,7 @@ function PopupIndexInner() {
             <span className="text-[11px] font-semibold text-white/40 bg-[rgba(255,255,255,0.08)] border border-[rgba(255,255,255,0.15)] rounded-md px-2 py-1">{t('navFavorites')}</span>
           </div>
         </div>
-        <div className="p-4 flex-1">
+        <div className="p-4 pt-[60px] flex-1">
           <LoadingBar loading={true} />
         </div>
       </div>
@@ -542,7 +544,7 @@ function PopupIndexInner() {
   return (
     <ErrorBoundary>
       <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-slate-50 flex flex-col">
-        <div className="bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
+        <div style={{ width: POPUP_WIDTH }} className="fixed top-0 z-30 bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
@@ -561,7 +563,7 @@ function PopupIndexInner() {
             </a>
           </div>
         </div>
-        <div className="p-4 flex-1">
+        <div className="p-4 pt-[60px] flex-1">
           <Router hook={useHashLocation}>
             <Route path="/favorites" component={FavoritesPage} />
             <Route path="/project/:owner/:repo">
