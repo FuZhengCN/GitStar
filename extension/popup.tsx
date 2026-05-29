@@ -462,7 +462,10 @@ export default function PopupIndex() {
             <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
-          <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
+            <span className="text-lg leading-none text-white/50">★</span>
+          </div>
         </div>
         <div className="p-4 flex-1">
           <LoadingBar loading={true} />
