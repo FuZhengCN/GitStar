@@ -84,6 +84,8 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 - 图标设计文档：`docs/superpowers/specs/2026-05-28-gitstar-icon-design.md`
 - 缓存优化设计：`docs/superpowers/specs/2026-05-28-gitstar-popup-cache-design.md`
 - 缓存优化计划：`docs/superpowers/plans/2026-05-28-gitstar-popup-cache-plan.md`
+- 收藏页设计：`docs/superpowers/specs/2026-05-29-gitstar-favorites-page-design.md`
+- 收藏页计划：`docs/superpowers/plans/2026-05-29-gitstar-favorites-page-plan.md`
 
 ## Non-Goals
 
@@ -149,6 +151,16 @@ Star API（`PUT/DELETE /user/starred/:owner/:repo`）需要用户 Token 有 `pub
 
 Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
 
+**FavoritesPage 加载流程（缓存优先 + 分批请求）：**
+
+1. `useFavorites()` → 读取 `chrome.storage.local` 中的 `gitstar-favorites`（`owner/repo` 字符串数组）
+2. 缓存优先：对每个 `owner/repo` 先查 `repo:*` 缓存（`getCache` + `isFresh`，TTL 5min），命中直接使用
+3. 缓存 miss 的项目分批并发：每批 5 个 `getRepoInfo()`，批次间隔 200ms，避免 GitHub secondary rate limit
+4. 请求成功写 `setCache`，请求失败跳过（`Promise.allSettled`）
+5. 详情页的 `useStaleCache` 写入的 `repo:*` 缓存可直接复用，从详情页返回收藏页秒出
+6. 分页：每页 10 条，复用 `Pagination` 组件，`favorites` 变化时重置到第 1 页
+7. `cancelled` 标记在 `useEffect` cleanup 中阻止卸载后 setState；`retryKey` state 控制重试
+
 **缓存策略（stale-while-revalidate）：**
 
 | 数据 | 缓存键 | TTL | 行为 |
@@ -163,12 +175,15 @@ Worker 创建失败或文件 < 10KB 时，自动回退主线程解析。
 
 Popup 使用 **wouter hash 路由**（`useHashLocation`），因为 Chrome 扩展 popup 的 URL pathname 固定为 `/popup.html`，不能用 pathname 路由。
 
-- `#/` → 首页（搜索/筛选/列表）
+- `#/favorites` → 收藏列表
 - `#/project/:owner/:repo` → 详情页
+- `#/` → 首页（搜索/筛选/列表）
 
 **重要：不要使用 wouter 的 `<Link>` 组件。** 它在 hash 路由下生成错误 href，会导致 popup 完整跳转到不存在的扩展页面（白块）。所有项目内导航用原生 `<a href="#/...">`，hashchange 事件会触发 wouter 自动匹配路由。
 
-**Route 必须按精确度排序**：`/project/:owner/:repo` 在前，`/` 在后。wouter 的 `path="/"` 是前缀匹配，会吃掉所有路径。
+**Route 必须按精确度排序**：`/favorites` → `/project/:owner/:repo` → `/`。wouter 的 `path="/"` 是前缀匹配，会吃掉所有路径。`/favorites` 必须排在 `/` 前面。
+
+**wouter Route component prop 陷阱：** `<Route path="/" component={() => <HomePage />} />` 中内联箭头函数每次渲染都生成新引用，wouter 判定为新组件 → 卸载旧组件 → 重新挂载（状态和滚动位置丢失）。必须用 `useCallback` 稳定化：`const renderHomePage = useCallback(() => <HomePage .../>, [hasToken])` → `<Route path="/" component={renderHomePage} />`。
 
 ### Popup UI 布局
 
@@ -192,6 +207,10 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[720px]` + `flex fle
 
 分页（`Pagination`）使用简化箭头 `←` / `→`（无文字），页码范围为当前页 ±1，避免 400px 宽度溢出。
 
+**收藏页：** 面包屑「← 返回发现」+ 标题「★ 我的收藏 (N)」+ RepoCard 列表（每页 10 条）+ Pagination。RepoCard 上收藏按钮为「★ 已收藏」（金色边框），点击取消收藏后从列表乐观移除。无收藏时显示空状态引导回首页。
+
+**顶栏收藏入口：** 右侧文字按钮「★ 收藏 (N)」，白色半透明胶囊 + 数量徽标。在收藏页时按钮变为金色。收藏数量通过 `useFavorites()` 读取，这导致 `PopupIndex` 在收藏操作时重渲染（须注意 wouter component 内联函数问题）。
+
 ### Sidebar 面板
 
 Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCSConfig` + 手动 `createRoot` 挂载到 GitHub 侧边栏位置（`#repo-details-container` / `.Layout-sidebar` / `aside[aria-label="Repository details"]`）。
@@ -202,7 +221,7 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **限高滚动**：`maxHeight: calc(100vh - 100px)` + `overflow-y: auto`，标题栏 `flexShrink: 0` 固定顶部。
 - **深色模式**：读取 `data-color-mode` 属性切换配色。
 - **手动挂载 + SPA 适配**：Content Script 不依赖 Plasmo 自动注入，而是 `mountPanel()` 手动挂载。必须提供 `export default`（返回 null）避免 Plasmo 自动渲染报 Error #130（见已知陷阱）。通过 `setInterval` 500ms 轮询 `location.href` 检测 GitHub SPA 导航（`document.hidden` 时跳过），自动 `cleanup()` → 重新挂载。优先查 `#repo-details-container` → `.Layout-sidebar` → `aside`，未找到时用 `MutationObserver` 等待 DOM 出现，10 秒超时后回退为 `position: fixed` 浮动面板。
-213	- **推荐缓存**：推荐结果按 `owner/repo` 做 60 秒内存缓存（`recsCache` Map），同一仓库内快速切换不会重复请求 API。
+- **推荐缓存**：推荐结果按 `owner/repo` 做 60 秒内存缓存（`recsCache` Map），同一仓库内快速切换不会重复请求 API。
 
 ### 已知陷阱
 
@@ -220,8 +239,12 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **骨架屏样式一致性**：popup.tsx 中的加载骨架屏（标题字号、头像尺寸、内边距）必须和实际渲染组件保持一致，否则 `loading → loaded` 切换时会产生视觉跳变。修改组件样式时同步检查对应的骨架屏。
 - **配色严格遵循方案**：所有硬编码色值（`bg-[#...]`、`text-[#...]`、`border-[#...]` 等）必须来自上方配色方案表。常见违规：indigo（`#6366f1`/`#4f46e5`）应为主蓝（`#3b82f6`/`#2563eb`），`#22c55e` 应为 `#16a34a`。新增 UI 时对照配色表检查，不要用 Tailwind 默认色系。
 - **GitHub Star API scope**：`PUT/DELETE /user/starred/:owner/:repo` 需要 Token 有 `public_repo`（经典）或 `star`（细粒度）scope。只读 Token 会返回 403/404，`checkStarred()` 会静默失败（catch 空函数）。
-222	- **DOMPurify 净化**：`markdown.ts` 中 `parseMarkdown()` 使用 DOMPurify 净化 marked 输出（`ADD_ATTR: ['class']` 保留代码高亮）。Worker 线程不做净化（无 DOM），HTML 回到主线程后统一净化。不要移除净化步骤或用其他库替换而不评估安全性。
-223	- **缓存淘汰**：`cache.ts` 中 `setCache()` 写入后触发 `evictOldest()`（fire-and-forget），超过 30 条时按时间戳删除最旧条目。`evictOldest` 失败静默降级，不影响写入。修改缓存逻辑时保持淘汰机制有效。
+- **DOMPurify 净化**：`markdown.ts` 中 `parseMarkdown()` 使用 DOMPurify 净化 marked 输出（`ADD_ATTR: ['class']` 保留代码高亮）。Worker 线程不做净化（无 DOM），HTML 回到主线程后统一净化。不要移除净化步骤或用其他库替换而不评估安全性。
+- **缓存淘汰**：`cache.ts` 中 `setCache()` 写入后触发 `evictOldest()`（fire-and-forget），超过 30 条时按时间戳删除最旧条目。`evictOldest` 失败静默降级，不影响写入。修改缓存逻辑时保持淘汰机制有效。
+- **wouter Route component 内联函数**：`<Route path="/" component={() => <HomePage />} />` 中的内联箭头每次父组件渲染都生成新引用，wouter 会判定为新组件 → 卸载旧组件 → 丢失滚动位置和状态。必须用 `useCallback` 稳定化。
+- **详情页面包屑不要硬编码回首页**：`RepoHeader` 的面包屑使用 `window.history.back()` 而非 `<a href="#/">`，确保从收藏页进入详情页时能正确返回收藏页。
+- **收藏按钮与 GitHub Star 分离**：`useFavorites` hook 的收藏/取消收藏只操作 `chrome.storage.local`，不调 GitHub API。详情页的 Star 按钮才调 `starRepo()`/`unstarRepo()`。两者是完全独立的功能。
+- **FavoritesPage 骨架屏一致性**：FavoritesPage 中有两处骨架屏——`favorites === null`（storage 未就绪，3 个占位）和 `loading`（repo 数据加载中，5 个占位）。修改 RepoCard 样式时必须同步更新这两处骨架屏。
 
 ### 配色方案
 
