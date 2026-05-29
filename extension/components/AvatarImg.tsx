@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const blobCache = new Map<string, string>();
+
 interface Props {
   src: string;
   alt: string;
@@ -7,18 +9,24 @@ interface Props {
 }
 
 export default function AvatarImg({ src, alt, className }: Props) {
-  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(() => blobCache.get(src) || null);
 
   useEffect(() => {
+    if (blobCache.has(src)) {
+      setBlobUrl(blobCache.get(src)!);
+      return;
+    }
+
     let cancelled = false;
     fetch(src)
       .then(r => r.blob())
       .then(blob => {
-        if (!cancelled) setBlobUrl(URL.createObjectURL(blob));
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        blobCache.set(src, url);
+        setBlobUrl(url);
       })
-      .catch(() => {
-        // 降级：fetch 失败时直接用原始 URL（已经声明了 host_permissions，正常情况可到达）
-      });
+      .catch(() => {});
     return () => { cancelled = true; };
   }, [src]);
 
