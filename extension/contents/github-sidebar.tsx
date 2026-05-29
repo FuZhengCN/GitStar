@@ -175,8 +175,7 @@ function SidebarPanel() {
   return (
     <div
       style={{
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: 'system-ui, sans-serif',
         fontSize: '12px',
       }}
     >
