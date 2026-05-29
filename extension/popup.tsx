@@ -443,6 +443,7 @@ export default function PopupIndex() {
   const { favorites, loaded: favLoaded } = useFavorites();
   const favCount = favLoaded ? (favorites || []).length : 0;
   const isFavPage = hash === '#/favorites';
+  const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} />, [hasToken]);
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
@@ -505,7 +506,7 @@ export default function PopupIndex() {
             <Route path="/project/:owner/:repo">
               {(params) => <DetailPage params={params} />}
             </Route>
-            <Route path="/" component={() => <HomePage hasToken={hasToken} />} />
+            <Route path="/" component={renderHomePage} />
           </Router>
         </div>
       </div>
