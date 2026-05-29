@@ -26,10 +26,9 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
       </div>
       <button
         onClick={() => onToggleFavorite(repo.full_name)}
-        className={`flex-shrink-0 text-base leading-none mt-0.5 transition-colors ${isFavorite ? 'text-[#f59e0b]' : 'text-[#e5e7eb] hover:text-[#f59e0b]'}`}
-        aria-label={isFavorite ? '取消收藏' : '收藏'}
+        className={`flex-shrink-0 text-xs border rounded-md px-1.5 py-0.5 mt-0.5 transition-colors flex items-center gap-0.5 ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#9ca3af] hover:text-[#f59e0b] hover:border-[#f59e0b]'}`}
       >
-        {isFavorite ? '★' : '☆'}
+        {isFavorite ? '★ 已收藏' : '☆ 收藏'}
       </button>
     </div>
   );

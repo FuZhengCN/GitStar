@@ -439,6 +439,7 @@ function FavoritesPage() {
 export default function PopupIndex() {
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [starPulse, setStarPulse] = useState(false);
   const hash = useCurrentHash();
 
   useEffect(() => {
@@ -448,6 +449,10 @@ export default function PopupIndex() {
         const val = changes.githubToken.newValue || null;
         setToken(val);
         setHasToken(!!val);
+      }
+      if (changes['gitstar-favorites']) {
+        setStarPulse(true);
+        setTimeout(() => setStarPulse(false), 1800);
       }
     };
     chrome.storage.onChanged.addListener(listener);
@@ -486,7 +491,7 @@ export default function PopupIndex() {
             <span className="text-[11px] text-white/85 font-medium">发现优质开源项目</span>
             <a
               href="#/favorites"
-              className={`text-lg leading-none no-underline transition-colors ${hash === '#/favorites' ? 'text-[#f59e0b]' : 'text-white/85 hover:text-white'}`}
+              className={`text-lg leading-none no-underline transition-colors ${hash === '#/favorites' ? 'text-[#f59e0b]' : 'text-white/85 hover:text-white'} ${starPulse ? 'animate-[starPulse_0.6s_ease-in-out_3]' : ''}`}
               title="我的收藏"
             >
               ★
