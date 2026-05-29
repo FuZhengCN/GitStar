@@ -7,6 +7,7 @@ import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken,
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
 import { useStaleCache } from './hooks/useStaleCache';
+import { I18nProvider } from './lib/i18n';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
 import RepoList from './components/RepoList';
@@ -493,6 +494,7 @@ export default function PopupIndex() {
 
   if (!tokenReady) {
     return (
+      <I18nProvider>
       <div style={{ width: POPUP_WIDTH }} className="min-h-[720px] bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
@@ -508,11 +510,13 @@ export default function PopupIndex() {
           <LoadingBar loading={true} />
         </div>
       </div>
+      </I18nProvider>
     );
   }
 
   return (
     <ErrorBoundary>
+      <I18nProvider>
       <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-white flex flex-col">
         <div className="bg-[#3b82f6] px-4 py-3 shadow-md flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
@@ -543,6 +547,7 @@ export default function PopupIndex() {
           </Router>
         </div>
       </div>
+      </I18nProvider>
     </ErrorBoundary>
   );
 }

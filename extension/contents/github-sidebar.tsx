@@ -2,6 +2,7 @@ import type { PlasmoCSConfig } from 'plasmo';
 import { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { searchRepos, getRepoDetail, loadToken, setToken } from '../lib/github';
+import { I18nProvider } from '../lib/i18n';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Repo } from '../lib/types';
 import GitStarIcon from '../components/GitStarIcon';
@@ -313,7 +314,7 @@ function mountPanel() {
         root.id = 'gitstar-root';
         target.insertBefore(root, target.firstChild);
         reactRoot = createRoot(root);
-        reactRoot.render(<SidebarPanel />);
+        reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
         return true;
       }
     }
@@ -339,7 +340,7 @@ function mountPanel() {
         'position:fixed;right:16px;top:80px;z-index:9999;width:220px;';
       document.body.appendChild(float);
       reactRoot = createRoot(float);
-      reactRoot.render(<SidebarPanel />);
+      reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
     }
   }, 10000);
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './assets/tailwind.css';
+import { I18nProvider } from './lib/i18n';
 
 export default function OptionsIndex() {
   const [token, setToken] = useState('');
@@ -56,6 +57,7 @@ export default function OptionsIndex() {
   }
 
   return (
+    <I18nProvider>
     <div className="max-w-lg mx-auto p-6">
       <h1 className="text-xl font-bold text-[#1e1b4b] mb-6">GitStar 配置</h1>
 
@@ -117,5 +119,6 @@ export default function OptionsIndex() {
         )}
       </div>
     </div>
+    </I18nProvider>
   );
 }
