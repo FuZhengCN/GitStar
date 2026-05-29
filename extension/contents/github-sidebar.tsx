@@ -10,12 +10,22 @@ export const config: PlasmoCSConfig = {
   run_at: 'document_idle',
 };
 
-// 监听 Token 变更
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes.githubToken) {
-    setToken(changes.githubToken.newValue || null);
-  }
-});
+// Plasmo 自动渲染需要默认导出，提供空组件避免 Error #130
+// 实际 UI 由 mountPanel() 手动挂载到侧边栏位置
+export default function PlasmoOverride() {
+  return null;
+}
+
+let reactRoot: ReturnType<typeof createRoot> | null = null;
+let mountTimeout: ReturnType<typeof setTimeout> | null = null;
+let mountObserver: MutationObserver | null = null;
+let lastUrl = location.href;
+
+function cleanup() {
+  if (mountTimeout) { clearTimeout(mountTimeout); mountTimeout = null; }
+  if (mountObserver) { mountObserver.disconnect(); mountObserver = null; }
+  if (reactRoot) { reactRoot.unmount(); reactRoot = null; }
+}
 
 function SidebarPanel() {
   const [repos, setRepos] = useState<Repo[]>([]);
@@ -28,6 +38,16 @@ function SidebarPanel() {
     }
   });
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
+
+  useEffect(() => {
+    const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
+      if (changes.githubToken) {
+        setToken(changes.githubToken.newValue || null);
+      }
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return () => chrome.storage.onChanged.removeListener(listener);
+  }, []);
 
   useEffect(() => {
     loadToken().then(() => loadRecommendations());
@@ -272,8 +292,10 @@ function SidebarPanel() {
   );
 }
 
-// 手动 DOM 挂载（不 export default 组件，避免 Plasmo 自动挂载）
+// 手动 DOM 挂载到 GitHub 侧边栏位置
 function mountPanel() {
+  cleanup();
+
   const selectors = [
     '#repo-details-container',
     '.Layout-sidebar',
@@ -289,7 +311,8 @@ function mountPanel() {
         const root = document.createElement('div');
         root.id = 'gitstar-root';
         target.insertBefore(root, target.firstChild);
-        createRoot(root).render(<SidebarPanel />);
+        reactRoot = createRoot(root);
+        reactRoot.render(<SidebarPanel />);
         return true;
       }
     }
@@ -298,23 +321,35 @@ function mountPanel() {
 
   if (tryMount()) return;
 
-  const observer = new MutationObserver(() => {
-    if (tryMount()) observer.disconnect();
+  mountObserver = new MutationObserver(() => {
+    if (tryMount()) { mountObserver?.disconnect(); mountObserver = null; }
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  mountObserver.observe(document.body, { childList: true, subtree: true });
 
   // 10 秒超时 → 浮动面板回退
-  setTimeout(() => {
-    observer.disconnect();
+  mountTimeout = setTimeout(() => {
+    mountObserver?.disconnect();
+    mountObserver = null;
+    mountTimeout = null;
     if (!document.getElementById('gitstar-root')) {
       const float = document.createElement('div');
       float.id = 'gitstar-root';
       float.style.cssText =
         'position:fixed;right:16px;top:80px;z-index:9999;width:220px;';
       document.body.appendChild(float);
-      createRoot(float).render(<SidebarPanel />);
+      reactRoot = createRoot(float);
+      reactRoot.render(<SidebarPanel />);
     }
   }, 10000);
 }
 
 mountPanel();
+
+// 监听 URL 变化（GitHub SPA 导航），自动清理并重新挂载
+setInterval(() => {
+  const currentUrl = location.href;
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+    mountPanel();
+  }
+}, 500);
