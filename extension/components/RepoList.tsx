@@ -14,7 +14,7 @@ export default function RepoList({ repos, favorites, onToggleFavorite, loaded }:
     return (
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="border border-[#f3f4f6] rounded-lg p-3 bg-white animate-pulse">
+          <div key={i} className="rounded-xl p-3 bg-white animate-pulse shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
             <div className="flex gap-3 items-start">
               <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0" />
               <div className="flex-1">
