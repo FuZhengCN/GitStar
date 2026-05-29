@@ -44,13 +44,33 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
 }
 
 function HomePage({ hasToken }: { hasToken: boolean }) {
-  const [search, setSearch] = useState('');
-  const [language, setLanguage] = useState('');
-  const [timeRange, setTimeRange] = useState('');
-  const [sort, setSort] = useState('stars');
-  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState(() => {
+    try { return sessionStorage.getItem('gs-search') || ''; } catch { return ''; }
+  });
+  const [language, setLanguage] = useState(() => {
+    try { return sessionStorage.getItem('gs-language') || ''; } catch { return ''; }
+  });
+  const [timeRange, setTimeRange] = useState(() => {
+    try { return sessionStorage.getItem('gs-timerange') || ''; } catch { return ''; }
+  });
+  const [sort, setSort] = useState(() => {
+    try { return sessionStorage.getItem('gs-sort') || 'stars'; } catch { return 'stars'; }
+  });
+  const [page, setPage] = useState(() => {
+    try { return parseInt(sessionStorage.getItem('gs-page') || '1', 10); } catch { return 1; }
+  });
 
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
+
+  const saveSearchState = useCallback((s: string, l: string, t: string, so: string, p: number) => {
+    try {
+      sessionStorage.setItem('gs-search', s);
+      sessionStorage.setItem('gs-language', l);
+      sessionStorage.setItem('gs-timerange', t);
+      sessionStorage.setItem('gs-sort', so);
+      sessionStorage.setItem('gs-page', String(p));
+    } catch { /* ignore */ }
+  }, []);
 
   const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(sort)}:${page}`;
 
@@ -72,6 +92,10 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
   const repos = result?.items ?? [];
   const total = result?.total_count ?? 0;
   const totalPages = Math.min(Math.ceil(total / 10), 100);
+
+  useEffect(() => {
+    saveSearchState(search, language, timeRange, sort, page);
+  }, [search, language, timeRange, sort, page, saveSearchState]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [page]);
 
