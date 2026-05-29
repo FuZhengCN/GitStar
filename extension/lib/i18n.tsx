@@ -25,6 +25,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   // Async read stored preference
   useEffect(() => {
+    if (!chrome?.storage) return;
     chrome.storage.local.get(STORAGE_KEY).then(result => {
       if (result[STORAGE_KEY] === 'zh' || result[STORAGE_KEY] === 'en') {
         setLangState(result[STORAGE_KEY]);
@@ -34,6 +35,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   // Cross-context sync via onChanged
   useEffect(() => {
+    if (!chrome?.storage) return;
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
       const v = changes[STORAGE_KEY]?.newValue;
       if (v === 'zh' || v === 'en') {
@@ -46,6 +48,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
+    if (!chrome?.storage) return;
     chrome.storage.local.set({ [STORAGE_KEY]: l }).catch(() => {});
   }, []);
 

@@ -7,6 +7,11 @@ export function useFavorites() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    if (!chrome?.storage) {
+      setFavorites([]);
+      setLoaded(true);
+      return;
+    }
     chrome.storage.local.get(STORAGE_KEY).then(result => {
       setFavorites(result[STORAGE_KEY] || []);
       setLoaded(true);
@@ -25,6 +30,7 @@ export function useFavorites() {
   }, []);
 
   useEffect(() => {
+    if (!chrome?.storage) return;
     if (loaded && favorites !== null) {
       chrome.storage.local.set({ [STORAGE_KEY]: favorites });
     }
