@@ -12,10 +12,10 @@ export function useStaleCache<T>(
   cacheKey: string | null,
   fetcher: () => Promise<T>,
   ttlMs: number,
-): { data: T | null; loading: boolean; error: string | null } {
+): { data: T | null; loading: boolean; error: Error | null } {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     if (!cacheKey) {
@@ -49,9 +49,8 @@ export function useStaleCache<T>(
         setCache(key, fresh).catch(() => {});
       } catch (err: unknown) {
         if (cancelled) return;
-        const e = err as { message?: string };
         if (!cached) {
-          setError(e.message || '加载失败');
+          setError(err instanceof Error ? err : new Error(String(err)));
         }
         // 有旧缓存时静默保留旧数据
       } finally {

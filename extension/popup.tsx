@@ -2,12 +2,13 @@ import { useState, useEffect, useLayoutEffect, useCallback, Component } from 're
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
+import { AppError } from './lib/types';
 import { README_PREVIEW_BYTES } from './lib/constants';
 import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken, checkStarred, starRepo, unstarRepo } from './lib/github';
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
 import { useStaleCache } from './hooks/useStaleCache';
-import { I18nProvider } from './lib/i18n';
+import { I18nProvider, useI18n } from './lib/i18n';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
 import RepoList from './components/RepoList';
@@ -22,6 +23,19 @@ import { getCache, setCache, isFresh } from './lib/cache';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
+
+function errorMessageText(e: Error, t: (key: string) => string): string {
+  if (e instanceof AppError) {
+    const map: Record<string, string> = {
+      RATE_LIMIT: 'rateLimitError',
+      REPO_NOT_FOUND: 'repoNotFound',
+      NETWORK_ERROR: 'tokenNetworkError',
+      LOAD_FAILED: 'loadFailed',
+    };
+    return t(map[e.code] || 'loadFailed');
+  }
+  return e.message;
+}
 
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
@@ -73,6 +87,8 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
     } catch { /* ignore */ }
   }, []);
 
+  const { t } = useI18n();
+
   const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(sort)}:${page}`;
 
   const fetcher = useCallback(async () => {
@@ -110,7 +126,7 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
         sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
       />
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{errorMessageText(error, t)}</div>
       )}
       <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
@@ -125,6 +141,7 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
 
 function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   const { owner, repo } = params;
+  const { t } = useI18n();
   const [readmeExpanded, setReadmeExpanded] = useState(false);
   const [displayHtml, setDisplayHtml] = useState('');
   const [isStarred, setIsStarred] = useState(false);
@@ -209,7 +226,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
 
   if (error) {
     return (
-      <ErrorState title="出错了" message={error} onBack={() => window.history.back()} />
+      <ErrorState title={t('errorOccurred')} message={errorMessageText(error, t)} onBack={() => window.history.back()} />
     );
   }
 
@@ -260,7 +277,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
                 </div>
               </div>
             ) : readmeError && !readmeContent ? (
-              <p className="text-red-500 text-center py-8 text-sm">{readmeError}</p>
+              <p className="text-red-500 text-center py-8 text-sm">{readmeError.message}</p>
             ) : (
               <p className="text-gray-400 text-center py-8 text-sm">该项目没有 README 文件</p>
             )}
