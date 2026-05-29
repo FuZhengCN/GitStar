@@ -35,4 +35,12 @@ export interface SearchResponse {
   total_count: number;
 }
 
+export class AppError extends Error {
+  code: 'RATE_LIMIT' | 'REPO_NOT_FOUND' | 'NETWORK_ERROR' | 'LOAD_FAILED';
+  constructor(code: 'RATE_LIMIT' | 'REPO_NOT_FOUND' | 'NETWORK_ERROR' | 'LOAD_FAILED') {
+    super(code);
+    this.code = code;
+  }
+}
+
 
