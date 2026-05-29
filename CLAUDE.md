@@ -88,6 +88,8 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 - 收藏页计划：`docs/superpowers/plans/2026-05-29-gitstar-favorites-page-plan.md`
 - i18n 设计：`docs/superpowers/specs/2026-05-29-gitstar-i18n-design.md`
 - i18n 计划：`docs/superpowers/plans/2026-05-29-gitstar-i18n-plan.md`
+- 视觉柔化设计：`docs/superpowers/specs/2026-05-29-gitstar-popup-softening-design.md`
+- 视觉柔化计划：`docs/superpowers/plans/2026-05-29-gitstar-popup-softening-plan.md`
 
 ## Non-Goals
 
@@ -200,13 +202,15 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[720px]` + `flex fle
 
 **启动流程：** `PopupIndex` 在最外层包裹 `<I18nProvider>`，内部 `PopupIndexInner` 实际执行逻辑。先骨架屏等待 `loadToken()` 读取 Token（`tokenReady`），然后渲染路由。`ErrorBoundary` 类组件在 `I18nProvider` 内部，捕获子组件渲染崩溃。
 
-**共享结构：** 蓝底顶栏（`bg-[#3b82f6] px-4 py-3`）+ 统一 16px 内边距内容区（`p-4`）。`HomePage` 和 `DetailPage` 各自渲染内容，不重复顶栏和 padding。
+**共享结构：** 蓝底顶栏（`bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)]`）+ 统一 16px 内边距内容区（`p-4`）。外层容器 `bg-slate-50`，内容卡片 `bg-white` + 阴影浮起（无硬边框）。`HomePage` 和 `DetailPage` 各自渲染内容，不重复顶栏和 padding。
+
+**视觉风格（阴影层次）：** 卡片用阴影替代硬边框，阴影按元素类型分层级：RepoCard `shadow-[0_1px_4px_rgba(0,0,0,0.06)]`（最突出），静态块（README、Star 块）`0.04`，表单控件保留边框 + 微阴影（输入框 `0.04`、下拉框 `0.03`）。骨架屏圆角与对应真实组件保持一致，避免加载切换跳变。
 
 **首页：** 每页 10 条（`per_page: 10`），翻页自动 `scrollTo(0, 0)`。搜索框使用 debounce 自动触发（300ms），Enter 键立即触发，无搜索按钮。输入框 + 下拉筛选框统一样式（`rounded-md`、`border-[#e5e7eb]`）。
 
 **详情页（方案 C 布局）：**
 - 标题行：仓库名 + 右上"打开"/"收藏"小按钮（`text-[11px] px-2 py-0.5`）
-- Star 块（`bg-[#f9fafb] rounded-lg`）：左侧大 Star 按钮 + 右侧双行统计（stars / forks·watchers·language）
+- Star 块（`bg-white rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)]`）：左侧大 Star 按钮 + 右侧双行统计（stars / forks·watchers·language）
 - Star 按钮调用 `starRepo()`/`unstarRepo()`，页面加载时 `checkStarred()` 检测状态
 - Starred 状态：绿底 `#f0fdf4` + 绿字 `#16a34a`；未 Star：蓝底白字
 
