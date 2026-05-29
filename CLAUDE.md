@@ -89,6 +89,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | 收藏页 | 05-29 | `specs/2026-05-29-gitstar-favorites-page-design.md` | `plans/2026-05-29-gitstar-favorites-page-plan.md` |
 | i18n | 05-29 | `specs/2026-05-29-gitstar-i18n-design.md` | `plans/2026-05-29-gitstar-i18n-plan.md` |
 | 视觉柔化 | 05-29 | `specs/2026-05-29-gitstar-popup-softening-design.md` | `plans/2026-05-29-gitstar-popup-softening-plan.md` |
+| Sidebar 开关 | 05-29 | `specs/2026-05-29-gitstar-sidebar-toggle-design.md` | `plans/2026-05-29-gitstar-sidebar-toggle-plan.md` |
 
 新增功能时在此表追加一行，保持按日期排序。
 
@@ -143,7 +144,7 @@ Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
   ↑ React state + useI18n()      ↑ React state + useI18n()
 
 chrome.storage.sync  → githubToken（跨设备同步）
-chrome.storage.local → gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）+ gitstar-lang（语言偏好，设备级）
+chrome.storage.local → gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）+ gitstar-lang（语言偏好，设备级）+ gitstar-sidebar-enabled（Sidebar 开关，默认 true）
 sessionStorage        → 搜索参数（同一 popup 会话内导航恢复，关闭即清除）
 ```
 
@@ -236,6 +237,7 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **深色模式**：读取 `data-color-mode` 属性切换配色。
 - **手动挂载 + SPA 适配**：Content Script 不依赖 Plasmo 自动注入，而是 `mountPanel()` 手动挂载。必须提供 `export default`（返回 null）避免 Plasmo 自动渲染报 Error #130（见已知陷阱）。通过 `setInterval` 500ms 轮询 `location.href` 检测 GitHub SPA 导航（`document.hidden` 时跳过），自动 `cleanup()` → 重新挂载。优先查 `#repo-details-container` → `.Layout-sidebar` → `aside`，未找到时用 `MutationObserver` 等待 DOM 出现，10 秒超时后回退为 `position: fixed` 浮动面板。
 - **推荐缓存**：推荐结果按 `owner/repo` 做 60 秒内存缓存（`recsCache` Map），同一仓库内快速切换不会重复请求 API。
+- **开关控制**：通过选项页的 `gitstar-sidebar-enabled` 开关（`chrome.storage.local`）控制是否注入。`mountPanel()` 入口检查 `sidebarEnabled` 变量，为 `false` 时跳过挂载。监听 `chrome.storage.onChanged` 实现选项页切换即时生效，无需刷新页面。
 
 ### 已知陷阱
 
