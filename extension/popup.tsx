@@ -152,7 +152,7 @@ function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: Disc
 
 
 
-function DetailPage({ params }: { params: { owner: string; repo: string } }) {
+function DetailPage({ params, hasToken }: { params: { owner: string; repo: string }; hasToken: boolean }) {
   const { owner, repo } = params;
   const { t } = useI18n();
   const [readmeExpanded, setReadmeExpanded] = useState(false);
@@ -248,14 +248,19 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
       {repoLoading || !detail ? (
         <>
           <LoadingBar loading={true} />
-          <div className="animate-pulse space-y-4 mt-4">
+          <div className="animate-pulse space-y-3 mt-4">
             <div className="h-4 bg-gray-200 rounded w-24" />
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-full bg-gray-200" />
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gray-200 shrink-0" />
               <div className="flex-1 space-y-2">
                 <div className="h-5 bg-gray-200 rounded w-2/3" />
                 <div className="h-4 bg-gray-200 rounded w-full" />
               </div>
+            </div>
+            <div className="h-12 bg-gray-200 rounded-lg" />
+            <div className="flex gap-2">
+              <div className="flex-1 h-8 bg-gray-200 rounded-md" />
+              <div className="flex-1 h-8 bg-gray-200 rounded-md" />
             </div>
           </div>
         </>
@@ -268,6 +273,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
             isStarred={isStarred}
             onToggleStar={handleToggleStar}
             starLoading={starLoading}
+            hasToken={hasToken}
           />
           <div className="mt-4">
             {readmeContent ? (
@@ -638,7 +644,7 @@ function PopupIndexInner() {
           <Router hook={useHashLocation}>
             <Route path="/favorites" component={FavoritesPage} />
             <Route path="/project/:owner/:repo">
-              {(params) => <DetailPage params={params} />}
+              {(params) => <DetailPage params={params} hasToken={hasToken} />}
             </Route>
             <Route path="/" component={renderHomePage} />
           </Router>
