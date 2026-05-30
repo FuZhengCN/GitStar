@@ -20,6 +20,8 @@ import ErrorState from './components/ErrorState';
 import GitStarIcon from './components/GitStarIcon';
 import RepoCard from './components/RepoCard';
 import { getCache, setCache, isFresh } from './lib/cache';
+import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue, calcStarsPerDay } from './lib/constants';
+import type { DiscoveryMode } from './lib/types';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
@@ -58,7 +60,7 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Er
   }
 }
 
-function HomePage({ hasToken }: { hasToken: boolean }) {
+function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: DiscoveryMode; flashMode: DiscoveryMode | null }) {
   const [search, setSearch] = useState(() => {
     try { return sessionStorage.getItem('gs-search') || ''; } catch { return ''; }
   });
@@ -124,11 +126,12 @@ function HomePage({ hasToken }: { hasToken: boolean }) {
         language={language} onLanguageChange={v => { setLanguage(v); setPage(1); }}
         timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
         sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
+        flashMode={flashMode}
       />
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{errorMessageText(error, t)}</div>
       )}
-      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} />
+      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} mode={mode} />
       <div className="fixed bottom-0 left-0 right-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1">
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <div className="text-center text-[10px] text-gray-400 pt-0.5">
@@ -506,11 +509,21 @@ function PopupIndexInner() {
   const { t } = useI18n();
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [mode, setMode] = useState<DiscoveryMode>('hot');
+  const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
+  const [flashMode, setFlashMode] = useState<DiscoveryMode | null>(null);
+
+  const handleModeChange = useCallback((newMode: DiscoveryMode) => {
+    setMode(newMode);
+    setModeDropdownOpen(false);
+    setFlashMode(newMode);
+    setTimeout(() => setFlashMode(null), 200);
+  }, []);
   const hash = useCurrentHash();
   const { favorites, loaded: favLoaded } = useFavorites();
   const favCount = favLoaded ? (favorites || []).length : 0;
   const isFavPage = hash === '#/favorites';
-  const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} />, [hasToken]);
+  const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} mode={mode} flashMode={flashMode} />, [hasToken, mode, flashMode]);
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
@@ -548,13 +561,50 @@ function PopupIndexInner() {
   return (
     <ErrorBoundary>
       <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-slate-50 flex flex-col">
-        <div style={{ width: POPUP_WIDTH }} className="fixed top-0 z-30 bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
+        <div style={{ width: POPUP_WIDTH, background: mode === 'rising' ? 'linear-gradient(135deg, #3b82f6, #8b5cf6)' : mode === 'active' ? 'linear-gradient(135deg, #3b82f6, #10b981)' : '#3b82f6', transition: 'background 300ms' }} className="fixed top-0 z-30 px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <GitStarIcon />
             <span className="translate-y-[-1px]">GitStar</span>
           </h1>
           <div className="flex items-center gap-2.5">
-            <span className="text-[11px] text-white/85 font-medium">{t('discoverProjects')}</span>
+            {/* Mode switcher button */}
+            <div className="relative">
+              <button
+                onClick={() => setModeDropdownOpen(v => !v)}
+                className={`flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-1 border transition-colors ${
+                  mode !== 'hot'
+                    ? 'text-white bg-[rgba(255,255,255,0.22)] border-[rgba(255,255,255,0.4)]'
+                    : 'text-white bg-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.2)]'
+                }`}
+              >
+                {MODE_EMOJI[mode]} {t(`mode.${mode}` as any)} ▾
+              </button>
+              {modeDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setModeDropdownOpen(false)} />
+                  <div className="absolute top-full right-0 mt-1 z-50 bg-white rounded-lg shadow-lg border border-[#e5e7eb] overflow-hidden min-w-[180px]">
+                    {(['hot', 'rising', 'active'] as DiscoveryMode[]).map(m => (
+                      <button
+                        key={m}
+                        onClick={() => handleModeChange(m)}
+                        className={`w-full text-left px-3 py-2 flex items-center gap-2 hover:bg-[#f3f4f6] transition-colors ${
+                          m === mode ? 'bg-[#eff6ff]' : ''
+                        }`}
+                      >
+                        <span>{MODE_EMOJI[m]}</span>
+                        <div>
+                          <div className={`text-[12px] font-semibold ${m === mode ? 'text-[#3b82f6]' : 'text-[#1e1b4b]'}`}>
+                            {t(`mode.${m}` as any)}
+                            {m === mode && <span className="ml-1 text-[#3b82f6]">✓</span>}
+                          </div>
+                          <div className="text-[10px] text-[#6b7280]">{t(`mode.${m}.desc` as any)}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
             <a
               href="#/favorites"
               className={`flex items-center gap-1 text-[11px] font-semibold no-underline rounded-md px-2 py-1 border transition-colors ${isFavPage ? 'text-[#f59e0b] bg-[rgba(245,158,11,0.15)] border-[rgba(245,158,11,0.3)]' : 'text-white bg-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.2)]'}`}

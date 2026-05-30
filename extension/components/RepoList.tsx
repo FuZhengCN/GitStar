@@ -1,4 +1,5 @@
-import { Repo } from '../lib/types';
+import type { Repo, DiscoveryMode } from '../lib/types';
+import { calcStarsPerDay } from '../lib/constants';
 import RepoCard from './RepoCard';
 import EmptyState from './EmptyState';
 
@@ -7,9 +8,10 @@ interface Props {
   favorites: string[] | null;
   onToggleFavorite: (fullName: string) => void;
   loaded: boolean;
+  mode: DiscoveryMode;
 }
 
-export default function RepoList({ repos, favorites, onToggleFavorite, loaded }: Props) {
+export default function RepoList({ repos, favorites, onToggleFavorite, loaded, mode }: Props) {
   if (!loaded) {
     return (
       <div className="space-y-3">
@@ -39,6 +41,7 @@ export default function RepoList({ repos, favorites, onToggleFavorite, loaded }:
           repo={repo}
           isFavorite={(favorites || []).includes(repo.full_name)}
           onToggleFavorite={onToggleFavorite}
+          starsPerDay={mode === 'rising' ? calcStarsPerDay(repo, mode) : undefined}
         />
       ))}
     </div>
