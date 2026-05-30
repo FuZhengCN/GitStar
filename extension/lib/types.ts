@@ -13,6 +13,7 @@ export interface Repo {
   owner_avatar: string;
   topics: string[];
   updated_at: string;
+  created_at: string;
 }
 
 export interface RepoDetail extends Repo {
@@ -43,4 +44,10 @@ export class AppError extends Error {
   }
 }
 
+export type DiscoveryMode = 'hot' | 'rising' | 'active';
 
+export interface ModeConfig {
+  mode: DiscoveryMode;
+  sort: 'stars' | 'updated';
+  created: string;  // '' | 'week' | 'month'
+}
