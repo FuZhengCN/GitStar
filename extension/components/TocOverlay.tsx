@@ -43,17 +43,16 @@ export default function TocOverlay({ containerSelector, visible, onClose }: Prop
     setItems(result);
   }, [containerSelector]);
 
-  // Extract headings when overlay becomes visible and items haven't been extracted yet
+  // Extract headings when overlay becomes visible
   useEffect(() => {
     if (!visible) return;
-    if (items.length > 0) return;
 
     const timer = setTimeout(() => {
       extractHeadings();
     }, 100);
 
     return () => clearTimeout(timer);
-  }, [visible, items.length, extractHeadings]);
+  }, [visible, extractHeadings]);
 
   // Restore original heading IDs on unmount
   useEffect(() => {

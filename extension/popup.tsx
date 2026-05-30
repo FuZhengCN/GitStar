@@ -215,6 +215,9 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   // Reset state when navigating to a different repo (before paint to avoid flicker)
   useLayoutEffect(() => {
     setReadmeExpanded(false);
+    setDetailsExpanded(false);
+    setTocVisible(false);
+    setDisplayHtml('');
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
