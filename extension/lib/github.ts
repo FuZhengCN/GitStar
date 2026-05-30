@@ -32,6 +32,15 @@ function headers(): Record<string, string> {
   return h;
 }
 
+function decodeBase64Utf8(base64: string): string {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
 const VALID_OWNER_REPO = /^[a-zA-Z0-9._-]+$/;
 
 function buildSearchQuery(params: SearchParams): string {
@@ -137,7 +146,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
   let readme = '';
   if (readmeRes.ok) {
     const readmeRaw = await readmeRes.json() as Record<string, unknown>;
-    if (typeof readmeRaw.content === 'string') readme = atob(readmeRaw.content);
+    if (typeof readmeRaw.content === 'string') readme = decodeBase64Utf8(readmeRaw.content);
   }
 
   return {
@@ -165,7 +174,7 @@ export async function getRepoReadme(owner: string, repo: string): Promise<string
   const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/readme`, { headers: headers() });
   if (!res.ok) return '';
   const raw = await res.json() as Record<string, unknown>;
-  return typeof raw.content === 'string' ? atob(raw.content) : '';
+  return typeof raw.content === 'string' ? decodeBase64Utf8(raw.content) : '';
 }
 
 // GitHub Star API

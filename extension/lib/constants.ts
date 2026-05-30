@@ -3,6 +3,9 @@ import type { Repo } from './types';
 
 export const README_PREVIEW_BYTES = 60000;
 
+// README cache key prefix, bump version when cache format changes
+export const README_CACHE_PREFIX = 'readme:v2:';
+
 // Discovery mode configs (label via i18n t())
 export const DISCOVERY_MODES: Record<DiscoveryMode, ModeConfig> = {
   hot:    { mode: 'hot',    sort: 'stars',   created: '' },

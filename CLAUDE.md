@@ -167,7 +167,7 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 ```
 GitHub REST API (api.github.com)
   ↑ fetch + Bearer Token
-extension/lib/github.ts       ← 直接调 API（atob 解码 README），不掺和缓存
+extension/lib/github.ts       ← 直接调 API（decodeBase64Utf8 解码 README），不掺和缓存
   ↑ searchRepos() / getRepoInfo() / getRepoReadme()
   ↑ checkStarred() / starRepo() / unstarRepo()  ← GitHub Star API（需 Token scope）
 extension/lib/cache.ts        ← chrome.storage.local 缓存读写，MAX_ENTRIES=30 自动淘汰最旧条目
@@ -296,6 +296,9 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **配色严格遵循方案**：所有硬编码色值（`bg-[#...]`、`text-[#...]`、`border-[#...]` 等）必须来自上方配色方案表。常见违规：indigo（`#6366f1`/`#4f46e5`）应为主蓝（`#3b82f6`/`#2563eb`），`#22c55e` 应为 `#16a34a`。新增 UI 时对照配色表检查，不要用 Tailwind 默认色系。
 - **GitHub Star API scope**：`PUT/DELETE /user/starred/:owner/:repo` 需要 Token 有 `public_repo`（经典）或 `star`（细粒度）scope。只读 Token 会返回 403/404，`checkStarred()` 会静默失败（catch 空函数）。
 - **DOMPurify 净化**：`markdown.ts` 中 `parseMarkdown()` 使用 DOMPurify 净化 marked 输出（`ADD_ATTR: ['class']` 保留代码高亮）。Worker 线程不做净化（无 DOM），HTML 回到主线程后统一净化。不要移除净化步骤或用其他库替换而不评估安全性。
+- **README base64 解码必须走 UTF-8**：GitHub API 返回的 README 是 base64 编码的 UTF-8 字节。浏览器端 `atob()` 只能解码 ASCII/Latin-1，多字节 UTF-8 字符（中文、emoji 等）会乱码。必须用 `decodeBase64Utf8()`（`atob` → `Uint8Array` → `TextDecoder('utf-8')`）解码。`extension/lib/github.ts` 中 `getRepoDetail()` 和 `getRepoReadme()` 都调用此函数，不要改回 `atob()`。测试文件 `extension/lib/__tests__/markdown-encoding.test.tsx` 覆盖了端到端编码正确性。
+- **`@tailwindcss/typography` 必须安装**：`ReadmeViewer` 依赖 `prose` 类渲染 markdown 排版（标题层级、代码块底色、表格、引用等）。如果 `tailwind.config.js` 的 `plugins` 中没有注册该插件，`prose` 类不会生成 CSS，所有 markdown 内容塌成左对齐纯文本。安装：`npm install -D @tailwindcss/typography`，注册：`plugins: [require('@tailwindcss/typography')]`。
+- **README 相对路径图片用 raw.githubusercontent.com**：`markdown.ts` 和 `markdown-worker.ts` 中将相对路径的 `<img src>` 转换为绝对 URL 时，base 必须是 `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`，不能用 `github.com/.../blob/...`（blob 是 GitHub 网页而非原始图片文件，浏览器 `<img>` 无法渲染）。
 - **缓存淘汰**：`cache.ts` 中 `setCache()` 写入后触发 `evictOldest()`（fire-and-forget），超过 30 条时按时间戳删除最旧条目。`evictOldest` 失败静默降级，不影响写入。修改缓存逻辑时保持淘汰机制有效。
 - **wouter Route component 内联函数**：`<Route path="/" component={() => <HomePage />} />` 中的内联箭头每次父组件渲染都生成新引用，wouter 会判定为新组件 → 卸载旧组件 → 丢失滚动位置和状态。必须用 `useCallback` 稳定化。
 - **详情页面包屑不要硬编码回首页**：`RepoHeader` 的面包屑使用 `window.history.back()` 而非 `<a href="#/">`，确保从收藏页进入详情页时能正确返回收藏页。

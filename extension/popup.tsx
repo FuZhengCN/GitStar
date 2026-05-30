@@ -3,7 +3,7 @@ import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
 import { AppError } from './lib/types';
-import { README_PREVIEW_BYTES } from './lib/constants';
+import { README_PREVIEW_BYTES, README_CACHE_PREFIX } from './lib/constants';
 import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken, checkStarred, starRepo, unstarRepo } from './lib/github';
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
@@ -179,7 +179,7 @@ function DetailPage({ params }: { params: { owner: string; repo: string } }) {
   );
 
   // README cache (10 min TTL), gated on detail availability
-  const readmeCacheKey = detail ? `readme:${owner}/${repo}` : null;
+  const readmeCacheKey = detail ? `${README_CACHE_PREFIX}${owner}/${repo}` : null;
   const readmeFetcher = useCallback(async () => {
     const content = await getRepoReadme(owner, repo);
     if (!content) return { content: '', html: '' };

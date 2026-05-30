@@ -11,8 +11,11 @@ function sanitizeHtml(html: string): string {
 
 function parseInMainThread(content: string, owner: string, repo: string, branch: string): string {
   const raw = marked.parse(content, { gfm: true, breaks: true }) as string;
-  const base = `https://github.com/${owner}/${repo}/blob/${branch}/`;
-  return raw.replace(/src="(?!https?:\/\/|data:)([^"]+)"/g, (_, path: string) => `src="${base}${path}"`);
+  const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`;
+  return raw.replace(/src="(?!https?:\/\/|data:)([^"]+)"/g, (_, path: string) => {
+    const cleanPath = path.replace(/^\/+/, '');
+    return `src="${base}${cleanPath}"`;
+  });
 }
 
 export function parseMarkdown(
