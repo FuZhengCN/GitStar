@@ -91,6 +91,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | 视觉柔化 | 05-29 | `specs/2026-05-29-gitstar-popup-softening-design.md` | `plans/2026-05-29-gitstar-popup-softening-plan.md` |
 | Sidebar 开关 | 05-29 | `specs/2026-05-29-gitstar-sidebar-toggle-design.md` | `plans/2026-05-29-gitstar-sidebar-toggle-plan.md` |
 | 项目体检 | 05-29 | — | `2026-05-29-gitstar-audit-backlog.md`（待处理问题清单） |
+| 发现模式 | 05-30 | `specs/2026-05-30-gitstar-discovery-modes-design.md` | `plans/2026-05-30-gitstar-discovery-modes-plan.md` |
 
 新增功能时在此表追加一行，保持按日期排序。
 
@@ -119,7 +120,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Non-Goals
 
-无用户系统、无数据库、无 star 趋势图、无个性化推荐。
+无用户系统、无数据库、无个性化推荐。
 
 ## Extension
 
