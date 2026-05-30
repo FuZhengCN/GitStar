@@ -31,7 +31,7 @@ export default function RepoList({ repos, favorites, onToggleFavorite, loaded, m
     );
   }
 
-  if (repos.length === 0) return <EmptyState />;
+  if (repos.length === 0) return <EmptyState mode={mode} />;
 
   return (
     <div className="space-y-3">

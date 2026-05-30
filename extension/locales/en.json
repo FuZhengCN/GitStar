@@ -27,6 +27,7 @@
   "mode.active.desc": "Recently updated high-star repos",
   "badge.starsPerDay": "{n} ★/day",
   "empty.rising": "No rising stars this week, try expanding the time range",
+  "empty.active": "No active projects this month, try expanding the time range",
   "navFavorites": "★ Favorites",
   "navFavoritesTitle": "My Favorites",
   "favorite": "☆ Save",

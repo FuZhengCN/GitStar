@@ -27,6 +27,7 @@
   "mode.active.desc": "近期频繁更新的高星项目",
   "badge.starsPerDay": "{n} ★/天",
   "empty.rising": "本周暂无满足阈值的新星项目，试试扩大时间范围",
+  "empty.active": "本月暂无近期更新的活跃项目，试试扩大时间范围",
   "navFavorites": "★ 收藏",
   "navFavoritesTitle": "我的收藏",
   "favorite": "☆ 收藏",
