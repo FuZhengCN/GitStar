@@ -579,7 +579,7 @@ function PopupIndexInner() {
             <div className="relative">
               <button
                 onClick={() => setModeDropdownOpen(v => !v)}
-                className={`flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-1 border transition-colors ${
+                className={`flex items-center gap-1 text-[11px] font-semibold rounded-md px-2 py-1 border transition-colors ${
                   mode !== 'hot'
                     ? 'text-white bg-[rgba(255,255,255,0.22)] border-[rgba(255,255,255,0.4)]'
                     : 'text-white bg-[rgba(255,255,255,0.12)] border-[rgba(255,255,255,0.25)] hover:bg-[rgba(255,255,255,0.2)]'
