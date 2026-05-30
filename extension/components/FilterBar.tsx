@@ -1,4 +1,6 @@
 import { useI18n } from '../lib/i18n';
+import { getTimeRangeValue } from '../lib/constants';
+import type { DiscoveryMode } from '../lib/types';
 
 const LANGUAGES = [
   { value: '', labelKey: 'allLanguages' },
@@ -14,16 +16,11 @@ const LANGUAGES = [
 ];
 
 function getTimeRanges(t: (key: string) => string) {
-  const now = new Date();
-  const week = new Date(now); week.setDate(week.getDate() - 7);
-  const month = new Date(now); month.setMonth(month.getMonth() - 1);
-  const year = new Date(now); year.setFullYear(year.getFullYear() - 1);
-  const fmt = (d: Date) => d.toISOString().split('T')[0];
   return [
     { value: '', label: t('allTime') },
-    { value: `>${fmt(week)}`, label: t('thisWeek') },
-    { value: `>${fmt(month)}`, label: t('thisMonth') },
-    { value: `>${fmt(year)}`, label: t('thisYear') },
+    { value: getTimeRangeValue('week'), label: t('thisWeek') },
+    { value: getTimeRangeValue('month'), label: t('thisMonth') },
+    { value: getTimeRangeValue('year'), label: t('thisYear') },
   ];
 }
 
@@ -40,7 +37,13 @@ interface Props {
   onTimeRangeChange: (v: string) => void;
   sort: string;
   onSortChange: (v: string) => void;
+  flashMode?: DiscoveryMode | null;  // New: triggers border flash on mode switch
 }
+
+const FLASH_COLORS: Record<string, string> = {
+  rising: '#8b5cf6',
+  active: '#10b981',
+};
 
 const selectClass = 'w-full text-[11px] border border-[#e5e7eb] rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)]';
 
@@ -50,9 +53,10 @@ const Chevron = () => (
   </svg>
 );
 
-export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange }: Props) {
+export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange, flashMode }: Props) {
   const { t } = useI18n();
   const timeRanges = getTimeRanges(t);
+  const flashColor = flashMode ? FLASH_COLORS[flashMode] : undefined;
 
   return (
     <div className="flex gap-2">
@@ -65,15 +69,25 @@ export default function FilterBar({ language, onLanguageChange, timeRange, onTim
         <Chevron />
       </div>
       <div className="relative flex-1">
-        <select value={timeRange} onChange={e => onTimeRangeChange(e.target.value)} className={selectClass}>
-          {timeRanges.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+        <select
+          value={timeRange}
+          onChange={e => onTimeRangeChange(e.target.value)}
+          className={selectClass}
+          style={flashColor ? { borderColor: flashColor, boxShadow: `0 0 0 1px ${flashColor}`, transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' } : { transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' }}
+        >
+          {timeRanges.map(tr => (
+            <option key={tr.value} value={tr.value}>{tr.label}</option>
           ))}
         </select>
         <Chevron />
       </div>
       <div className="relative flex-1">
-        <select value={sort} onChange={e => onSortChange(e.target.value)} className={selectClass}>
+        <select
+          value={sort}
+          onChange={e => onSortChange(e.target.value)}
+          className={selectClass}
+          style={flashColor ? { borderColor: flashColor, boxShadow: `0 0 0 1px ${flashColor}`, transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' } : { transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' }}
+        >
           {SORTS.map(s => (
             <option key={s.value} value={s.value}>{t(s.labelKey)}</option>
           ))}
