@@ -1,7 +1,7 @@
-export const README_PREVIEW_BYTES = 60000;
-
 import type { DiscoveryMode, ModeConfig } from './types';
 import type { Repo } from './types';
+
+export const README_PREVIEW_BYTES = 60000;
 
 // Discovery mode configs (label via i18n t())
 export const DISCOVERY_MODES: Record<DiscoveryMode, ModeConfig> = {

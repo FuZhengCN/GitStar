@@ -49,5 +49,5 @@ export type DiscoveryMode = 'hot' | 'rising' | 'active';
 export interface ModeConfig {
   mode: DiscoveryMode;
   sort: 'stars' | 'updated';
-  created: string;  // '' | 'week' | 'month'
+  created: '' | 'week' | 'month';
 }
