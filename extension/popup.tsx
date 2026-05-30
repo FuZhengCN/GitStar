@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, Component } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef, Component } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
@@ -156,6 +156,8 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const { owner, repo } = params;
   const { t } = useI18n();
   const [readmeExpanded, setReadmeExpanded] = useState(false);
+  const expandRef = useRef(false);
+  const [tocVisible, setTocVisible] = useState(false);
   const [displayHtml, setDisplayHtml] = useState('');
   const [isStarred, setIsStarred] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
@@ -231,10 +233,20 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   }, [isStarred, owner, repo]);
 
   const handleExpand = () => {
+    expandRef.current = true;
     setReadmeExpanded(true);
     parseMarkdown(readmeContent, owner, repo, detail?.default_branch || 'main').then(html => {
-      setDisplayHtml(html);
+      if (expandRef.current) setDisplayHtml(html);
     });
+  };
+
+  const handleCollapse = () => {
+    expandRef.current = false;
+    setReadmeExpanded(false);
+  };
+
+  const handleToggleToc = () => {
+    setTocVisible(v => !v);
   };
 
   if (error) {
@@ -282,7 +294,10 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                 html={displayHtml}
                 expanded={readmeExpanded}
                 onExpand={handleExpand}
+                onCollapse={handleCollapse}
                 loading={readmeLoading}
+                onToggleToc={handleToggleToc}
+                tocVisible={tocVisible}
               />
             ) : readmeLoading ? (
               <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
