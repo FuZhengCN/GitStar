@@ -518,6 +518,7 @@ function PopupIndexInner() {
   const [tokenReady, setTokenReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
   const [mode, setMode] = useState<DiscoveryMode>('hot');
+  const [modeLoaded, setModeLoaded] = useState(false);
   const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
   const [flashMode, setFlashMode] = useState<DiscoveryMode | null>(null);
 
@@ -526,6 +527,7 @@ function PopupIndexInner() {
     setModeDropdownOpen(false);
     setFlashMode(newMode);
     setTimeout(() => setFlashMode(null), 200);
+    chrome.storage.local.set({ 'gitstar-mode': newMode }).catch(() => {});
   }, []);
   const hash = useCurrentHash();
   const { favorites, loaded: favLoaded } = useFavorites();
@@ -535,6 +537,13 @@ function PopupIndexInner() {
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
+    // Load persisted discovery mode
+    chrome.storage.local.get('gitstar-mode').then(r => {
+      if (r['gitstar-mode'] && ['hot', 'rising', 'active'].includes(r['gitstar-mode'])) {
+        setMode(r['gitstar-mode'] as DiscoveryMode);
+      }
+      setModeLoaded(true);
+    }).catch(() => setModeLoaded(true));
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
       if (changes.githubToken) {
         const val = changes.githubToken.newValue || null;
