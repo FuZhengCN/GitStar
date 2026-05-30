@@ -5,9 +5,10 @@ interface Props {
   repo: Repo;
   isFavorite: boolean;
   onToggleFavorite: (fullName: string) => void;
+  starsPerDay?: number | null;  // null = below threshold, undefined = not rising mode
 }
 
-export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) {
+export default function RepoCard({ repo, isFavorite, onToggleFavorite, starsPerDay }: Props) {
   const { t } = useI18n();
 
   return (
@@ -20,6 +21,11 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite }: Props) 
         >
           {repo.full_name}
         </a>
+        {starsPerDay != null && starsPerDay > 0 && (
+          <span className="ml-1.5 inline-block text-[10px] font-semibold px-1.5 py-px rounded bg-[#fef3c7] text-[#92400e]">
+            🚀 {t('badge.starsPerDay').replace('{n}', String(starsPerDay))}
+          </span>
+        )}
         <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-2">{repo.description || t('noDescription')}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5 text-xs text-[#9ca3af]">
           <span className="text-[#f59e0b]">★ {repo.stargazers_count.toLocaleString()}</span>
