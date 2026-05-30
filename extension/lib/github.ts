@@ -77,6 +77,7 @@ export async function searchRepos(params: SearchParams): Promise<SearchResponse>
     owner_avatar: (item.owner as Record<string, string>).avatar_url,
     topics: item.topics as string[],
     updated_at: item.updated_at as string,
+    created_at: item.created_at as string,
   }));
 
   return { items, total_count: raw.total_count as number };
@@ -111,6 +112,7 @@ export async function getRepoInfo(owner: string, repo: string): Promise<RepoDeta
     owner_avatar: (raw.owner as Record<string, string>).avatar_url,
     topics: raw.topics as string[],
     updated_at: raw.updated_at as string,
+    created_at: raw.created_at as string,
     readme: '',
     default_branch: raw.default_branch as string,
   };
@@ -153,6 +155,7 @@ export async function getRepoDetail(owner: string, repo: string): Promise<RepoDe
     owner_avatar: (raw.owner as Record<string, string>).avatar_url,
     topics: raw.topics as string[],
     updated_at: raw.updated_at as string,
+    created_at: raw.created_at as string,
     readme,
     default_branch: raw.default_branch as string,
   };
