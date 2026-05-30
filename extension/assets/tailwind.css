@@ -6,3 +6,12 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(400%); }
 }
+
+@keyframes filter-flash {
+  0%   { border-color: var(--flash-color, #8b5cf6); box-shadow: 0 0 0 1px var(--flash-color, #8b5cf6); }
+  100% { border-color: #e5e7eb; box-shadow: none; }
+}
+
+.animate-filter-flash {
+  animation: filter-flash 200ms ease-out forwards;
+}
