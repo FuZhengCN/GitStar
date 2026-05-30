@@ -20,7 +20,7 @@ import ErrorState from './components/ErrorState';
 import GitStarIcon from './components/GitStarIcon';
 import RepoCard from './components/RepoCard';
 import { getCache, setCache, isFresh } from './lib/cache';
-import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue, calcStarsPerDay } from './lib/constants';
+import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue } from './lib/constants';
 import type { DiscoveryMode } from './lib/types';
 import './assets/tailwind.css';
 
@@ -117,6 +117,14 @@ function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: Disc
   }, [search, language, timeRange, sort, page, saveSearchState]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [page]);
+
+  // Sync sort/timeRange when discovery mode changes
+  useEffect(() => {
+    const config = DISCOVERY_MODES[mode];
+    setSort(config.sort);
+    setTimeRange(config.created ? getTimeRangeValue(config.created as 'week' | 'month') : '');
+    setPage(1);
+  }, [mode]);
 
   return (
     <div className="space-y-3 pb-14">
