@@ -90,8 +90,32 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | i18n | 05-29 | `specs/2026-05-29-gitstar-i18n-design.md` | `plans/2026-05-29-gitstar-i18n-plan.md` |
 | 视觉柔化 | 05-29 | `specs/2026-05-29-gitstar-popup-softening-design.md` | `plans/2026-05-29-gitstar-popup-softening-plan.md` |
 | Sidebar 开关 | 05-29 | `specs/2026-05-29-gitstar-sidebar-toggle-design.md` | `plans/2026-05-29-gitstar-sidebar-toggle-plan.md` |
+| 项目体检 | 05-29 | — | `2026-05-29-gitstar-audit-backlog.md`（待处理问题清单） |
 
 新增功能时在此表追加一行，保持按日期排序。
+
+## Chrome Web Store
+
+当前版本 `1.0.0`，已上架。上架资料在 `docs/store-listing/`：
+
+| 文件 | 用途 |
+|------|------|
+| `description.md` | 中英文产品说明 |
+| `privacy-policy.html` | 中英文隐私权政策，GitHub Pages 托管 |
+| `screenshots/` | 9 张 1280x800 JPEG 截图（原始 PNG 也在目录中但未提交） |
+| `promo-small.jpg` | 440x280 小型宣传图 |
+| `promo-marquee.jpg` | 1400x560 顶部宣传图（marquee） |
+
+隐私政策 URL：`https://fuzhengcn.github.io/GitStar/store-listing/privacy-policy.html`
+
+截图处理要点：原始 Retina 截图需先 resize height=800 → center crop 1280x800 → 转 JPEG。`sips -s format jpeg` 在合并 `--resampleWidth` 时会静默失败（文件后缀 .jpg 但内部仍是 PNG），必须分两步执行。
+
+### Git Remotes
+
+- `origin` → Gitee（主仓库）：`https://gitee.com/fuzheng0312/github-star.git`
+- `github` → GitHub（Release + Pages）：`https://github.com/FuZhengCN/GitStar.git`
+
+发布 Release：打 tag 并推送 GitHub → 在 GitHub Releases 页面创建。
 
 ## Non-Goals
 
@@ -105,11 +129,25 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 cd extension
 npm run dev      # 开发（热更新，需手动刷新扩展；图标有色偏，验证功能用）
 npm run build    # 生产构建（图标颜色正确，验证图标和最终效果用）
-npm run package  # 打包为 .zip（用于 Chrome Web Store 发布）
+npm run package  # 打包为 .zip 并自动重命名为 gitstar-v{VERSION}.zip
+npm test         # 运行 vitest 测试（需要先 npm install）
+npx vitest run   # 等同 npm test
 node scripts/generate-icons.js  # 从 icon.svg 生成各尺寸 PNG（依赖 sharp）
 ```
 
 构建产物在 `extension/build/chrome-mv3-prod/`，Chrome `chrome://extensions/` → "加载已解压的扩展程序" 指向该目录。
+
+### 测试
+
+测试框架 vitest 4.x + @testing-library/react + jsdom。由于 Plasmo 的 tsconfig 使用 `jsx: preserve`，vitest 配置（`extension/vitest.config.mjs`）需要 `oxc: false` + `esbuild: { jsx: 'automatic' }` 才能正确编译 TSX。
+
+```bash
+npm test              # 运行全部测试
+npx vitest run        # 同上
+npx vitest run path/to/test  # 运行单个测试文件
+```
+
+测试文件放在 `extension/lib/__tests__/` 目录下，`.tsx` 扩展名。chrome API 需通过 `globalThis.chrome` mock。
 
 ### 文件结构（Plasmo 扁平约定）
 
@@ -222,7 +260,7 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[720px]` + `flex fle
 
 分页（`Pagination`）+ Token 状态合并为一个 `position: fixed; bottom: 0` 底栏，始终可见不随内容滚动。`Pagination` 使用简化箭头 `←` / `→`（无文字），页码范围为当前页 ±1，避免 400px 宽度溢出。HomePage 容器有 `pb-14` 为底部固定栏留出空间。
 
-**收藏页：** 面包屑「← 返回发现」+ 标题「★ 我的收藏 (N)」+ RepoCard 列表（每页 10 条）+ Pagination。RepoCard 上收藏按钮为「★ 已收藏」（金色边框），点击取消收藏后从列表乐观移除。无收藏时显示空状态引导回首页。
+**收藏页：** 面包屑「← 返回发现」+ 标题「★ 我的收藏 (N)」+ RepoCard 列表（每页 10 条）+ `position: fixed; bottom: 0` 固定底栏（Pagination + 失败计数 + 重试按钮）。底栏仅在 `totalPages > 1` 或有加载失败项目时显示。容器 `pb-14` 为固定底栏留空。RepoCard 上收藏按钮为「★ 已收藏」（金色边框），点击取消收藏后从列表乐观移除。无收藏时显示空状态引导回首页。
 
 **顶栏收藏入口：** 右侧文字按钮「★ 收藏 (N)」，白色半透明胶囊 + 数量徽标。在收藏页时按钮变为金色。收藏数量通过 `useFavorites()` 读取，这导致 `PopupIndex` 在收藏操作时重渲染（须注意 wouter component 内联函数问题）。
 
@@ -265,8 +303,9 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **Popup 视口是所有路由共享的**：Chrome popup 是单一可滚动视口，不同 wouter 路由页面共享同一个滚动位置。导航到新页面时如果不显式 `window.scrollTo(0, 0)`，视口会停留在上一页的滚动位置。用 `useLayoutEffect` 而非 `useEffect`，确保在浏览器绘制前同步执行，避免视觉闪烁。
 - **搜索状态用 sessionStorage 持久化**：HomePage 的搜索参数（`search`、`language`、`timeRange`、`sort`、`page`）在 `useState` 初始化时从 `sessionStorage` 读取，参数变化时写回。这样用户从详情页返回时搜索结果自动恢复，而 popup 关闭后 `sessionStorage` 自动清除，下次打开是全新状态。
 - **i18n — I18nProvider 必须在三个入口分别包裹**：Popup/Options/Sidebar 是三个独立 React 树（不同 `createRoot`），每个都需要自己的 `<I18nProvider>`。Provider 通过 `chrome.storage.onChanged` 监听 `gitstar-lang` 键实现跨上下文语言同步，Options 切换语言后其他入口会即时响应。
+- **i18n — I18nProvider 有 ready 闸门**：通过 `ready` state 在 `chrome.storage.local` 读取完成前返回 `null`，防止 `navigator.language` 闪烁。非 Chrome 环境下 `setReady(true)` 立即触发。不要在 Provider 外层包其他依赖 i18n 的组件。
 - **i18n — AppError 错误码模式**：错误消息国际化通过 `AppError`（`lib/types.ts`）实现。fetcher 函数 `throw new AppError('RATE_LIMIT')`（错误码而非用户可见文本），组件用 `errorMessageText(error, t)` 映射 code → i18n key → 翻译文本。不要在 catch 块中 `throw new Error('中文消息')`。
-- **i18n — 翻译字典 key 必须一致**：`zh.json` 和 `en.json` 的顶层 key 必须相同。新增翻译时在两个文件中都添加，缺失 key 会触发 fallback（en → zh → 返回 key 本身 + dev 模式 `console.warn`）。
+- **i18n — 翻译字典 key 必须一致**：`zh.json` 和 `en.json` 的顶层 key 必须相同。新增翻译时在两个文件中都添加，缺失 key 会触发 fallback（当前语言 → zh → 返回 key 本身 + dev 模式 `console.warn`）。
 - **i18n — 模板变量仅数字**：带变量的文本用 `t('key').replace('{n}', String(number))` 模式。变量仅限数字类型（计数、文件大小），禁止将未净化的用户输入作为模板参数。
 - **i18n — 语言切换在 Options 页**：不在 popup 顶栏放置语言切换按钮。语言偏好存 `chrome.storage.local`（非 sync，设备级设置），默认跟随 `navigator.language`。`PopupIndex` 拆为外层 `<I18nProvider>` + 内层 `PopupIndexInner`，避免重复包裹 Provider。
 - **i18n — useStaleCache error 类型变更**：`error` 从 `string | null` 改为 `Error | null`。消费方需处理 `Error` 对象（`.message` 或 `errorMessageText()`），不能直接 `{error}` 渲染。
