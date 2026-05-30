@@ -16,6 +16,8 @@ import Pagination from './components/Pagination';
 import LoadingBar from './components/LoadingBar';
 import RepoHeader from './components/RepoHeader';
 import ReadmeViewer from './components/ReadmeViewer';
+import MiniBar from './components/MiniBar';
+import TocOverlay from './components/TocOverlay';
 import ErrorState from './components/ErrorState';
 import GitStarIcon from './components/GitStarIcon';
 import RepoCard from './components/RepoCard';
@@ -158,6 +160,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [readmeExpanded, setReadmeExpanded] = useState(false);
   const expandRef = useRef(false);
   const [tocVisible, setTocVisible] = useState(false);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
   const [displayHtml, setDisplayHtml] = useState('');
   const [isStarred, setIsStarred] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
@@ -249,6 +252,35 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     setTocVisible(v => !v);
   };
 
+  // Extracted README rendering (shared between preview and reading modes)
+  const readmeSection = readmeContent ? (
+    <ReadmeViewer
+      content={readmeContent}
+      html={displayHtml}
+      expanded={readmeExpanded}
+      onExpand={handleExpand}
+      onCollapse={handleCollapse}
+      loading={readmeLoading}
+      onToggleToc={handleToggleToc}
+      tocVisible={tocVisible}
+    />
+  ) : readmeLoading ? (
+    <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+      <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb]">
+        <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
+      </div>
+      <div className="px-6 py-4 animate-pulse space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-full" />
+        <div className="h-4 bg-gray-200 rounded w-5/6" />
+        <div className="h-4 bg-gray-200 rounded w-4/6" />
+      </div>
+    </div>
+  ) : readmeError && !readmeContent ? (
+    <p className="text-red-500 text-center py-8 text-sm">{errorMessageText(readmeError, t)}</p>
+  ) : (
+    <p className="text-gray-400 text-center py-8 text-sm">{t('noReadme')}</p>
+  );
+
   if (error) {
     return (
       <ErrorState title={t('errorOccurred')} message={errorMessageText(error, t)} onBack={() => window.history.back()} />
@@ -276,47 +308,90 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
             </div>
           </div>
         </>
-      ) : (
-        <>
-          <RepoHeader
-            repo={detail}
-            isFavorite={loaded && (favorites || []).includes(detail.full_name)}
-            onToggleFavorite={toggleFavorite}
-            isStarred={isStarred}
-            onToggleStar={handleToggleStar}
-            starLoading={starLoading}
-            hasToken={hasToken}
-          />
-          <div className="mt-4">
-            {readmeContent ? (
-              <ReadmeViewer
-                content={readmeContent}
-                html={displayHtml}
-                expanded={readmeExpanded}
-                onExpand={handleExpand}
-                onCollapse={handleCollapse}
-                loading={readmeLoading}
-                onToggleToc={handleToggleToc}
-                tocVisible={tocVisible}
+      ) : readmeExpanded ? (
+          <>
+            <MiniBar
+              owner={owner}
+              repo={repo}
+              fullName={detail.full_name}
+              avatar={detail.owner_avatar}
+              isStarred={isStarred}
+              onToggleStar={handleToggleStar}
+              starLoading={starLoading}
+              isFavorite={loaded && (favorites || []).includes(detail.full_name)}
+              onToggleFavorite={toggleFavorite}
+              hasToken={hasToken}
+            />
+            <div className="relative">
+              {readmeSection}
+              <TocOverlay
+                containerSelector="#readme-content"
+                visible={tocVisible}
+                onClose={() => setTocVisible(false)}
               />
-            ) : readmeLoading ? (
-              <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-                <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb]">
-                  <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
-                </div>
-                <div className="px-6 py-4 animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-full" />
-                  <div className="h-4 bg-gray-200 rounded w-5/6" />
-                  <div className="h-4 bg-gray-200 rounded w-4/6" />
-                </div>
-              </div>
-            ) : readmeError && !readmeContent ? (
-              <p className="text-red-500 text-center py-8 text-sm">{readmeError.message}</p>
-            ) : (
-              <p className="text-gray-400 text-center py-8 text-sm">{t('noReadme')}</p>
-            )}
-          </div>
-        </>
+            </div>
+          </>
+        ) : (
+          <>
+            <RepoHeader
+              repo={detail}
+              isFavorite={loaded && (favorites || []).includes(detail.full_name)}
+              onToggleFavorite={toggleFavorite}
+              isStarred={isStarred}
+              onToggleStar={handleToggleStar}
+              starLoading={starLoading}
+              hasToken={hasToken}
+            />
+            <div className="mt-4">
+              {readmeSection}
+            </div>
+
+            <div className="mt-2 rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-3">
+              <button
+                onClick={() => setDetailsExpanded(v => !v)}
+                className="w-full flex items-center justify-between text-[11px] font-semibold text-[#374151]"
+              >
+                <span>📋 {t('projectDetails')}</span>
+                <span className="text-[10px] text-[#9ca3af]">{detailsExpanded ? '▴' : '▾'}</span>
+              </button>
+              {detailsExpanded && (
+                <>
+                  <div className="grid grid-cols-2 gap-1.5 mt-2.5">
+                    <div className="text-[11px]">
+                      <span className="text-[#9ca3af]">📅 {t('created')}</span><br />
+                      <span className="text-[#1e1b4b] font-medium">
+                        {new Date(detail.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="text-[11px]">
+                      <span className="text-[#9ca3af]">🔄 {t('updated')}</span><br />
+                      <span className="text-[#1e1b4b] font-medium">
+                        {new Date(detail.updated_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="text-[11px]">
+                      <span className="text-[#9ca3af]">📄 {t('license')}</span><br />
+                      <span className="text-[#1e1b4b] font-medium">{detail.license?.name || '—'}</span>
+                    </div>
+                    <div className="text-[11px]">
+                      <span className="text-[#9ca3af]">🔤 {t('languageLabel')}</span><br />
+                      <span className="text-[#1e1b4b] font-medium">{detail.language || '—'}</span>
+                    </div>
+                  </div>
+                  {detail.topics && detail.topics.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {detail.topics.slice(0, 8).map(topic => (
+                        <span key={topic} className="text-[10px] bg-[#eff6ff] text-[#3b82f6] px-2 py-0.5 rounded-full">{topic}</span>
+                      ))}
+                      {detail.topics.length > 8 && (
+                        <span className="text-[10px] text-[#9ca3af]">+{detail.topics.length - 8}</span>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </>
       )}
     </div>
   );

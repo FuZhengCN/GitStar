@@ -65,5 +65,11 @@
   "favoritesLoadFailed": "Failed to load favorites",
   "sidebarToggle": "GitHub Sidebar Recommendations",
   "sidebarToggleDesc": "Show similar popular projects based on topic similarity in the GitHub repository sidebar",
-  "languageLabel": "语言 / Language"
+  "languageLabel": "语言 / Language",
+  "tocTitle": "On this page",
+  "tocEmpty": "No headings found",
+  "projectDetails": "Project Details",
+  "created": "Created",
+  "updated": "Updated",
+  "license": "License"
 }
