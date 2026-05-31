@@ -59,7 +59,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
           <div
             id="readme-content"
             className={`px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto ${
-              needsTruncation ? 'max-h-[200px]' : ''
+              needsTruncation ? 'max-h-[160px]' : ''
             }`}
             dangerouslySetInnerHTML={{ __html: html }}
           />
@@ -84,7 +84,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
         <div className="border-t border-[#f3f4f6] px-6 pb-4 pt-4 text-center">
           <button
             onClick={onCollapse}
-            className="text-xs text-[#3b82f6] hover:text-[#2563eb] cursor-pointer"
+            className="text-xs text-[#6b7280] hover:text-[#374151] cursor-pointer"
           >
             {t('collapseReadme')} ▴
           </button>
