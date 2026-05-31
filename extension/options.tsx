@@ -171,8 +171,16 @@ function OptionsForm() {
           </div>
         )}
 
-        <div className="mt-8 pt-4 border-t border-[#e5e7eb] text-center text-xs text-[#9ca3af]">
-          v1.0.0
+        <div className="mt-8 pt-4 border-t border-[#e5e7eb] text-center text-xs text-[#9ca3af] space-x-3">
+          <a
+            href="https://fuzhengcn.github.io/GitStar/store-listing/privacy-policy.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#3b82f6] hover:underline"
+          >
+            {t('privacyPolicy')}
+          </a>
+          <span>v1.0.0</span>
         </div>
       </div>
     </div>
