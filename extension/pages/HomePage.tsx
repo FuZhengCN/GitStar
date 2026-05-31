@@ -51,11 +51,14 @@ export default function HomePage({ hasToken, mode, flashMode }: Props) {
 
   const { t } = useI18n();
 
-  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(sort)}:${page}`;
+  // 'growth' sort is client-side only — normalize to 'stars' for API and cache key
+  const apiSort = sort === 'growth' ? 'stars' : sort;
+
+  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(apiSort)}:${page}`;
 
   const fetcher = useCallback(async () => {
     try {
-      const params: SearchParams = { sort: sort as SearchParams['sort'], order: 'desc', page, per_page: 10 };
+      const params: SearchParams = { sort: apiSort as SearchParams['sort'], order: 'desc', page, per_page: 10 };
       if (search) params.q = search;
       if (language) params.language = language;
       if (timeRange) params.created = timeRange;
@@ -65,7 +68,7 @@ export default function HomePage({ hasToken, mode, flashMode }: Props) {
       if (e.status === 403) throw new AppError('RATE_LIMIT');
       throw err;
     }
-  }, [search, language, timeRange, sort, page]);
+  }, [search, language, timeRange, apiSort, page]);
 
   const { data: result, loading, error } = useStaleCache(cacheKey, fetcher, CACHE_TTL.SEARCH);
   const repos = result?.items ?? [];
@@ -81,7 +84,8 @@ export default function HomePage({ hasToken, mode, flashMode }: Props) {
   // Sync sort/timeRange when discovery mode changes
   useEffect(() => {
     const config = DISCOVERY_MODES[mode];
-    setSort(config.sort);
+    // Rising mode defaults to client-side growth rate ranking
+    setSort(mode === 'rising' ? 'growth' : config.sort);
     setTimeRange(config.created ? getTimeRangeValue(config.created as 'week' | 'month') : '');
     setPage(1);
   }, [mode]);
@@ -95,11 +99,12 @@ export default function HomePage({ hasToken, mode, flashMode }: Props) {
         timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
         sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
         flashMode={flashMode}
+        mode={mode}
       />
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{errorMessageText(error, t)}</div>
       )}
-      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} mode={mode} />
+      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} mode={mode} timeRange={timeRange} />
       <div className="fixed bottom-0 left-0 right-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1">
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
         <div className="text-center text-[10px] text-gray-400 pt-0.5">

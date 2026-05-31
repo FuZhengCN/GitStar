@@ -26,20 +26,67 @@ export const MODE_EMOJI: Record<DiscoveryMode, string> = {
   hot: '🔥', rising: '🚀', active: '📈',
 };
 
-// Badge thresholds
-export const STAR_VELOCITY_MIN_STARS = 500;
-export const STAR_VELOCITY_MIN_PER_DAY = 10;
-export const STAR_VELOCITY_MAX_AGE_DAYS = 30;
+// Age smoothing constant: prevents division-by-zero for day-0 repos
+// and reduces ranking noise for very young projects (github-discover style)
+const AGE_SMOOTHING = 1;
 
-// Stars/day velocity calculation (borrows github-discover dual threshold approach)
-export function calcStarsPerDay(repo: Repo, mode: DiscoveryMode): number | null {
+const MS_PER_DAY = 86400000;
+
+// Period threshold configs (github-discover thresholds: daily=60, weekly=500, monthly=4000, yearly=10000)
+interface PeriodThreshold {
+  minStars: number;
+  maxAge: number;    // days
+  minPerDay: number;
+}
+
+const PERIOD_CONFIG: Record<string, PeriodThreshold> = {
+  week:  { minStars: 500,   maxAge: 30,  minPerDay: 10 },
+  month: { minStars: 4000,  maxAge: 90,  minPerDay: 10 },
+  year:  { minStars: 10000, maxAge: 365, minPerDay: 10 },
+  all:   { minStars: 10000, maxAge: 365, minPerDay: 10 },
+};
+
+const PERIOD_DEFAULT: PeriodThreshold = PERIOD_CONFIG.all;
+
+// Derive period key from timeRange filter value (e.g., ">2026-05-24" → "week")
+export function getPeriodFromTimeRange(created: string): string {
+  if (!created || typeof created !== 'string' || !created.startsWith('>')) return 'all';
+  try {
+    const iso = created.slice(1); // remove ">"
+    const target = new Date(iso);
+    if (isNaN(target.getTime())) return 'all';
+    const diffMs = Date.now() - target.getTime();
+    const diffDays = Math.floor(diffMs / MS_PER_DAY);
+    // 8 days = 7-day week + 1 day buffer for timezone/clock variance
+    if (diffDays <= 8) return 'week';
+    // 32 days = ~30-day month + buffer
+    if (diffDays <= 32) return 'month';
+    // 367 days = ~365-day year + buffer
+    if (diffDays <= 367) return 'year';
+    return 'all';
+  } catch {
+    return 'all';
+  }
+}
+
+// Stars/day velocity calculation with age smoothing and period-based thresholds.
+// Inspired by github-discover: dual threshold (total stars + rate) filters noise.
+// Age smoothing adds 1 day to denominator so day-0 repos don't inflate.
+export function calcStarsPerDay(repo: Repo, mode: DiscoveryMode, timeRange?: string): number | null {
   if (mode !== 'rising') return null;
-  if (repo.stargazers_count < STAR_VELOCITY_MIN_STARS) return null;
   if (!repo.created_at) return null;
-  const ageDays = Math.max(1, (Date.now() - new Date(repo.created_at).getTime()) / 86400000);
-  if (ageDays > STAR_VELOCITY_MAX_AGE_DAYS) return null;
-  const velocity = Math.floor(repo.stargazers_count / ageDays);
-  if (velocity < STAR_VELOCITY_MIN_PER_DAY) return null;
+
+  const cfg = PERIOD_CONFIG[getPeriodFromTimeRange(timeRange || '')] || PERIOD_DEFAULT;
+
+  if (repo.stargazers_count < cfg.minStars) return null;
+
+  const ageDays = (Date.now() - new Date(repo.created_at).getTime()) / MS_PER_DAY;
+  // Guard against future dates from clock skew
+  if (ageDays < 0) return null;
+  if (ageDays > cfg.maxAge) return null;
+
+  const velocity = Math.floor(repo.stargazers_count / (ageDays + AGE_SMOOTHING));
+  if (velocity < cfg.minPerDay) return null;
   return velocity;
 }
 

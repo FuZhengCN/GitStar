@@ -170,7 +170,7 @@ GitHub REST API (api.github.com)
 extension/lib/github.ts       ← 直接调 API（decodeBase64Utf8 解码 README），不掺和缓存
   ↑ searchRepos() / getRepoInfo() / getRepoReadme()
   ↑ checkStarred() / starRepo() / unstarRepo()  ← GitHub Star API（需 Token scope）
-extension/lib/constants.ts     ← CACHE_TTL 集中管理，DISCOVERY_MODES，calcStarsPerDay，README_PREVIEW_BYTES
+extension/lib/constants.ts     ← CACHE_TTL 集中管理，DISCOVERY_MODES，calcStarsPerDay（年龄平滑 + 周期阈值），getPeriodFromTimeRange，README_PREVIEW_BYTES
 extension/lib/errors.ts       ← errorMessageText() 错误码 → i18n key 映射，被 HomePage/DetailPage 共享
 extension/lib/cache.ts        ← chrome.storage.local 缓存读写，MAX_ENTRIES=30 自动淘汰最旧条目
   ↑
@@ -223,6 +223,19 @@ README 首次只解析前 60KB（`README_PREVIEW_BYTES`，定义在 `extension/l
 | README | `readme:<owner>/<repo>` | 10min | 同上，cacheKey 为 null 直到 repo info 就绪 |
 
 缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。TTL 集中定义在 `lib/constants.ts` 的 `CACHE_TTL` 对象中（SEARCH=2min、REPO_INFO=5min、README=10min、FAVORITES_REPO=5min）。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中所有用户输入参数（`q`、`language`、`timeRange`、`sort`）用 `encodeURIComponent` 编码，避免参数字符（如 `:`、`>`）导致键冲突。
+
+**增长率排名（新星模式，借鉴 github-discover）：**
+
+新星 (rising) 模式采用 github-discover 风格的双重门槛增长率排名：
+
+1. **API 层**：`DISCOVERY_MODES.rising` → `sort=stars` + `created=week`，GitHub 返回本周内创建的高星项目
+2. **客户端重排**：`RepoList` 使用 `useMemo` + `calcStarsPerDay` 按增长率降序重新排列，预计算到 `Map<id, value>` 避免重复计算
+3. **年龄平滑**：`stars / (ageDays + 1)`，分母 +1 防止 0 天项目除零并降低极年轻项目的不确定性
+4. **周期自适应阈值**：`getPeriodFromTimeRange(timeRange)` → week(≥500星/≤30天) / month(≥4000星/≤90天) / year(≥10000星/≤365天)，阈值跟随 FilterBar 时间范围自动切换
+5. **增长率 badge**：通过阈值后在 RepoCard 标题旁显示 `🚀 {n} ★/天`，低于阈值或非新星模式不显示
+6. **排序下拉**：新星模式下 FilterBar 排序下拉默认选项为 "🚀 增长率"（客户端专用，API 仍发 `sort=stars`），手动切换 "按 Star 排" 等选项仍可用
+
+增长率排名仅在 `mode === 'rising'` 时生效；热门/活跃模式下 `calcStarsPerDay` 直接返回 `null`，无额外开销。
 
 ### 路由（关键约束）
 

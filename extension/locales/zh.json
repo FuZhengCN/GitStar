@@ -8,6 +8,7 @@
   "sortByStars": "按 Star 排",
   "sortByForks": "按 Fork 排",
   "sortByUpdated": "最近更新",
+  "sortByGrowthRate": "🚀 增长率",
   "noResults": "没有找到匹配的项目",
   "noResultsHint": "尝试调整筛选条件或搜索关键词",
   "noDescription": "暂无描述",

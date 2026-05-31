@@ -8,6 +8,7 @@
   "sortByStars": "By Stars",
   "sortByForks": "By Forks",
   "sortByUpdated": "Recently Updated",
+  "sortByGrowthRate": "Growth Rate",
   "noResults": "No matching projects found",
   "noResultsHint": "Try adjusting filters or search keywords",
   "noDescription": "No description",
