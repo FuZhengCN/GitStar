@@ -3,6 +3,14 @@ import type { Repo } from './types';
 
 export const README_PREVIEW_BYTES = 60000;
 
+// Cache TTLs in milliseconds
+export const CACHE_TTL = {
+  SEARCH: 2 * 60 * 1000,       // 2 min
+  REPO_INFO: 5 * 60 * 1000,    // 5 min
+  README: 10 * 60 * 1000,      // 10 min
+  FAVORITES_REPO: 5 * 60 * 1000, // 5 min (same as REPO_INFO)
+} as const;
+
 // README cache key prefix, bump version when cache format changes
 export const README_CACHE_PREFIX = 'readme:v2:';
 

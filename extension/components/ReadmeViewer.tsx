@@ -28,6 +28,10 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
           expanded ? 'cursor-pointer hover:bg-[#eff6ff] active:bg-[#dbeafe] select-none' : ''
         }`}
         onClick={expanded ? onCollapse : undefined}
+        onKeyDown={expanded ? (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCollapse(); } } : undefined}
+        tabIndex={expanded ? 0 : undefined}
+        role={expanded ? 'button' : undefined}
+        aria-label={expanded ? t('collapseReadme') : undefined}
       >
         <div className="flex items-center gap-1.5">
           {expanded && <span className="text-[10px] text-[#9ca3af]">▾</span>}

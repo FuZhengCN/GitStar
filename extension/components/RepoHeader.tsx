@@ -41,6 +41,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
             <button
               onClick={onToggleStar}
               disabled={starLoading}
+              aria-label={isStarred ? `Unstar ${repo.full_name}` : `Star ${repo.full_name}`}
               className={`px-5 py-1.5 text-[13px] font-semibold rounded-md transition-colors disabled:opacity-50 min-w-[92px] text-center ${
                 isStarred
                   ? 'bg-[#f0fdf4] border border-[#16a34a] text-[#16a34a]'
@@ -74,6 +75,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
       <div className="flex gap-2">
         <button
           onClick={() => onToggleFavorite(repo.full_name)}
+          aria-label={isFavorite ? `${t('favorited')} ${repo.full_name}` : `${t('favorite')} ${repo.full_name}`}
           className={`flex-1 px-2 py-1.5 text-[11px] font-medium border rounded-md transition-colors text-center ${
             isFavorite
               ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]'

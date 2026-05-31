@@ -23,6 +23,7 @@ export default function MiniBar({ owner, repo, fullName, avatar, isStarred, onTo
       <button
         onClick={onToggleStar}
         disabled={starLoading || !hasToken}
+        aria-label={isStarred ? `Unstar ${fullName}` : `Star ${fullName}`}
         className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-colors disabled:opacity-50 shrink-0 ${
           hasToken
             ? isStarred
@@ -35,6 +36,7 @@ export default function MiniBar({ owner, repo, fullName, avatar, isStarred, onTo
       </button>
       <button
         onClick={() => onToggleFavorite(fullName)}
+        aria-label={isFavorite ? `${t('favorited')} ${fullName}` : `${t('favorite')} ${fullName}`}
         className={`px-2 py-1 text-[11px] border rounded-md transition-colors shrink-0 ${
           isFavorite
             ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]'

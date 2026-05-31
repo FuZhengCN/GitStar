@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useI18n } from '../lib/i18n';
 
+function useEscape(onEscape: () => void) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onEscape();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onEscape]);
+}
+
 interface TocItem {
   id: string;
   text: string;
@@ -17,6 +27,18 @@ export default function TocOverlay({ containerSelector, visible, onClose }: Prop
   const { t } = useI18n();
   const [items, setItems] = useState<TocItem[]>([]);
   const assignedElsRef = useRef<{ el: HTMLElement; originalId: string }[]>([]);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEscape(onClose);
+
+  // Auto-focus close button when overlay opens
+  useEffect(() => {
+    if (visible) {
+      // Small delay to allow rendering before focusing
+      const timer = setTimeout(() => closeRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
 
   const extractHeadings = useCallback(() => {
     const container = document.querySelector(containerSelector);
@@ -83,11 +105,22 @@ export default function TocOverlay({ containerSelector, visible, onClose }: Prop
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="absolute right-0 top-8 z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden min-w-[160px] max-w-[200px] max-h-[280px] overflow-y-auto">
+      <div
+        role="dialog"
+        aria-label={t('tocTitle')}
+        className="absolute right-0 top-8 z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden min-w-[160px] max-w-[200px] max-h-[280px] overflow-y-auto"
+      >
         {/* Header */}
-        <div className="px-3 py-2 text-[11px] font-semibold text-[#374151] border-b border-[#f3f4f6] bg-[#f9fafb] sticky top-0">
-          {'📋 '}
-          {t('tocTitle')}
+        <div className="px-3 py-2 text-[11px] font-semibold text-[#374151] border-b border-[#f3f4f6] bg-[#f9fafb] sticky top-0 flex items-center justify-between">
+          <span>📋 {t('tocTitle')}</span>
+          <button
+            ref={closeRef}
+            onClick={onClose}
+            aria-label="Close"
+            className="text-[#9ca3af] hover:text-[#374151] cursor-pointer text-sm leading-none"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Empty state */}

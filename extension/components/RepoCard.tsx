@@ -35,6 +35,7 @@ export default function RepoCard({ repo, isFavorite, onToggleFavorite, starsPerD
       </div>
       <button
         onClick={() => onToggleFavorite(repo.full_name)}
+        aria-label={isFavorite ? `${t('favorited')} ${repo.full_name}` : `${t('favorite')} ${repo.full_name}`}
         className={`flex-shrink-0 text-xs border rounded-md px-1.5 py-0.5 mt-0.5 transition-colors flex items-center gap-0.5 ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] text-[#9ca3af] hover:text-[#f59e0b] hover:border-[#f59e0b]'}`}
       >
         {isFavorite ? t('favorited') : t('favorite')}

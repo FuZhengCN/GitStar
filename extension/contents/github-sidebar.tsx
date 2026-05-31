@@ -13,25 +13,89 @@ export const config: PlasmoCSConfig = {
 };
 
 // Plasmo 自动渲染需要默认导出，提供空组件避免 Error #130
-// 实际 UI 由 mountPanel() 手动挂载到侧边栏位置
+// 实际 UI 由 SidebarLifecycle.mount() 手动挂载到侧边栏位置
 export default function PlasmoOverride() {
   return null;
 }
 
-let reactRoot: ReturnType<typeof createRoot> | null = null;
-let mountTimeout: ReturnType<typeof setTimeout> | null = null;
-let mountObserver: MutationObserver | null = null;
-let lastUrl = location.href;
-let sidebarEnabled = true;
-
 const recsCache = new Map<string, { data: Repo[]; ts: number }>();
 const RECS_CACHE_TTL = 60000;
 
-function cleanup() {
-  if (mountTimeout) { clearTimeout(mountTimeout); mountTimeout = null; }
-  if (mountObserver) { mountObserver.disconnect(); mountObserver = null; }
-  if (reactRoot) { reactRoot.unmount(); reactRoot = null; }
-}
+// SidebarLifecycle: 单例封装所有模块级可变状态
+// 防止多次注入导致的状态不一致，并集中管理 mount/cleanup 生命周期
+const SidebarLifecycle = (() => {
+  let reactRoot: ReturnType<typeof createRoot> | null = null;
+  let mountTimeout: ReturnType<typeof setTimeout> | null = null;
+  let mountObserver: MutationObserver | null = null;
+  let lastUrl = location.href;
+  let sidebarEnabled = true;
+
+  function cleanup() {
+    if (mountTimeout) { clearTimeout(mountTimeout); mountTimeout = null; }
+    if (mountObserver) { mountObserver.disconnect(); mountObserver = null; }
+    if (reactRoot) { reactRoot.unmount(); reactRoot = null; }
+  }
+
+  function mountPanel() {
+    if (!sidebarEnabled) return;
+    cleanup();
+
+    const selectors = [
+      '#repo-details-container',
+      '.Layout-sidebar',
+      'aside[aria-label="Repository details"]',
+    ];
+
+    function tryMount(): boolean {
+      for (const sel of selectors) {
+        const target = document.querySelector(sel);
+        if (target) {
+          const existing = document.getElementById('gitstar-root');
+          if (existing) return true;
+          const root = document.createElement('div');
+          root.id = 'gitstar-root';
+          target.insertBefore(root, target.firstChild);
+          reactRoot = createRoot(root);
+          reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (tryMount()) return;
+
+    mountObserver = new MutationObserver(() => {
+      if (tryMount()) { mountObserver?.disconnect(); mountObserver = null; }
+    });
+    mountObserver.observe(document.body, { childList: true, subtree: true });
+
+    // 10 秒超时 → 浮动面板回退
+    mountTimeout = setTimeout(() => {
+      mountObserver?.disconnect();
+      mountObserver = null;
+      mountTimeout = null;
+      if (!document.getElementById('gitstar-root')) {
+        const float = document.createElement('div');
+        float.id = 'gitstar-root';
+        float.style.cssText =
+          'position:fixed;right:16px;top:80px;z-index:9999;width:220px;';
+        document.body.appendChild(float);
+        reactRoot = createRoot(float);
+        reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
+      }
+    }, 10000);
+  }
+
+  return {
+    mount: mountPanel,
+    cleanup,
+    get enabled() { return sidebarEnabled; },
+    set enabled(v: boolean) { sidebarEnabled = v; },
+    get lastUrl() { return lastUrl; },
+    set lastUrl(v: string) { lastUrl = v; },
+  };
+})();
 
 function SidebarPanel() {
   const [repos, setRepos] = useState<Repo[]>([]);
@@ -217,8 +281,12 @@ function SidebarPanel() {
             {t('sidebarTitle')}
           </span>
           <span
+            role="button"
+            tabIndex={0}
+            aria-label="Collapse sidebar"
             data-action="collapse"
             onClick={() => setCollapsed(true)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(true); } }}
             style={{ cursor: 'pointer', opacity: 0.7, fontSize: '14px' }}
           >
             −
@@ -295,86 +363,40 @@ function SidebarPanel() {
   );
 }
 
-// 手动 DOM 挂载到 GitHub 侧边栏位置
-function mountPanel() {
-  if (!sidebarEnabled) return;
-  cleanup();
-
-  const selectors = [
-    '#repo-details-container',
-    '.Layout-sidebar',
-    'aside[aria-label="Repository details"]',
-  ];
-
-  function tryMount(): boolean {
-    for (const sel of selectors) {
-      const target = document.querySelector(sel);
-      if (target) {
-        const existing = document.getElementById('gitstar-root');
-        if (existing) return true;
-        const root = document.createElement('div');
-        root.id = 'gitstar-root';
-        target.insertBefore(root, target.firstChild);
-        reactRoot = createRoot(root);
-        reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
-        return true;
-      }
-    }
-    return false;
-  }
-
-  if (tryMount()) return;
-
-  mountObserver = new MutationObserver(() => {
-    if (tryMount()) { mountObserver?.disconnect(); mountObserver = null; }
-  });
-  mountObserver.observe(document.body, { childList: true, subtree: true });
-
-  // 10 秒超时 → 浮动面板回退
-  mountTimeout = setTimeout(() => {
-    mountObserver?.disconnect();
-    mountObserver = null;
-    mountTimeout = null;
-    if (!document.getElementById('gitstar-root')) {
-      const float = document.createElement('div');
-      float.id = 'gitstar-root';
-      float.style.cssText =
-        'position:fixed;right:16px;top:80px;z-index:9999;width:220px;';
-      document.body.appendChild(float);
-      reactRoot = createRoot(float);
-      reactRoot.render(<I18nProvider><SidebarPanel /></I18nProvider>);
-    }
-  }, 10000);
-}
-
 // Initialize: read sidebar toggle state, default enabled
 chrome.storage.local.get('gitstar-sidebar-enabled').then(result => {
-  sidebarEnabled = result['gitstar-sidebar-enabled'] !== false;
-  if (sidebarEnabled) mountPanel();
+  SidebarLifecycle.enabled = result['gitstar-sidebar-enabled'] !== false;
+  if (SidebarLifecycle.enabled) SidebarLifecycle.mount();
 }).catch(() => {
-  mountPanel(); // read failure defaults to enabled
+  SidebarLifecycle.mount(); // read failure defaults to enabled
 });
 
 // Listen for toggle changes from options page
 chrome.storage.onChanged.addListener((changes) => {
   if (changes['gitstar-sidebar-enabled']) {
     const enabled = changes['gitstar-sidebar-enabled'].newValue !== false;
-    sidebarEnabled = enabled;
+    SidebarLifecycle.enabled = enabled;
     if (enabled) {
-      mountPanel();
+      SidebarLifecycle.mount();
     } else {
-      cleanup();
+      SidebarLifecycle.cleanup();
     }
   }
 });
 
-// 监听 URL 变化（GitHub SPA 导航），自动清理并重新挂载
-// 页面隐藏时跳过检查，减少后台轮询开销
-setInterval(() => {
-  if (document.hidden) return;
-  const currentUrl = location.href;
-  if (currentUrl !== lastUrl) {
-    lastUrl = currentUrl;
-    mountPanel();
-  }
-}, 500);
+// 监听 GitHub SPA 导航（观察 <title> 变化），自动清理并重新挂载
+// GitHub 在每次 SPA 导航时更新 document.title，MutationObserver 比 setInterval 更高效且响应更快
+function observeSPANavigation() {
+  const titleEl = document.querySelector('title');
+  if (!titleEl) return;
+
+  const observer = new MutationObserver(() => {
+    const currentUrl = location.href;
+    if (currentUrl !== SidebarLifecycle.lastUrl) {
+      SidebarLifecycle.lastUrl = currentUrl;
+      SidebarLifecycle.mount();
+    }
+  });
+  observer.observe(titleEl, { childList: true, characterData: true, subtree: true });
+}
+observeSPANavigation();
