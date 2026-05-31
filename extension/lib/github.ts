@@ -46,7 +46,7 @@ const VALID_OWNER_REPO = /^[a-zA-Z0-9._-]+$/;
 function buildSearchQuery(params: SearchParams): string {
   const parts: string[] = [];
   if (params.q) parts.push(params.q);
-  if (params.language) parts.push(`language:"${params.language}"`);
+  if (params.language) parts.push(`language:"${params.language.replace(/"/g, '\\"')}"`);
   if (params.created && /^>\d{4}-\d{2}-\d{2}$/.test(params.created)) parts.push(`created:${params.created}`);
   // 过滤掉 <=100 stars 的低热度仓库，减少噪音
   parts.push('stars:>100');

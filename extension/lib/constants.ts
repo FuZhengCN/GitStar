@@ -73,8 +73,8 @@ export function calcStarsPerDay(repo: Repo, mode: DiscoveryMode, timeRange?: str
   if (repo.stargazers_count < cfg.minStars) return null;
 
   const ageDays = (Date.now() - new Date(repo.created_at).getTime()) / MS_PER_DAY;
-  // Guard against future dates from clock skew
-  if (ageDays < 0) return null;
+  // Guard against NaN (malformed date) and future dates from clock skew
+  if (isNaN(ageDays) || ageDays < 0) return null;
   if (ageDays > cfg.maxAge) return null;
 
   const velocity = Math.floor(repo.stargazers_count / (ageDays + AGE_SMOOTHING));

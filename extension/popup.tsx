@@ -214,7 +214,11 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   // Star check (not cached — always fetch current state)
   useEffect(() => {
     if (!detail) return;
-    checkStarred(owner, repo).then(setIsStarred).catch(() => {});
+    let cancelled = false;
+    checkStarred(owner, repo).then(result => {
+      if (!cancelled) setIsStarred(result);
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, [detail, owner, repo]);
 
   // Reset state when navigating to a different repo (before paint to avoid flicker)
