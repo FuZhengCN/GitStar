@@ -1,4 +1,3 @@
-import { README_PREVIEW_BYTES } from '../lib/constants';
 import { useI18n } from '../lib/i18n';
 
 function estimateReadTime(content: string): string {
@@ -19,7 +18,7 @@ interface Props {
 
 export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading, onToggleToc, tocVisible }: Props) {
   const { t } = useI18n();
-  const needsTruncation = content.length > README_PREVIEW_BYTES && !expanded;
+  const needsTruncation = !expanded;
 
   return (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
