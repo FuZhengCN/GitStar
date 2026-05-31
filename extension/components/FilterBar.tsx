@@ -37,7 +37,8 @@ interface Props {
   onTimeRangeChange: (v: string) => void;
   sort: string;
   onSortChange: (v: string) => void;
-  flashMode?: DiscoveryMode | null;  // New: triggers border flash on mode switch
+  flashMode?: DiscoveryMode | null;
+  mode?: DiscoveryMode;  // When rising, appends "Growth Rate" option to sort dropdown
 }
 
 const FLASH_COLORS: Record<string, string> = {
@@ -53,10 +54,13 @@ const Chevron = () => (
   </svg>
 );
 
-export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange, flashMode }: Props) {
+export default function FilterBar({ language, onLanguageChange, timeRange, onTimeRangeChange, sort, onSortChange, flashMode, mode }: Props) {
   const { t } = useI18n();
   const timeRanges = getTimeRanges(t);
   const flashColor = flashMode ? FLASH_COLORS[flashMode] : undefined;
+  const sorts = mode === 'rising'
+    ? [{ value: 'growth', labelKey: 'sortByGrowthRate' }, ...SORTS]
+    : SORTS;
 
   return (
     <div className="flex gap-2">
@@ -88,7 +92,7 @@ export default function FilterBar({ language, onLanguageChange, timeRange, onTim
           className={selectClass}
           style={flashColor ? { borderColor: flashColor, boxShadow: `0 0 0 1px ${flashColor}`, transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' } : { transition: 'border-color 200ms ease-out, box-shadow 200ms ease-out' }}
         >
-          {SORTS.map(s => (
+          {sorts.map(s => (
             <option key={s.value} value={s.value}>{t(s.labelKey)}</option>
           ))}
         </select>

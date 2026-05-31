@@ -92,12 +92,13 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | Sidebar 开关 | 05-29 | `specs/2026-05-29-gitstar-sidebar-toggle-design.md` | `plans/2026-05-29-gitstar-sidebar-toggle-plan.md` |
 | 项目体检 | 05-29 | — | `2026-05-29-gitstar-audit-backlog.md`（待处理问题清单） |
 | 发现模式 | 05-30 | `specs/2026-05-30-gitstar-discovery-modes-design.md` | `plans/2026-05-30-gitstar-discovery-modes-plan.md` |
+| 增长率排名 | 05-31 | — | — |
 
 新增功能时在此表追加一行，保持按日期排序。
 
 ## Chrome Web Store
 
-当前版本 `1.0.0`，已上架。上架资料在 `docs/store-listing/`：
+当前版本 `1.1.0`，已上架。上架资料在 `docs/store-listing/`：
 
 | 文件 | 用途 |
 |------|------|

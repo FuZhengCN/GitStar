@@ -1,7 +1,7 @@
 {
   "name": "gitstar-extension",
   "displayName": "GitStar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Browse GitHub high-star projects",
   "author": "fuzheng",
   "scripts": {
