@@ -75,5 +75,6 @@
   "license": "License",
   "tokenSecurityTitle": "⚠️ Security Notice",
   "tokenSecurityDesc": "Your token is stored in plaintext in your browser's local profile and can be read by any program with filesystem access. Please use a fine-grained token with only \"Public Repositories - read-only\" scope, and revoke unused tokens regularly.",
-  "privacyPolicy": "Privacy Policy"
+  "privacyPolicy": "Privacy Policy",
+  "feedback": "Feedback"
 }

@@ -75,5 +75,6 @@
   "license": "协议",
   "tokenSecurityTitle": "⚠️ 安全提示",
   "tokenSecurityDesc": "Token 将以明文存储在浏览器本地配置文件中，任何具有文件系统访问权限的程序均可读取。请使用细粒度 Token（Fine-grained token），仅授予 \"Public Repositories - read-only\" 权限，并定期撤销不再使用的 Token。",
-  "privacyPolicy": "隐私权政策"
+  "privacyPolicy": "隐私权政策",
+  "feedback": "反馈"
 }

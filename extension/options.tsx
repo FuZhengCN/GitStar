@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { I18nProvider, useI18n } from './lib/i18n';
+import pkg from './package.json';
 import './assets/tailwind.css';
 
 function OptionsForm() {
@@ -180,7 +181,15 @@ function OptionsForm() {
           >
             {t('privacyPolicy')}
           </a>
-          <span>v1.0.0</span>
+          <a
+            href="https://github.com/FuZhengCN/GitStar/issues"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#3b82f6] hover:underline"
+          >
+            {t('feedback')}
+          </a>
+          <span>v{pkg.version}</span>
         </div>
       </div>
     </div>
