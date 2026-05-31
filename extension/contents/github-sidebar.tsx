@@ -36,13 +36,16 @@ function cleanup() {
 function SidebarPanel() {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return localStorage.getItem('gitstar-sidebar-collapsed') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [collapsed, setCollapsed] = useState<boolean | null>(null);
+
+  // Load collapsed state from chrome.storage.local
+  useEffect(() => {
+    chrome.storage.local.get('gitstar-sidebar-collapsed').then(result => {
+      setCollapsed(result['gitstar-sidebar-collapsed'] === true);
+    }).catch(() => {
+      setCollapsed(false);
+    });
+  }, []);
   const { t } = useI18n();
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
 
@@ -105,8 +108,10 @@ function SidebarPanel() {
     }
   }
 
+  // Persist collapsed state to chrome.storage.local (skip initial null)
   useEffect(() => {
-    localStorage.setItem('gitstar-sidebar-collapsed', String(collapsed));
+    if (collapsed === null) return;
+    chrome.storage.local.set({ 'gitstar-sidebar-collapsed': collapsed }).catch(() => {});
   }, [collapsed]);
 
   const [floatPos, setFloatPos] = useState<{ x: number; y: number } | null>(null);

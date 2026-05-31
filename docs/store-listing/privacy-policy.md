@@ -1,6 +1,6 @@
 # Privacy Policy for GitStar
 
-*Last updated: 2026-05-29*
+*Last updated: 2026-05-31*
 
 ## English
 
@@ -14,12 +14,13 @@ All data is stored on your device using Chrome's built-in storage APIs:
 
 | Data | Storage Location | Purpose |
 |------|-----------------|---------|
-| GitHub Personal Access Token | `chrome.storage.sync` | Authenticate GitHub API requests. Synced across your Chrome browsers if Chrome Sync is enabled. |
+| GitHub Personal Access Token | `chrome.storage.local` | Authenticate GitHub API requests. Stored on your device only — never synced to the cloud. |
 | Favorite projects list | `chrome.storage.local` | Your locally bookmarked repositories. Never leaves your device. |
-| API response cache | `chrome.storage.local` | Improve loading speed by caching search results and repository info. Automatically expires. |
+| API response cache | `chrome.storage.local` | Improve loading speed by caching search results and repository info. Automatically expires and evicted (max 30 entries). |
 | Language preference | `chrome.storage.local` | Remember your UI language choice (Chinese / English). |
 | Sidebar toggle preference | `chrome.storage.local` | Remember whether the sidebar recommendation panel is enabled. |
-| Sidebar collapse state | `localStorage` | Remember whether the sidebar panel is collapsed on GitHub pages. |
+| Discovery mode preference | `chrome.storage.local` | Remember your selected discovery mode (Hot / Rising / Active). |
+| Sidebar collapse state | `chrome.storage.local` | Remember whether the sidebar panel is collapsed on GitHub pages. |
 
 ### Network Requests
 
@@ -65,12 +66,13 @@ For questions about this privacy policy, please open an issue at the project's r
 
 | 数据 | 存储位置 | 用途 |
 |------|---------|------|
-| GitHub Personal Access Token | `chrome.storage.sync` | 用于 GitHub API 认证。如果你启用了 Chrome 同步，Token 会跨设备同步。 |
+| GitHub Personal Access Token | `chrome.storage.local` | 用于 GitHub API 认证。仅存储在你的设备上，不会云端同步。 |
 | 收藏项目列表 | `chrome.storage.local` | 你本地收藏的仓库。绝不离开你的设备。 |
-| API 响应缓存 | `chrome.storage.local` | 缓存搜索结果和仓库信息以提升加载速度。自动过期淘汰。 |
+| API 响应缓存 | `chrome.storage.local` | 缓存搜索结果和仓库信息以提升加载速度。自动过期淘汰（最多 30 条）。 |
 | 语言偏好 | `chrome.storage.local` | 记住你的界面语言选择（中文 / 英文）。 |
 | 侧边栏开关偏好 | `chrome.storage.local` | 记住侧边栏推荐面板是否启用。 |
-| 侧边栏折叠状态 | `localStorage` | 记住 GitHub 页面上侧边栏面板是否已折叠。 |
+| 发现模式偏好 | `chrome.storage.local` | 记住你选择的发现模式（热门 / 新星 / 活跃）。 |
+| 侧边栏折叠状态 | `chrome.storage.local` | 记住 GitHub 页面上侧边栏面板是否已折叠。 |
 
 ### 网络请求
 

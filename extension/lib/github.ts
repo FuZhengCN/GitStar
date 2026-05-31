@@ -12,7 +12,7 @@ export function getToken(): string | null {
   return cachedToken;
 }
 
-// Initialize from chrome.storage.sync
+// Initialize from chrome.storage.local
 export async function loadToken(): Promise<void> {
   try {
     const result = await chrome.storage.local.get('githubToken');
