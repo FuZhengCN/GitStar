@@ -9,7 +9,7 @@ function OptionsForm() {
   const { t, lang, setLang } = useI18n();
 
   useEffect(() => {
-    chrome.storage.sync.get('githubToken').then(result => {
+    chrome.storage.local.get('githubToken').then(result => {
       if (result.githubToken) {
         setToken(result.githubToken);
         setStatus('success');
@@ -49,7 +49,7 @@ function OptionsForm() {
         return;
       }
 
-      await chrome.storage.sync.set({ githubToken: token.trim() });
+      await chrome.storage.local.set({ githubToken: token.trim() });
       setStatus('success');
       setMessage(t('tokenSaved'));
     } catch {
@@ -59,7 +59,7 @@ function OptionsForm() {
   }
 
   async function handleClear() {
-    await chrome.storage.sync.remove('githubToken');
+    await chrome.storage.local.remove('githubToken');
     setToken('');
     setStatus('idle');
     setMessage(t('tokenCleared'));

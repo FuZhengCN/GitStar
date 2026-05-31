@@ -1,7 +1,7 @@
 import type { PlasmoCSConfig } from 'plasmo';
 import { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { searchRepos, getRepoDetail, loadToken, setToken } from '../lib/github';
+import { searchRepos, getRepoInfo, loadToken, setToken } from '../lib/github';
 import { I18nProvider, useI18n } from '../lib/i18n';
 import { useFavorites } from '../hooks/useFavorites';
 import type { Repo } from '../lib/types';
@@ -78,7 +78,7 @@ function SidebarPanel() {
 
       if (match && match[1] && match[2] && key !== '_global') {
         const [, owner, repo] = match;
-        const detail = await getRepoDetail(owner, repo);
+        const detail = await getRepoInfo(owner, repo);
         const topics = detail.topics as string[] | undefined;
         if (topics && topics.length > 0) {
           const q = topics.slice(0, 3).map((t) => `topic:${t}`).join(' ');

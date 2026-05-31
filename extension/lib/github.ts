@@ -15,7 +15,7 @@ export function getToken(): string | null {
 // Initialize from chrome.storage.sync
 export async function loadToken(): Promise<void> {
   try {
-    const result = await chrome.storage.sync.get('githubToken');
+    const result = await chrome.storage.local.get('githubToken');
     cachedToken = result.githubToken || null;
   } catch {
     cachedToken = null;
