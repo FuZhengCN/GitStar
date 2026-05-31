@@ -657,7 +657,7 @@ function PopupIndexInner() {
 
   if (!tokenReady) {
     return (
-      <div style={{ width: POPUP_WIDTH }} className="bg-slate-50 flex flex-col">
+      <div style={{ width: POPUP_WIDTH }} className="min-h-[720px] bg-slate-50 flex flex-col">
         <div style={{ width: POPUP_WIDTH }} className="fixed top-0 z-30 bg-[#3b82f6] px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <GitStarIcon />
@@ -677,7 +677,7 @@ function PopupIndexInner() {
 
   return (
     <ErrorBoundary>
-      <div style={{ width: POPUP_WIDTH }} className="bg-slate-50 flex flex-col">
+      <div style={{ width: POPUP_WIDTH, minHeight: '720px' }} className="bg-slate-50 flex flex-col">
         <div style={{ width: POPUP_WIDTH, background: mode === 'rising' ? 'linear-gradient(135deg, #3b82f6, #8b5cf6)' : mode === 'active' ? 'linear-gradient(135deg, #3b82f6, #10b981)' : '#3b82f6', transition: 'background 300ms' }} className="fixed top-0 z-30 px-4 py-3 shadow-[0_2px_8px_rgba(59,130,246,0.25)] flex items-center justify-between">
           <h1 className="text-base font-bold text-white flex items-center gap-2">
             <GitStarIcon />
