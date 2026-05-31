@@ -22,14 +22,22 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
 
   return (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-      {/* Header bar */}
-      <div className="px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb] flex items-center justify-between">
-        <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
+      {/* Header bar — clickable to collapse when expanded */}
+      <div
+        className={`px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb] flex items-center justify-between ${
+          expanded ? 'cursor-pointer hover:bg-[#eff6ff] active:bg-[#dbeafe] select-none' : ''
+        }`}
+        onClick={expanded ? onCollapse : undefined}
+      >
+        <div className="flex items-center gap-1.5">
+          {expanded && <span className="text-[10px] text-[#9ca3af]">▾</span>}
+          <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
+        </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>{(content.length / 1024).toFixed(1)} KB · {estimateReadTime(content)}</span>
           {expanded && (
             <button
-              onClick={onToggleToc}
+              onClick={(e) => { e.stopPropagation(); onToggleToc(); }}
               className={`px-2 py-0.5 rounded text-xs cursor-pointer ${
                 tocVisible ? 'bg-[#eff6ff] text-[#3b82f6]' : 'hover:bg-gray-100'
               }`}

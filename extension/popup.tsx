@@ -325,7 +325,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               isFavorite={loaded && (favorites || []).includes(detail.full_name)}
               onToggleFavorite={toggleFavorite}
               hasToken={hasToken}
-              onCollapse={handleCollapse}
             />
             <div className="relative">
               {readmeSection}
