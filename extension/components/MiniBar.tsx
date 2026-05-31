@@ -11,13 +11,21 @@ interface Props {
   isFavorite: boolean;
   onToggleFavorite: (fullName: string) => void;
   hasToken: boolean;
+  onCollapse: () => void;
 }
 
-export default function MiniBar({ owner, repo, fullName, avatar, isStarred, onToggleStar, starLoading, isFavorite, onToggleFavorite, hasToken }: Props) {
+export default function MiniBar({ owner, repo, fullName, avatar, isStarred, onToggleStar, starLoading, isFavorite, onToggleFavorite, hasToken, onCollapse }: Props) {
   const { t } = useI18n();
 
   return (
     <div className="sticky top-[60px] z-20 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.06)] px-3 py-2 flex items-center gap-2">
+      <button
+        onClick={onCollapse}
+        className="text-[11px] text-[#9ca3af] hover:text-[#6b7280] shrink-0 cursor-pointer"
+        title="收起阅读"
+      >
+        ▴
+      </button>
       <img src={avatar} alt={owner} className="w-6 h-6 rounded-md flex-shrink-0" />
       <span className="text-[12px] font-bold text-[#1e1b4b] truncate flex-1">{fullName}</span>
       <button
