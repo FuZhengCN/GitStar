@@ -345,7 +345,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               starLoading={starLoading}
               hasToken={hasToken}
             />
-            <div className="mt-4">
+            <div className="mt-2">
               {readmeSection}
             </div>
 

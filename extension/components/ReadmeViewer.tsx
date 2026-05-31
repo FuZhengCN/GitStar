@@ -52,7 +52,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
           <div
             id="readme-content"
             className={`px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto ${
-              needsTruncation ? 'max-h-[200px]' : 'max-h-[60vh]'
+              needsTruncation ? 'max-h-[200px]' : ''
             }`}
             dangerouslySetInnerHTML={{ __html: html }}
           />
