@@ -249,6 +249,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const handleCollapse = () => {
     expandRef.current = false;
     setReadmeExpanded(false);
+    window.scrollTo(0, 0);
   };
 
   const handleToggleToc = () => {
