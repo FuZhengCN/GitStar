@@ -164,8 +164,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [displayHtml, setDisplayHtml] = useState('');
   const [isStarred, setIsStarred] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
-  const [readmePreviewHeight, setReadmePreviewHeight] = useState(160);
-  const previewAnchorRef = useRef<HTMLDivElement>(null);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
 
   // Repo info cache (5 min TTL)
@@ -223,28 +221,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
-  // Dynamically calculate README preview height to keep Project Details visible
-  useEffect(() => {
-    if (readmeExpanded || !detail) return;
-    const el = previewAnchorRef.current;
-    if (!el) return;
-    const calc = () => {
-      const rect = el.getBoundingClientRect();
-      const viewportH = window.innerHeight;
-      // Space needed below preview: expand btn(~36) + gap(8) + details card(~40) + bottom pad(~16) + safety(20)
-      const belowSpace = 120;
-      const available = Math.max(100, viewportH - rect.top - belowSpace);
-      setReadmePreviewHeight(available);
-    };
-    // Delay one frame for layout to settle
-    const timer = setTimeout(calc, 50);
-    window.addEventListener('resize', calc);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', calc);
-    };
-  }, [readmeExpanded, detail]);
-
   const handleToggleStar = useCallback(async () => {
     setStarLoading(true);
     try {
@@ -291,7 +267,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
       loading={readmeLoading}
       onToggleToc={handleToggleToc}
       tocVisible={tocVisible}
-      previewMaxHeight={readmePreviewHeight}
     />
   ) : readmeLoading ? (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
@@ -371,7 +346,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               starLoading={starLoading}
               hasToken={hasToken}
             />
-            <div className="mt-2" ref={readmeExpanded ? undefined : previewAnchorRef}>
+            <div className="mt-2">
               {readmeSection}
             </div>
 
