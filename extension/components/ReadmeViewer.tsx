@@ -14,9 +14,10 @@ interface Props {
   loading: boolean;
   onToggleToc: () => void;
   tocVisible: boolean;
+  previewMaxHeight: number;
 }
 
-export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading, onToggleToc, tocVisible }: Props) {
+export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading, onToggleToc, tocVisible, previewMaxHeight }: Props) {
   const { t } = useI18n();
   const needsTruncation = !expanded;
 
@@ -58,9 +59,8 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
         <div className="relative">
           <div
             id="readme-content"
-            className={`px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto ${
-              needsTruncation ? 'max-h-[160px]' : ''
-            }`}
+            className="px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto"
+            style={needsTruncation ? { maxHeight: `${previewMaxHeight}px` } : undefined}
             dangerouslySetInnerHTML={{ __html: html }}
           />
           {needsTruncation && (
