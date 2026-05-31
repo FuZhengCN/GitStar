@@ -17,8 +17,8 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite, isStarr
   return (
     <div>
       {/* Layer 1: Breadcrumb + Identity */}
-      <div className="mb-2">
-        <nav className="flex items-center gap-1.5 text-xs mb-2">
+      <div className="mb-2 bg-white rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-3">
+        <nav className="flex items-center gap-1.5 text-[11px] mb-2 pb-2 border-b border-[#f3f4f6]">
           <a href="#" onClick={(e) => { e.preventDefault(); window.history.back(); }} className="text-[#3b82f6] hover:underline cursor-pointer shrink-0">{t('back')}</a>
           <span className="text-[#9ca3af]">/</span>
           <span className="text-[#1e1b4b] font-semibold truncate max-w-[90px]">{repo.owner}</span>
