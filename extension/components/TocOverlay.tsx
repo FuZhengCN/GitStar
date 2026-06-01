@@ -98,15 +98,15 @@ export default function TocOverlay({ containerSelector, visible, onClose }: Prop
         ) : (
           /* Heading items */
           items.map((item) => (
-            <div
+            <button
               key={item.id}
-              className={`px-3 py-1.5 text-[11px] font-medium cursor-pointer hover:bg-[#f3f4f6] truncate ${
+              className={`block w-full text-left px-3 py-1.5 text-[11px] font-medium cursor-pointer hover:bg-[#f3f4f6] truncate ${
                 item.level === 3 ? 'pl-6 text-[#6b7280]' : 'text-[#1e1b4b]'
               }`}
               onClick={() => handleItemClick(item.id)}
             >
               {item.text}
-            </div>
+            </button>
           ))
         )}
       </div>

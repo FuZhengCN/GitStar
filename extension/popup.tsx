@@ -279,6 +279,8 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const handleExpand = () => {
     expandRef.current = true;
     setReadmeExpanded(true);
+    setTocVisible(false);
+    setShowBackToTop(false);
     parseMarkdown(readmeContent, owner, repo, detail?.default_branch || 'main').then(html => {
       if (expandRef.current) setDisplayHtml(html);
     });
