@@ -356,7 +356,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               owner={owner}
               fullName={detail.full_name}
               avatar={detail.owner_avatar}
-              detail={detail}
+              stargazersCount={detail.stargazers_count}
               isStarred={isStarred}
               onToggleStar={handleToggleStar}
               starLoading={starLoading}

@@ -1,11 +1,10 @@
-import type { RepoDetail } from '../lib/types';
 import { useI18n } from '../lib/i18n';
 
 interface Props {
   owner: string;
   fullName: string;
   avatar: string;
-  detail: RepoDetail;
+  stargazersCount: number;
   isStarred: boolean;
   onToggleStar: () => void;
   starLoading: boolean;
@@ -14,22 +13,15 @@ interface Props {
   hasToken: boolean;
 }
 
-export default function MiniBar({ owner, fullName, avatar, detail, isStarred, onToggleStar, starLoading, isFavorite, onToggleFavorite, hasToken }: Props) {
+export default function MiniBar({ owner, fullName, avatar, stargazersCount, isStarred, onToggleStar, starLoading, isFavorite, onToggleFavorite, hasToken }: Props) {
   const { t } = useI18n();
 
   return (
     <div className="sticky top-[60px] z-20 bg-white shadow-[0_1px_4px_rgba(0,0,0,0.06)] px-3 py-2 flex items-center gap-2">
-      <button
-        onClick={() => window.history.back()}
-        className="text-[#3b82f6] hover:text-[#2563eb] shrink-0 leading-none text-[13px]"
-        aria-label={t('back')}
-      >
-        ←
-      </button>
       <img src={avatar} alt={owner} className="w-6 h-6 rounded-md flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <span className="text-[12px] font-bold text-[#1e1b4b] truncate block">{fullName}</span>
-        <span className="text-[10px] font-semibold text-[#f59e0b]">★ {detail.stargazers_count.toLocaleString()}</span>
+        <span className="text-[10px] font-semibold text-[#f59e0b]">★ {stargazersCount.toLocaleString()}</span>
       </div>
       <button
         onClick={onToggleStar}
@@ -54,17 +46,6 @@ export default function MiniBar({ owner, fullName, avatar, detail, isStarred, on
       >
         {isFavorite ? t('favorited') : t('favorite')}
       </button>
-      <a
-        href={detail.html_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[#6b7280] hover:text-[#3b82f6] shrink-0 leading-none"
-        title={t('openOnGitHub')}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-        </svg>
-      </a>
     </div>
   );
 }
