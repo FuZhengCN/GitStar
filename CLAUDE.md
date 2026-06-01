@@ -93,6 +93,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | 项目体检 | 05-29 | — | `2026-05-29-gitstar-audit-backlog.md`（待处理问题清单） |
 | 发现模式 | 05-30 | `specs/2026-05-30-gitstar-discovery-modes-design.md` | `plans/2026-05-30-gitstar-discovery-modes-plan.md` |
 | 增长率排名 | 05-31 | — | — |
+| README 展开交互 | 06-01 | `specs/2026-06-01-gitstar-readme-expand-interaction-design.md` | — |
 
 新增功能时在此表追加一行，保持按日期排序。
 
