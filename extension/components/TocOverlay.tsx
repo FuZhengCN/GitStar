@@ -83,7 +83,7 @@ export default function TocOverlay({ containerSelector, visible, onClose }: Prop
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="absolute right-0 top-8 z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden min-w-[160px] max-w-[200px] max-h-[280px] overflow-y-auto">
+      <div className="fixed right-4 bottom-[80px] z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden min-w-[160px] max-w-[200px] max-h-[240px] overflow-y-auto">
         {/* Header */}
         <div className="px-3 py-2 text-[11px] font-semibold text-[#374151] border-b border-[#f3f4f6] bg-[#f9fafb] sticky top-0">
           {'📋 '}
