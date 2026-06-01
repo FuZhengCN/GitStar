@@ -354,7 +354,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
           <>
             <MiniBar
               owner={owner}
-              repo={repo}
               fullName={detail.full_name}
               avatar={detail.owner_avatar}
               detail={detail}
