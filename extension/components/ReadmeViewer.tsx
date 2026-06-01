@@ -12,11 +12,9 @@ interface Props {
   onExpand: () => void;
   onCollapse: () => void;
   loading: boolean;
-  onToggleToc: () => void;
-  tocVisible: boolean;
 }
 
-export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading, onToggleToc, tocVisible }: Props) {
+export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading }: Props) {
   const { t } = useI18n();
   const needsTruncation = !expanded;
 
@@ -35,16 +33,6 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
           <span>{(content.length / 1024).toFixed(1)} KB · {estimateReadTime(content)}</span>
-          {expanded && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggleToc(); }}
-              className={`px-2 py-0.5 rounded text-xs cursor-pointer ${
-                tocVisible ? 'bg-[#eff6ff] text-[#3b82f6]' : 'hover:bg-gray-100'
-              }`}
-            >
-              📋 {t('toc')}
-            </button>
-          )}
         </div>
       </div>
 
@@ -59,7 +47,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
           <div
             id="readme-content"
             className={`px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto ${
-              needsTruncation ? 'max-h-[160px]' : ''
+              needsTruncation ? 'max-h-[160px]' : 'pb-16'
             }`}
             dangerouslySetInnerHTML={{ __html: html }}
           />
