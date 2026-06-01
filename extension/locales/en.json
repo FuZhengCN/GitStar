@@ -59,6 +59,7 @@
   "sidebarEmpty": "No recommendations",
   "expandReadme": "Expand full README ({size}KB, may be slow)",
   "toc": "TOC",
+  "backToTop": "Back to top",
   "collapseReadme": "Collapse README",
   "expandReadmeFull": "Expand full README",
   "favoritesLoadFailed": "Failed to load favorites",

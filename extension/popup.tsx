@@ -170,6 +170,8 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [isStarred, setIsStarred] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [hasToc, setHasToc] = useState(false);
 
   // Repo info cache (5 min TTL)
   const repoFetcher = useCallback(async () => {
@@ -221,6 +223,33 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     return () => { cancelled = true; };
   }, [detail, owner, repo]);
 
+  // Scroll listener for back-to-top button (passive, rAF-throttled)
+  useEffect(() => {
+    if (!readmeExpanded) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setShowBackToTop(window.scrollY > 200);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [readmeExpanded]);
+
+  // Detect headings for TOC button visibility
+  useEffect(() => {
+    if (!readmeExpanded || !displayHtml) return;
+    const raf = requestAnimationFrame(() => {
+      const headings = document.querySelectorAll('#readme-content h2, #readme-content h3');
+      setHasToc(headings.length > 0);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [readmeExpanded, displayHtml]);
+
   // Reset state when navigating to a different repo (before paint to avoid flicker)
   useLayoutEffect(() => {
     setReadmeExpanded(false);
@@ -258,7 +287,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const handleCollapse = () => {
     expandRef.current = false;
     setReadmeExpanded(false);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleToggleToc = () => {
@@ -274,8 +303,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
       onExpand={handleExpand}
       onCollapse={handleCollapse}
       loading={readmeLoading}
-      onToggleToc={handleToggleToc}
-      tocVisible={tocVisible}
     />
   ) : readmeLoading ? (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
@@ -336,14 +363,33 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               onToggleFavorite={toggleFavorite}
               hasToken={hasToken}
             />
-            <div className="relative">
-              {readmeSection}
-              <TocOverlay
-                containerSelector="#readme-content"
-                visible={tocVisible}
-                onClose={() => setTocVisible(false)}
-              />
+            {readmeSection}
+            {/* Floating action buttons */}
+            <div className="fixed right-4 z-50 flex flex-col gap-1.5 items-end" style={{ bottom: '16px' }}>
+              {hasToc && (
+                <button
+                  onClick={handleToggleToc}
+                  className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  aria-label={t('toc')}
+                >
+                  <span className="text-xs">📋</span>
+                </button>
+              )}
+              {showBackToTop && (
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  aria-label={t('backToTop')}
+                >
+                  <span className="text-xs">↑</span>
+                </button>
+              )}
             </div>
+            <TocOverlay
+              containerSelector="#readme-content"
+              visible={tocVisible}
+              onClose={() => setTocVisible(false)}
+            />
           </>
         ) : (
           <>

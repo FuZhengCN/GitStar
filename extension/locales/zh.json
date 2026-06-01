@@ -59,6 +59,7 @@
   "sidebarEmpty": "暂无推荐",
   "expandReadme": "展开全部 README（{size}KB，可能较慢）",
   "toc": "目录",
+  "backToTop": "回到顶部",
   "collapseReadme": "收起 README",
   "expandReadmeFull": "展开阅读全部",
   "favoritesLoadFailed": "无法获取收藏项目信息",
