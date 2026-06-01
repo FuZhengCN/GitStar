@@ -28,18 +28,20 @@ MiniBar 从单行扩展为双行结构：
 **第 2 行（可展开）：** 仓库描述（单行截断）+ 项目详情（创建/更新时间、License、Topics）
 
 Props 变更：
-- 新增：`stargazersCount`, `htmlUrl`, `description`, `createdAt`, `updatedAt`, `license`, `language`, `topics`
+- 新增：`detail: RepoDetail`（替代 8 个独立 prop，避免 prop drilling）
 - 新增内部状态：`detailsExpanded`
-- 移除：无需移除的 prop
+- 详情展开箭头使用 `aria-label`，不依赖 ▾ 字符传达语义
 
 ### 2. 浮动操作按钮
 
 展开 README 后，右下角 fixed 定位两个圆形按钮（上下排列，间距 6px）：
 
-- **📋 目录**：点击弹出 TocOverlay（fixed 定位，从按钮位置向上展开）
-- **↑ 返回顶部**：仅在 `scrollY > 200px` 时显示，点击平滑滚动到顶部
+- **📋 目录**（`aria-label="目录"`）：点击弹出 TocOverlay。**仅在 README 中存在 h2/h3 标题时渲染**，避免无标题时弹出空面板。
+- **↑ 返回顶部**（`aria-label="回到顶部"`）：仅在 `scrollY > 200px` 时显示，点击平滑滚动到顶部。
 
 按钮样式：`w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb]`
+
+**内容区底部留白：** 展开模式下 `#readme-content` 需要 `pb-16`（或等效），防止浮动按钮遮挡 README 底部的代码块、表格等内容。
 
 ### 3. TocOverlay 定位修复
 
@@ -54,6 +56,18 @@ Props 变更：
 ### 5. 收起平滑滚动
 
 `handleCollapse` 中 `window.scrollTo(0, 0)` → `window.scrollTo({ top: 0, behavior: 'smooth' })`
+
+### 6. 无障碍
+
+- 浮动按钮（📋/↑）添加 `aria-label`，不依赖 emoji 传达语义
+- 详情展开箭头使用 `aria-label` + `aria-expanded`，不依赖 ▾/▴ 字符
+- TOC 面板出现时焦点移入、关闭时焦点回到触发按钮
+- 浮动按钮使用 `<button>` 原生元素（键盘可聚焦）
+
+### 7. 性能
+
+- scroll 监听使用 `passive: true`，避免阻塞主线程
+- 返回顶部按钮的显示/隐藏用 `requestAnimationFrame` 节流，不在 scroll 事件中直接 setState
 
 ## 涉及文件
 
