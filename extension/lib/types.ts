@@ -51,3 +51,10 @@ export interface ModeConfig {
   sort: 'stars' | 'updated';
   created: '' | 'week' | 'month';
 }
+
+export interface AIConfig {
+  endpoint: string;
+  apiKey: string;
+  model: string;
+  summaryLanguage: string;
+}

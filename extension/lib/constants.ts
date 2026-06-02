@@ -102,3 +102,10 @@ export function getTimeRangeValue(period: 'week' | 'month' | 'year'): string {
   }
   return '';
 }
+
+// AI Summary
+export const DEFAULT_AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
+export const DEFAULT_AI_MODEL = 'deepseek-chat';
+export const MAX_SUMMARY_CACHE_ENTRIES = 50;
+export const README_TRUNCATE_BYTES = 8192;
+export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:';
