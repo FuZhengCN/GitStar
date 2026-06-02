@@ -75,5 +75,21 @@
   "tokenSecurityTitle": "⚠️ Security Notice",
   "tokenSecurityDesc": "Your token is stored in plaintext in your browser's local profile and can be read by any program with filesystem access. Please use a fine-grained token with only \"Public Repositories - read-only\" scope, and revoke unused tokens regularly.",
   "privacyPolicy": "Privacy Policy",
-  "feedback": "Feedback"
+  "feedback": "Feedback",
+  "aiSummaryButtonLabel": "AI Summary",
+  "aiSummaryLoading": "Generating summary...",
+  "aiSummaryCached": "Cached · {n} min ago",
+  "aiSummaryCachedJustNow": "Cached · just now",
+  "aiSummaryRefresh": "Refresh",
+  "aiSummaryNotConfigured": "AI service not configured",
+  "aiSummaryGoConfig": "Configure",
+  "aiSummaryErrorNetwork": "Network error, check connection",
+  "aiSummaryErrorAuth": "Invalid API Key, check settings",
+  "aiSummaryErrorQuota": "API quota exceeded",
+  "aiSummaryErrorUnknown": "Request failed, please retry",
+  "aiOptionSectionTitle": "AI Summary",
+  "aiOptionEndpoint": "API Endpoint",
+  "aiOptionApiKey": "API Key",
+  "aiOptionModel": "Model",
+  "aiOptionLanguage": "Summary Language"
 }

@@ -75,5 +75,21 @@
   "tokenSecurityTitle": "⚠️ 安全提示",
   "tokenSecurityDesc": "Token 将以明文存储在浏览器本地配置文件中，任何具有文件系统访问权限的程序均可读取。请使用细粒度 Token（Fine-grained token），仅授予 \"Public Repositories - read-only\" 权限，并定期撤销不再使用的 Token。",
   "privacyPolicy": "隐私权政策",
-  "feedback": "反馈"
+  "feedback": "反馈",
+  "aiSummaryButtonLabel": "AI 概述",
+  "aiSummaryLoading": "正在生成概述...",
+  "aiSummaryCached": "已缓存 · {n}分钟前",
+  "aiSummaryCachedJustNow": "已缓存 · 刚刚",
+  "aiSummaryRefresh": "刷新",
+  "aiSummaryNotConfigured": "尚未配置 AI 服务",
+  "aiSummaryGoConfig": "前往配置",
+  "aiSummaryErrorNetwork": "网络连接失败，请检查网络",
+  "aiSummaryErrorAuth": "API Key 无效，请检查配置",
+  "aiSummaryErrorQuota": "API 配额不足",
+  "aiSummaryErrorUnknown": "请求失败，请稍后重试",
+  "aiOptionSectionTitle": "AI 概述",
+  "aiOptionEndpoint": "API 地址",
+  "aiOptionApiKey": "API Key",
+  "aiOptionModel": "模型",
+  "aiOptionLanguage": "概述语言"
 }
