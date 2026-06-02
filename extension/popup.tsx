@@ -180,6 +180,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [aiText, setAiText] = useState('');
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCachedTs, setAiCachedTs] = useState<number | null>(null);
+  const [aiModel, setAiModel] = useState('');
   const isSummarizingRef = useRef(false);
   const repoHeaderRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -271,6 +272,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     setAiText('');
     setAiVisible(false);
     setAiCachedTs(null);
+    setAiModel('');
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
@@ -343,6 +345,8 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
       return;
     }
 
+    setAiModel(config.model || '');
+
     // Close TOC to avoid overlap
     setTocVisible(false);
     setAiVisible(true);
@@ -391,6 +395,8 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     }
 
     if (!config || !config.apiKey) return;
+
+    setAiModel(config.model || '');
 
     isSummarizingRef.current = true;
     setAiState('loading');
@@ -503,15 +509,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
             {readmeSection}
             {/* Floating action buttons */}
             <div className="fixed right-4 z-50 flex flex-col gap-1.5 items-end" style={{ bottom: '16px' }}>
-              {hasToc && (
-                <button
-                  onClick={handleToggleToc}
-                  className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
-                  aria-label={t('toc')}
-                >
-                  <span className="text-xs">📋</span>
-                </button>
-              )}
               {showBackToTop && (
                 <button
                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -519,6 +516,15 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                   aria-label={t('backToTop')}
                 >
                   <span className="text-xs">↑</span>
+                </button>
+              )}
+              {hasToc && (
+                <button
+                  onClick={handleToggleToc}
+                  className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  aria-label={t('toc')}
+                >
+                  <span className="text-xs">📋</span>
                 </button>
               )}
               {/* AI Summary button */}
@@ -542,15 +548,27 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setAiVisible(false)} />
                 <div
-                  className="fixed z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden"
-                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '300px', overflowY: 'auto' }}
+                  className="fixed z-50 bg-white rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.15)] border border-[#e5e7eb]"
+                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '310px', overflowY: 'auto' }}
+                  role="dialog"
+                  aria-label={t('aiSummaryButtonLabel')}
                 >
+                  {/* Arrow pointing to trigger button */}
+                  <div
+                    className="absolute bg-white border-r border-b border-[#e5e7eb] w-3.5 h-3.5"
+                    style={{ bottom: '-7px', right: '19px', transform: 'rotate(45deg)' }}
+                  />
+
                   {/* Header */}
-                  <div className="px-3 py-2 text-[11px] font-semibold text-[#374151] border-b border-[#f3f4f6] bg-[#f9fafb] sticky top-0 flex items-center justify-between">
-                    <span>🤖 {t('aiSummaryButtonLabel')}</span>
+                  <div className="px-3 pt-2.5 pb-1.5 text-xs font-bold text-[#1e1b4b] sticky top-0 bg-white border-b border-[#f3f4f6] flex items-center justify-between">
+                    <div>
+                      <span>🤖 {t('aiSummaryButtonLabel')}</span>
+                      {aiModel ? <span className="block text-[9px] font-normal text-[#9ca3af]">由 {aiModel} 生成</span> : null}
+                    </div>
                     <button
                       onClick={() => setAiVisible(false)}
-                      className="text-[#9ca3af] hover:text-[#6b7280] text-xs leading-none"
+                      className="text-[#9ca3af] hover:text-[#6b7280] hover:bg-[#f3f4f6] rounded p-0.5 text-sm leading-none"
+                      aria-label="关闭"
                     >
                       ✕
                     </button>
@@ -559,33 +577,47 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                   {/* Body */}
                   <div className="px-3 py-2.5">
                     {aiState === 'loading' && (
-                      <div className="animate-pulse space-y-2">
-                        <div className="h-3 bg-gray-200 rounded w-full" />
-                        <div className="h-3 bg-gray-200 rounded w-5/6" />
-                        <div className="h-3 bg-gray-200 rounded w-4/6" />
-                        <p className="text-[11px] text-[#9ca3af] text-center mt-2">{t('aiSummaryLoading')}</p>
+                      <div className="text-center py-1" aria-busy="true">
+                        <p className="text-[11px] text-[#3b82f6] font-semibold mb-3">⏳ 正在分析 README...</p>
+                        <div className="bg-[#f3f4f6] rounded-full h-1 mb-3 overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{ width: '60%', background: 'linear-gradient(90deg, #3b82f6, #60a5fa)', animation: 'loadingBar 1.5s ease-in-out infinite' }}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-2.5 bg-[#e5e7eb] rounded w-full" />
+                          <div className="h-2.5 bg-[#e5e7eb] rounded w-5/6" />
+                          <div className="h-2.5 bg-[#e5e7eb] rounded w-4/6" />
+                        </div>
                       </div>
                     )}
 
                     {aiState === 'notConfigured' && (
                       <div className="text-center py-2">
-                        <p className="text-xs text-[#6b7280] mb-2">{t('aiSummaryNotConfigured')}</p>
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            chrome.runtime.openOptionsPage();
-                          }}
-                          className="text-xs text-[#3b82f6] hover:underline"
+                        <div className="text-2xl mb-1.5">🔑</div>
+                        <p className="text-[11px] font-semibold text-[#6b7280] mb-1">{t('aiSummaryNotConfigured')}</p>
+                        <p className="text-[10px] text-[#9ca3af] mb-3">在 Options 页配置 API Key 后即可使用</p>
+                        <button
+                          onClick={() => chrome.runtime.openOptionsPage()}
+                          className="text-[11px] font-semibold text-[#3b82f6] bg-[#eff6ff] hover:bg-[#dbeafe] px-4 py-1.5 rounded-md transition-colors"
                         >
                           {t('aiSummaryGoConfig')}
-                        </a>
+                        </button>
                       </div>
                     )}
 
                     {aiState === 'error' && (
                       <div className="text-center py-2">
-                        <span className="text-red-500 text-xs">⚠️ {aiErrorMessage(aiText)}</span>
+                        <div className="text-2xl mb-1.5">⚠️</div>
+                        <p className="text-[11px] font-semibold text-[#dc2626] mb-1">{aiErrorMessage(aiText)}</p>
+                        <p className="text-[10px] text-[#6b7280] mb-3">请检查 Options 页中的 API Key 配置</p>
+                        <button
+                          onClick={() => chrome.runtime.openOptionsPage()}
+                          className="text-[11px] font-semibold text-[#3b82f6] bg-[#eff6ff] hover:bg-[#dbeafe] px-4 py-1.5 rounded-md transition-colors"
+                        >
+                          {t('aiSummaryGoConfig')}
+                        </button>
                       </div>
                     )}
 
@@ -594,6 +626,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                         {(() => {
                           const lines = aiText.split('\n').filter(l => l.trim());
                           const sections: { label: string; text: string }[] = [];
+                          const iconMap: Record<string, string> = { '功能': '📌', '场景': '🎯', 'Function': '📌', 'Use cases': '🎯' };
                           const chineseLabels = ['功能', '场景'];
                           const englishLabels = ['Function', 'Use cases'];
                           for (const line of lines) {
@@ -612,31 +645,31 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                           }
                           const displaySections = sections.length > 0 ? sections : [{ label: '', text: aiText }];
                           return (
-                            <div className="space-y-2.5">
+                            <div className="space-y-2">
                               {displaySections.map((s, i) => (
-                                <div key={i}>
+                                <div key={i} className="bg-[#eff6ff] rounded-md px-3 py-2.5">
                                   {s.label && (
-                                    <div className="text-[10px] font-semibold text-[#3b82f6] mb-0.5">
-                                      {s.label}
+                                    <div className="text-[11px] font-bold text-[#1e1b4b] mb-1 flex items-center gap-1.5">
+                                      <span>{iconMap[s.label] || ''}</span>
+                                      <span>{s.label}</span>
                                     </div>
                                   )}
-                                  <p className="text-xs text-[#374151] leading-relaxed">{s.text}</p>
+                                  <p className="text-[12px] text-[#374151] leading-relaxed">{s.text}</p>
                                 </div>
                               ))}
                             </div>
                           );
                         })()}
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#f3f4f6]">
-                          {aiCachedTs && (
-                            <span className="text-[10px] text-[#9ca3af]">{aiCachedLabel(aiCachedTs)}</span>
-                          )}
-                          <button
-                            onClick={handleAiRefresh}
-                            className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] cursor-pointer ml-auto"
-                          >
-                            🔄 {t('aiSummaryRefresh')}
-                          </button>
-                        </div>
+                        <button
+                          onClick={handleAiRefresh}
+                          className="w-full mt-2.5 py-1.5 text-[11px] font-semibold text-[#3b82f6] bg-[#eff6ff] hover:bg-[#dbeafe] rounded-md transition-colors"
+                          aria-label="重新生成概述"
+                        >
+                          🔄 {t('aiSummaryRefresh')}
+                        </button>
+                        {aiCachedTs && (
+                          <p className="text-[10px] text-[#9ca3af] text-center mt-1">{aiCachedLabel(aiCachedTs)}</p>
+                        )}
                       </>
                     )}
                   </div>
