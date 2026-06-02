@@ -172,6 +172,9 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const { favorites, toggle: toggleFavorite, loaded } = useFavorites();
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [hasToc, setHasToc] = useState(false);
+  const [previewMaxH, setPreviewMaxH] = useState(300);
+  const repoHeaderRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   // Repo info cache (5 min TTL)
   const repoFetcher = useCallback(async () => {
@@ -259,6 +262,20 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
+  // Dynamic README preview height — measure actual layout, then self-correct
+  useLayoutEffect(() => {
+    if (readmeExpanded || !detail || repoLoading || readmeLoading || !readmeContent) return;
+    const raf = requestAnimationFrame(() => {
+      const detailsEl = detailsRef.current;
+      if (!detailsEl) return;
+      const gap = window.innerHeight - detailsEl.getBoundingClientRect().bottom;
+      if (Math.abs(gap) > 12) {
+        setPreviewMaxH(h => Math.max(100, Math.min(500, h + gap - 8)));
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [detail, readmeExpanded, repoLoading, readmeLoading, readmeContent]);
+
   const handleToggleStar = useCallback(async () => {
     setStarLoading(true);
     try {
@@ -304,6 +321,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
       expanded={readmeExpanded}
       onExpand={handleExpand}
       loading={readmeLoading}
+      maxPreviewHeight={previewMaxH}
     />
   ) : readmeLoading ? (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
@@ -400,6 +418,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
           </>
         ) : (
           <>
+            <div ref={repoHeaderRef}>
             <RepoHeader
               repo={detail}
               isFavorite={loaded && (favorites || []).includes(detail.full_name)}
@@ -409,11 +428,12 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               starLoading={starLoading}
               hasToken={hasToken}
             />
+            </div>
             <div className="mt-2">
               {readmeSection}
             </div>
 
-            <div className="mt-2 rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-3">
+            <div ref={detailsRef} className="mt-2 rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-3">
               <button
                 onClick={() => setDetailsExpanded(v => !v)}
                 className="w-full flex items-center justify-between text-[11px] font-semibold text-[#374151]"

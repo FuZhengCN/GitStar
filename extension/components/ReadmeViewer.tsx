@@ -11,9 +11,10 @@ interface Props {
   expanded: boolean;
   onExpand: () => void;
   loading: boolean;
+  maxPreviewHeight?: number;
 }
 
-export default function ReadmeViewer({ content, html, expanded, onExpand, loading }: Props) {
+export default function ReadmeViewer({ content, html, expanded, onExpand, loading, maxPreviewHeight = 160 }: Props) {
   const { t } = useI18n();
   const needsTruncation = !expanded;
 
@@ -44,8 +45,9 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, loadin
           <div
             id="readme-content"
             className={`px-6 py-4 text-sm prose prose-sm max-w-none overflow-y-auto ${
-              needsTruncation ? 'max-h-[160px]' : 'pb-16'
+              needsTruncation ? '' : 'pb-16'
             }`}
+            style={needsTruncation ? { maxHeight: maxPreviewHeight } : undefined}
             dangerouslySetInnerHTML={{ __html: html }}
           />
           {needsTruncation && (
