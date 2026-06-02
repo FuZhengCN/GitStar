@@ -303,7 +303,6 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
       html={displayHtml}
       expanded={readmeExpanded}
       onExpand={handleExpand}
-      onCollapse={handleCollapse}
       loading={readmeLoading}
     />
   ) : readmeLoading ? (
@@ -385,6 +384,13 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                   <span className="text-xs">↑</span>
                 </button>
               )}
+              <button
+                onClick={handleCollapse}
+                className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#3b82f6] flex items-center justify-center hover:bg-[#eff6ff] transition-colors"
+                aria-label={t('collapseReadme')}
+              >
+                <span className="text-xs text-[#3b82f6] font-bold">✕</span>
+              </button>
             </div>
             <TocOverlay
               containerSelector="#readme-content"

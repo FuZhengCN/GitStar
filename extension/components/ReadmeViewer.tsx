@@ -10,25 +10,22 @@ interface Props {
   html: string;
   expanded: boolean;
   onExpand: () => void;
-  onCollapse: () => void;
   loading: boolean;
 }
 
-export default function ReadmeViewer({ content, html, expanded, onExpand, onCollapse, loading }: Props) {
+export default function ReadmeViewer({ content, html, expanded, onExpand, loading }: Props) {
   const { t } = useI18n();
   const needsTruncation = !expanded;
 
   return (
     <div className="rounded-lg bg-white shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
-      {/* Header bar — clickable to collapse when expanded */}
+      {/* Header bar — static when expanded, shows light blue anchor */}
       <div
-        className={`px-4 py-3 border-b border-[#f3f4f6] bg-[#f9fafb] flex items-center justify-between ${
-          expanded ? 'cursor-pointer hover:bg-[#eff6ff] active:bg-[#dbeafe] select-none' : ''
+        className={`px-4 py-3 border-b border-[#f3f4f6] flex items-center justify-between ${
+          expanded ? 'bg-[#eff6ff]' : 'bg-[#f9fafb]'
         }`}
-        onClick={expanded ? onCollapse : undefined}
       >
         <div className="flex items-center gap-1.5">
-          {expanded && <span className="text-[10px] text-[#9ca3af]">▾</span>}
           <h2 className="text-xs font-semibold text-gray-700">📖 README.md</h2>
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -57,7 +54,7 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
         </div>
       )}
 
-      {/* Bottom actions */}
+      {/* Bottom actions — expand button only (collapse moved to floating button) */}
       {needsTruncation && (
         <div className="px-6 pb-4 text-center">
           <button
@@ -65,16 +62,6 @@ export default function ReadmeViewer({ content, html, expanded, onExpand, onColl
             className="text-xs text-[#3b82f6] hover:text-[#2563eb] cursor-pointer"
           >
             {t('expandReadmeFull')} ↓ · {estimateReadTime(content)}
-          </button>
-        </div>
-      )}
-      {expanded && (
-        <div className="border-t border-[#f3f4f6] px-6 pb-4 pt-4 text-center">
-          <button
-            onClick={onCollapse}
-            className="text-xs text-[#6b7280] hover:text-[#374151] cursor-pointer"
-          >
-            {t('collapseReadme')} ▴
           </button>
         </div>
       )}
