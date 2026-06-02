@@ -136,7 +136,7 @@ export async function saveSummary(owner: string, repo: string, text: string): Pr
   const key = cacheKey(owner, repo);
   try {
     await chrome.storage.local.set({ [key]: { text, ts: Date.now() } });
-    evictSummaries();
+    await evictSummaries();
   } catch {
     // silent degrade
   }
