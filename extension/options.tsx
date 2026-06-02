@@ -26,6 +26,58 @@ function OptionsForm() {
     }).catch(() => {});
   }, []);
 
+  // AI Summary config
+  const [aiEndpoint, setAiEndpoint] = useState('https://api.deepseek.com/v1/chat/completions');
+  const [aiKey, setAiKey] = useState('');
+  const [aiModel, setAiModel] = useState('deepseek-chat');
+  const [aiLang, setAiLang] = useState('中文');
+  const [aiStatus, setAiStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [aiMessage, setAiMessage] = useState('');
+
+  // Load AI config on mount
+  useEffect(() => {
+    chrome.storage.local.get('gitstar-ai-config').then(result => {
+      const cfg = result['gitstar-ai-config'];
+      if (cfg) {
+        if (cfg.endpoint) setAiEndpoint(cfg.endpoint);
+        if (cfg.apiKey) setAiKey(cfg.apiKey);
+        if (cfg.model) setAiModel(cfg.model);
+        if (cfg.summaryLanguage) setAiLang(cfg.summaryLanguage);
+      }
+    }).catch(() => {});
+  }, []);
+
+  async function handleSaveAiConfig() {
+    if (!aiKey.trim()) {
+      setAiStatus('error');
+      setAiMessage(t('tokenEmpty'));
+      return;
+    }
+    setAiStatus('saving');
+    try {
+      await chrome.storage.local.set({
+        'gitstar-ai-config': {
+          endpoint: aiEndpoint.trim(),
+          apiKey: aiKey.trim(),
+          model: aiModel.trim(),
+          summaryLanguage: aiLang,
+        },
+      });
+      setAiStatus('success');
+      setAiMessage(t('tokenSaved'));
+    } catch {
+      setAiStatus('error');
+      setAiMessage(t('tokenNetworkError'));
+    }
+  }
+
+  async function handleClearAiConfig() {
+    await chrome.storage.local.remove('gitstar-ai-config');
+    setAiKey('');
+    setAiStatus('idle');
+    setAiMessage('');
+  }
+
   async function handleSave() {
     if (!token.trim()) {
       setStatus('error');
@@ -89,6 +141,83 @@ function OptionsForm() {
           <option value="zh">中文</option>
           <option value="en">English</option>
         </select>
+      </div>
+
+      {/* AI Summary config */}
+      <div className="mb-6 p-4 bg-white border border-[#e5e7eb] rounded-lg">
+        <h2 className="text-sm font-semibold text-[#1e1b4b] mb-3">{t('aiOptionSectionTitle')}</h2>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionEndpoint')}</label>
+            <input
+              type="url"
+              value={aiEndpoint}
+              onChange={e => setAiEndpoint(e.target.value)}
+              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionApiKey')}</label>
+            <input
+              type="password"
+              value={aiKey}
+              onChange={e => { setAiKey(e.target.value); setAiStatus('idle'); setAiMessage(''); }}
+              placeholder="sk-xxxxxxxxxxxxxxxx"
+              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionModel')}</label>
+              <input
+                type="text"
+                value={aiModel}
+                onChange={e => setAiModel(e.target.value)}
+                placeholder="deepseek-chat"
+                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionLanguage')}</label>
+              <select
+                value={aiLang}
+                onChange={e => setAiLang(e.target.value)}
+                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+              >
+                <option value="中文">中文</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveAiConfig}
+              disabled={aiStatus === 'saving'}
+              className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[110px] text-center"
+            >
+              {aiStatus === 'saving' ? t('verifying') : t('save')}
+            </button>
+            {aiKey && (
+              <button
+                onClick={handleClearAiConfig}
+                className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {t('clear')}
+              </button>
+            )}
+          </div>
+          {aiMessage && (
+            <div
+              className={`text-sm p-3 rounded-lg ${
+                aiStatus === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                aiStatus === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
+                'bg-gray-50 text-gray-600'
+              }`}
+            >
+              {aiMessage}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Sidebar toggle */}
