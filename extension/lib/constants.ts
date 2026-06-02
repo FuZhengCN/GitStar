@@ -103,9 +103,10 @@ export function getTimeRangeValue(period: 'week' | 'month' | 'year'): string {
   return '';
 }
 
-// AI Summary
+// AI Summary — separate namespace from gitstar-cache: to avoid LRU eviction in cache.ts
 export const DEFAULT_AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions';
 export const DEFAULT_AI_MODEL = 'deepseek-chat';
 export const MAX_SUMMARY_CACHE_ENTRIES = 50;
+// Byte limit for README content sent to LLM (not rendered content)
 export const README_TRUNCATE_BYTES = 8192;
-export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:';
+export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:v1:';
