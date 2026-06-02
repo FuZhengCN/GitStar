@@ -125,7 +125,7 @@ function OptionsForm() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6">
+    <div className="max-w-lg mx-auto p-6 bg-slate-50 min-h-screen">
       <h1 className="text-xl font-bold text-[#1e1b4b] mb-5">GitStar 配置</h1>
 
       {/* Card 1: General */}
