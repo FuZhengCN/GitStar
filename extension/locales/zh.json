@@ -91,5 +91,7 @@
   "aiOptionEndpoint": "API 地址",
   "aiOptionApiKey": "API Key",
   "aiOptionModel": "模型",
-  "aiOptionLanguage": "概述语言"
+  "aiOptionLanguage": "概述语言",
+  "aiSecurityTitle": "⚠️ 安全提示",
+  "aiSecurityDesc": "API Key 将以明文存储在浏览器本地配置文件中，任何具有文件系统访问权限的程序均可读取。请使用最小权限的 API Key，并定期撤销不再使用的 Key。"
 }

@@ -91,5 +91,7 @@
   "aiOptionEndpoint": "API Endpoint",
   "aiOptionApiKey": "API Key",
   "aiOptionModel": "Model",
-  "aiOptionLanguage": "Summary Language"
+  "aiOptionLanguage": "Summary Language",
+  "aiSecurityTitle": "⚠️ Security Notice",
+  "aiSecurityDesc": "Your API Key is stored in plaintext in your browser's local profile and can be read by any program with filesystem access. Please use a key with minimal permissions and revoke unused keys regularly."
 }
