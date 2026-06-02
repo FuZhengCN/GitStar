@@ -24,6 +24,8 @@ import RepoCard from './components/RepoCard';
 import { getCache, setCache, isFresh } from './lib/cache';
 import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue } from './lib/constants';
 import type { DiscoveryMode } from './lib/types';
+import { fetchSummary, getCachedSummary, saveSummary, AISummaryError } from './lib/ai-summary';
+import type { AIConfig } from './lib/types';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
@@ -173,6 +175,12 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [hasToc, setHasToc] = useState(false);
   const [previewMaxH, setPreviewMaxH] = useState(300);
+  // AI Summary state
+  const [aiState, setAiState] = useState<'idle' | 'loading' | 'success' | 'error' | 'notConfigured'>('idle');
+  const [aiText, setAiText] = useState('');
+  const [aiVisible, setAiVisible] = useState(false);
+  const [aiCachedTs, setAiCachedTs] = useState<number | null>(null);
+  const isSummarizingRef = useRef(false);
   const repoHeaderRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
 
@@ -259,6 +267,10 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     setDetailsExpanded(false);
     setTocVisible(false);
     setDisplayHtml('');
+    setAiState('idle');
+    setAiText('');
+    setAiVisible(false);
+    setAiCachedTs(null);
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
@@ -312,6 +324,113 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const handleToggleToc = () => {
     setTocVisible(v => !v);
   };
+
+  const handleAiSummary = useCallback(async () => {
+    if (isSummarizingRef.current) return;
+
+    // Load config
+    let config: AIConfig | null = null;
+    try {
+      const result = await chrome.storage.local.get('gitstar-ai-config');
+      config = result['gitstar-ai-config'] || null;
+    } catch {
+      // ignore
+    }
+
+    if (!config || !config.apiKey) {
+      setAiState('notConfigured');
+      setAiVisible(true);
+      return;
+    }
+
+    // Close TOC to avoid overlap
+    setTocVisible(false);
+    setAiVisible(true);
+
+    // Try cache first
+    const cached = await getCachedSummary(owner, repo);
+    if (cached) {
+      setAiText(cached.text);
+      setAiCachedTs(cached.ts);
+      setAiState('success');
+      return;
+    }
+
+    // Call API
+    isSummarizingRef.current = true;
+    setAiState('loading');
+    setAiText('');
+
+    try {
+      const summary = await fetchSummary(readmeContent, config);
+      setAiText(summary);
+      setAiCachedTs(Date.now());
+      setAiState('success');
+      saveSummary(owner, repo, summary);
+    } catch (e) {
+      if (e instanceof AISummaryError) {
+        setAiText(e.code);
+      } else {
+        setAiText('UNKNOWN_ERROR');
+      }
+      setAiState('error');
+    } finally {
+      isSummarizingRef.current = false;
+    }
+  }, [owner, repo, readmeContent]);
+
+  const handleAiRefresh = useCallback(async () => {
+    if (isSummarizingRef.current) return;
+
+    let config: AIConfig | null = null;
+    try {
+      const result = await chrome.storage.local.get('gitstar-ai-config');
+      config = result['gitstar-ai-config'] || null;
+    } catch {
+      // ignore
+    }
+
+    if (!config || !config.apiKey) return;
+
+    isSummarizingRef.current = true;
+    setAiState('loading');
+    setAiText('');
+
+    try {
+      const summary = await fetchSummary(readmeContent, config);
+      setAiText(summary);
+      setAiCachedTs(Date.now());
+      setAiState('success');
+      saveSummary(owner, repo, summary);
+    } catch (e) {
+      if (e instanceof AISummaryError) {
+        setAiText(e.code);
+      } else {
+        setAiText('UNKNOWN_ERROR');
+      }
+      setAiState('error');
+    } finally {
+      isSummarizingRef.current = false;
+    }
+  }, [owner, repo, readmeContent]);
+
+  // Map AI error code to i18n message
+  const aiErrorMessage = useCallback((code: string) => {
+    const map: Record<string, string> = {
+      'NETWORK_ERROR': t('aiSummaryErrorNetwork'),
+      'AUTH_ERROR': t('aiSummaryErrorAuth'),
+      'QUOTA_ERROR': t('aiSummaryErrorQuota'),
+      'UNKNOWN_ERROR': t('aiSummaryErrorUnknown'),
+    };
+    return map[code] || t('aiSummaryErrorUnknown');
+  }, [t]);
+
+  // Format cached time
+  const aiCachedLabel = useCallback((ts: number) => {
+    const mins = Math.floor((Date.now() - ts) / 60000);
+    if (mins < 1) return t('aiSummaryCachedJustNow');
+    return t('aiSummaryCached').replace('{n}', String(mins));
+  }, [t]);
 
   // Extracted README rendering (shared between preview and reading modes)
   const readmeSection = readmeContent ? (
@@ -402,6 +521,14 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                   <span className="text-xs">↑</span>
                 </button>
               )}
+              {/* AI Summary button */}
+              <button
+                onClick={handleAiSummary}
+                className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
+                aria-label={t('aiSummaryButtonLabel')}
+              >
+                <span className="text-xs">🤖</span>
+              </button>
               <button
                 onClick={handleCollapse}
                 className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#3b82f6] flex items-center justify-center hover:bg-[#eff6ff] transition-colors"
@@ -410,6 +537,78 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                 <span className="text-xs text-[#3b82f6] font-bold">✕</span>
               </button>
             </div>
+            {/* AI Summary popover */}
+            {aiVisible && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setAiVisible(false)} />
+                <div
+                  className="fixed z-50 bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#e5e7eb] overflow-hidden"
+                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '300px', overflowY: 'auto' }}
+                >
+                  {/* Header */}
+                  <div className="px-3 py-2 text-[11px] font-semibold text-[#374151] border-b border-[#f3f4f6] bg-[#f9fafb] sticky top-0 flex items-center justify-between">
+                    <span>🤖 {t('aiSummaryButtonLabel')}</span>
+                    <button
+                      onClick={() => setAiVisible(false)}
+                      className="text-[#9ca3af] hover:text-[#6b7280] text-xs leading-none"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="px-3 py-2.5">
+                    {aiState === 'loading' && (
+                      <div className="animate-pulse space-y-2">
+                        <div className="h-3 bg-gray-200 rounded w-full" />
+                        <div className="h-3 bg-gray-200 rounded w-5/6" />
+                        <div className="h-3 bg-gray-200 rounded w-4/6" />
+                        <p className="text-[11px] text-[#9ca3af] text-center mt-2">{t('aiSummaryLoading')}</p>
+                      </div>
+                    )}
+
+                    {aiState === 'notConfigured' && (
+                      <div className="text-center py-2">
+                        <p className="text-xs text-[#6b7280] mb-2">{t('aiSummaryNotConfigured')}</p>
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            chrome.runtime.openOptionsPage();
+                          }}
+                          className="text-xs text-[#3b82f6] hover:underline"
+                        >
+                          {t('aiSummaryGoConfig')}
+                        </a>
+                      </div>
+                    )}
+
+                    {aiState === 'error' && (
+                      <div className="text-center py-2">
+                        <span className="text-red-500 text-xs">⚠️ {aiErrorMessage(aiText)}</span>
+                      </div>
+                    )}
+
+                    {aiState === 'success' && (
+                      <>
+                        <p className="text-xs text-[#374151] leading-relaxed whitespace-pre-wrap">{aiText}</p>
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#f3f4f6]">
+                          {aiCachedTs && (
+                            <span className="text-[10px] text-[#9ca3af]">{aiCachedLabel(aiCachedTs)}</span>
+                          )}
+                          <button
+                            onClick={handleAiRefresh}
+                            className="text-[10px] text-[#3b82f6] hover:text-[#2563eb] cursor-pointer ml-auto"
+                          >
+                            🔄 {t('aiSummaryRefresh')}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
             <TocOverlay
               containerSelector="#readme-content"
               visible={tocVisible}
