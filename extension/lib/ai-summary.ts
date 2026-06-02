@@ -27,12 +27,21 @@ export function truncateReadme(content: string, maxBytes: number = README_TRUNCA
   const bytes = encoder.encode(text);
   if (bytes.length <= maxBytes) return text;
 
-  // Slice to maxBytes, then backtrack to last complete newline boundary
+  // Slice to maxBytes, then backtrack to last complete UTF-8 character boundary
   const sliced = bytes.slice(0, maxBytes);
-  const decoder = new TextDecoder('utf-8', { fatal: false });
-  let result = decoder.decode(sliced);
+  let cut = sliced.length;
+  while (cut > 0) {
+    try {
+      new TextDecoder('utf-8', { fatal: true }).decode(sliced.slice(0, cut));
+      break;
+    } catch {
+      cut--;
+    }
+  }
 
-  // Remove trailing partial line (if decoder produced incomplete char, cut to last newline)
+  let result = new TextDecoder('utf-8').decode(sliced.slice(0, cut));
+
+  // Remove trailing partial line (cut incomplete char, then cut to last newline)
   const lastNewline = result.lastIndexOf('\n');
   if (lastNewline > 0) {
     result = result.slice(0, lastNewline);
