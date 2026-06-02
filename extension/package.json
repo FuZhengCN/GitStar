@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
-    "package": "plasmo package && cp build/chrome-mv3-prod.zip build/gitstar-v${npm_package_version}.zip",
+    "package": "plasmo package && node -e \"const v=require('./package.json').version;require('fs').copyFileSync('build/chrome-mv3-prod.zip','build/gitstar-v'+v+'.zip')\"",
     "lint": "echo 'No linter configured yet'"
   },
   "dependencies": {

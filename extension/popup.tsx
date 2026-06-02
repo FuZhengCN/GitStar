@@ -530,7 +530,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               {/* AI Summary button */}
               <button
                 onClick={handleAiSummary}
-                className="w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] border border-[#e5e7eb] flex items-center justify-center hover:bg-gray-50 transition-colors"
+                className={`w-7 h-7 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] flex items-center justify-center hover:bg-gray-50 transition-colors ${aiVisible ? 'border-2 border-[#3b82f6]' : 'border border-[#e5e7eb]'}`}
                 aria-label={t('aiSummaryButtonLabel')}
               >
                 <span className="text-xs">🤖</span>
@@ -548,34 +548,28 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setAiVisible(false)} />
                 <div
-                  className="fixed z-50 bg-white rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.15)] border border-[#e5e7eb]"
-                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '310px', overflowY: 'auto' }}
+                  className="fixed z-50 bg-white rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.15)] border border-[#e5e7eb] overflow-hidden"
+                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '310px', display: 'flex', flexDirection: 'column' }}
                   role="dialog"
                   aria-label={t('aiSummaryButtonLabel')}
                 >
-                  {/* Arrow pointing to trigger button */}
-                  <div
-                    className="absolute bg-white border-r border-b border-[#e5e7eb] w-3.5 h-3.5"
-                    style={{ bottom: '-7px', right: '19px', transform: 'rotate(45deg)' }}
-                  />
-
-                  {/* Header */}
-                  <div className="px-3 pt-2.5 pb-1.5 text-xs font-bold text-[#1e1b4b] sticky top-0 bg-white border-b border-[#f3f4f6] flex items-center justify-between">
-                    <div>
-                      <span>🤖 {t('aiSummaryButtonLabel')}</span>
-                      {aiModel ? <span className="block text-[9px] font-normal text-[#9ca3af]">由 {aiModel} 生成</span> : null}
+                    {/* Header */}
+                    <div className="shrink-0 px-3 pt-2.5 pb-1.5 text-xs font-bold text-[#1e1b4b] bg-white border-b border-[#f3f4f6] flex items-center justify-between">
+                      <div>
+                        <span>🤖 {t('aiSummaryButtonLabel')}</span>
+                        {aiModel ? <span className="block text-[9px] font-normal text-[#9ca3af]">由 {aiModel} 生成</span> : null}
+                      </div>
+                      <button
+                        onClick={() => setAiVisible(false)}
+                        className="text-[#9ca3af] hover:text-[#6b7280] hover:bg-[#f3f4f6] rounded p-0.5 text-sm leading-none"
+                        aria-label="关闭"
+                      >
+                        ✕
+                      </button>
                     </div>
-                    <button
-                      onClick={() => setAiVisible(false)}
-                      className="text-[#9ca3af] hover:text-[#6b7280] hover:bg-[#f3f4f6] rounded p-0.5 text-sm leading-none"
-                      aria-label="关闭"
-                    >
-                      ✕
-                    </button>
-                  </div>
 
-                  {/* Body */}
-                  <div className="px-3 py-2.5">
+                    {/* Body */}
+                    <div className="overflow-y-auto px-3 py-2.5" style={{ maxHeight: '262px' }}>
                     {aiState === 'loading' && (
                       <div className="text-center py-1" aria-busy="true">
                         <p className="text-[11px] text-[#3b82f6] font-semibold mb-3">⏳ 正在分析 README...</p>
