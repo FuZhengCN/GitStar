@@ -126,128 +126,59 @@ function OptionsForm() {
 
   return (
     <div className="max-w-lg mx-auto p-6">
-      <h1 className="text-xl font-bold text-[#1e1b4b] mb-6">{t('configTitle')}</h1>
+      <h1 className="text-xl font-bold text-[#1e1b4b] mb-5">GitStar 配置</h1>
 
-      {/* Language selector */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t('languageLabel')}
-        </label>
-        <select
-          value={lang}
-          onChange={e => setLang(e.target.value as 'zh' | 'en')}
-          className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
-        >
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-        </select>
-      </div>
-
-      {/* AI Summary config */}
-      <div className="mb-6 p-4 bg-white border border-[#e5e7eb] rounded-lg">
-        <h2 className="text-sm font-semibold text-[#1e1b4b] mb-3">{t('aiOptionSectionTitle')}</h2>
-        <div className="space-y-3">
+      {/* Card 1: General */}
+      <div className="bg-white border border-[#e5e7eb] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-4 mb-3">
+        <div className="text-xs font-bold text-[#1e1b4b] mb-3 flex items-center gap-1.5">
+          <span className="w-[22px] h-[22px] bg-[#eff6ff] rounded-md flex items-center justify-center text-xs">⚙️</span>
+          通用设置
+        </div>
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-[#1e1b4b] mb-1">{t('languageLabel')}</label>
+          <select
+            value={lang}
+            onChange={e => setLang(e.target.value as 'zh' | 'en')}
+            className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+          >
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div className="border-t border-[#f3f4f6] my-3" />
+        <div className="flex items-center justify-between">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionEndpoint')}</label>
-            <input
-              type="url"
-              value={aiEndpoint}
-              onChange={e => setAiEndpoint(e.target.value)}
-              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
-            />
+            <div className="text-xs font-medium text-[#1e1b4b]">{t('sidebarToggle')}</div>
+            <div className="text-[10px] text-[#6b7280] mt-0.5">{t('sidebarToggleDesc')}</div>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionApiKey')}</label>
-            <input
-              type="password"
-              value={aiKey}
-              onChange={e => { setAiKey(e.target.value); setAiStatus('idle'); setAiMessage(''); }}
-              placeholder="sk-xxxxxxxxxxxxxxxx"
-              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
-            />
-            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-xs font-semibold text-amber-700 mb-1">{t('aiSecurityTitle')}</p>
-              <p className="text-xs text-amber-600 leading-relaxed">{t('aiSecurityDesc')}</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionModel')}</label>
-              <input
-                type="text"
-                value={aiModel}
-                onChange={e => setAiModel(e.target.value)}
-                placeholder="deepseek-chat"
-                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">{t('aiOptionLanguage')}</label>
-              <select
-                value={aiLang}
-                onChange={e => setAiLang(e.target.value)}
-                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
-              >
-                <option value="中文">中文</option>
-                <option value="English">English</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSaveAiConfig}
-              disabled={aiStatus === 'saving'}
-              className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[110px] text-center"
-            >
-              {aiStatus === 'saving' ? t('verifying') : t('save')}
-            </button>
-            {aiKey && (
-              <button
-                onClick={handleClearAiConfig}
-                className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {t('clear')}
-              </button>
-            )}
-          </div>
-          {aiMessage && (
+          <button
+            role="switch"
+            aria-checked={sidebarEnabled}
+            onClick={handleSidebarToggle}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleSidebarToggle();
+              }
+            }}
+            className={`w-[38px] h-[22px] rounded-full transition-colors cursor-pointer flex items-center px-0.5 flex-shrink-0 ${sidebarEnabled ? 'bg-[#3b82f6]' : 'bg-gray-300'}`}
+          >
             <div
-              className={`text-sm p-3 rounded-lg ${
-                aiStatus === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-                aiStatus === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
-                'bg-gray-50 text-gray-600'
-              }`}
-            >
-              {aiMessage}
-            </div>
-          )}
+              className={`w-[18px] h-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform ${sidebarEnabled ? 'translate-x-[16px]' : 'translate-x-0'}`}
+            />
+          </button>
         </div>
       </div>
 
-      {/* Sidebar toggle */}
-      <div className="mb-4">
-        <label className="flex items-center gap-3 cursor-pointer">
-          <div className="relative">
-            <div
-              onClick={handleSidebarToggle}
-              className={`w-10 h-5 rounded-full transition-colors cursor-pointer ${sidebarEnabled ? 'bg-[#3b82f6]' : 'bg-gray-300'}`}
-            >
-              <div
-                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${sidebarEnabled ? 'translate-x-[22px]' : 'translate-x-[2px]'}`}
-              />
-            </div>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-gray-800">{t('sidebarToggle')}</div>
-            <div className="text-xs text-gray-400 mt-0.5">{t('sidebarToggleDesc')}</div>
-          </div>
-        </label>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="token" className="block text-sm font-medium text-gray-700 mb-1">
-            GitHub Personal Access Token
+      {/* Card 2: GitHub */}
+      <div className="bg-white border border-[#e5e7eb] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-4 mb-3">
+        <div className="text-xs font-bold text-[#1e1b4b] mb-3 flex items-center gap-1.5">
+          <span className="w-[22px] h-[22px] bg-[#eff6ff] rounded-md flex items-center justify-center text-xs">🔗</span>
+          GitHub
+        </div>
+        <div className="mb-3">
+          <label htmlFor="token" className="block text-xs font-medium text-[#1e1b4b] mb-1">
+            Personal Access Token
           </label>
           <input
             id="token"
@@ -255,9 +186,9 @@ function OptionsForm() {
             value={token}
             onChange={e => { setToken(e.target.value); setStatus('idle'); setMessage(''); }}
             placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-            className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+            className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-[10px] text-[#6b7280] mt-1">
             {t('createTokenAt')}{' '}
             <a
               href="https://github.com/settings/tokens"
@@ -269,61 +200,141 @@ function OptionsForm() {
             </a>{' '}
             {t('createTokenHint')}
           </p>
-          <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-xs font-semibold text-amber-700 mb-1">{t('tokenSecurityTitle')}</p>
-            <p className="text-xs text-amber-600 leading-relaxed">{t('tokenSecurityDesc')}</p>
-          </div>
         </div>
-
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-2">
           <button
             onClick={handleSave}
             disabled={status === 'saving'}
-            className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[110px] text-center"
+            className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[80px] text-center"
           >
             {status === 'saving' ? t('verifying') : t('save')}
           </button>
           {token && (
             <button
               onClick={handleClear}
-              className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors text-[#6b7280]"
             >
               {t('clear')}
             </button>
           )}
         </div>
-
         {message && (
           <div
-            className={`text-sm p-3 rounded-lg ${
-              status === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
-              status === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
+            className={`text-xs p-2.5 rounded-lg ${
+              status === 'success' ? 'bg-[#f0fdf4] border border-[#bbf7d0] text-[#16a34a]' :
+              status === 'error' ? 'bg-[#fef2f2] border border-[#fecaca] text-[#dc2626]' :
               'bg-gray-50 text-gray-600'
             }`}
           >
             {message}
           </div>
         )}
+      </div>
 
-        <div className="mt-8 pt-4 border-t border-[#e5e7eb] text-center text-xs text-[#9ca3af] space-x-3">
-          <a
-            href="https://fuzhengcn.github.io/GitStar/store-listing/privacy-policy.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#3b82f6] hover:underline"
-          >
-            {t('privacyPolicy')}
-          </a>
-          <a
-            href="https://github.com/FuZhengCN/GitStar/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#3b82f6] hover:underline"
-          >
-            {t('feedback')}
-          </a>
-          <span>v{pkg.version}</span>
+      {/* Card 3: AI Summary */}
+      <div className="bg-white border border-[#e5e7eb] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.04)] p-4 mb-3">
+        <div className="text-xs font-bold text-[#1e1b4b] mb-3 flex items-center gap-1.5">
+          <span className="w-[22px] h-[22px] bg-[#eff6ff] rounded-md flex items-center justify-center text-xs">🤖</span>
+          {t('aiOptionSectionTitle')}
         </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-[#1e1b4b] mb-1">{t('aiOptionEndpoint')}</label>
+            <input
+              type="url"
+              value={aiEndpoint}
+              onChange={e => setAiEndpoint(e.target.value)}
+              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#1e1b4b] mb-1">{t('aiOptionApiKey')}</label>
+            <input
+              type="password"
+              value={aiKey}
+              onChange={e => { setAiKey(e.target.value); setAiStatus('idle'); setAiMessage(''); }}
+              placeholder="sk-xxxxxxxxxxxxxxxx"
+              className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-[#1e1b4b] mb-1">{t('aiOptionModel')}</label>
+              <input
+                type="text"
+                value={aiModel}
+                onChange={e => setAiModel(e.target.value)}
+                placeholder="deepseek-chat"
+                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-[#1e1b4b] mb-1">{t('aiOptionLanguage')}</label>
+              <select
+                value={aiLang}
+                onChange={e => setAiLang(e.target.value)}
+                className="w-full px-3 py-2 border border-[#e5e7eb] rounded-lg text-sm shadow-[0_1px_2px_rgba(0,0,0,0.03)] focus:outline-none focus:ring-2 focus:ring-[#3b82f6] focus:border-transparent"
+              >
+                <option value="中文">中文</option>
+                <option value="English">English</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveAiConfig}
+              disabled={aiStatus === 'saving'}
+              className="px-4 py-2 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors disabled:opacity-50 min-w-[80px] text-center"
+            >
+              {aiStatus === 'saving' ? t('verifying') : t('save')}
+            </button>
+            {aiKey && (
+              <button
+                onClick={handleClearAiConfig}
+                className="px-4 py-2 border border-[#e5e7eb] text-sm rounded-lg hover:bg-gray-50 transition-colors text-[#6b7280]"
+              >
+                {t('clear')}
+              </button>
+            )}
+          </div>
+          {aiMessage && (
+            <div
+              className={`text-xs p-2.5 rounded-lg ${
+                aiStatus === 'success' ? 'bg-[#f0fdf4] border border-[#bbf7d0] text-[#16a34a]' :
+                aiStatus === 'error' ? 'bg-[#fef2f2] border border-[#fecaca] text-[#dc2626]' :
+                'bg-gray-50 text-gray-600'
+              }`}
+            >
+              {aiMessage}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Unified security notice */}
+      <div className="bg-[#fffbeb] border border-[#fde68a] rounded-lg px-3 py-2.5 mb-3 text-[10px] text-[#a16207]">
+        {t('securityNotice')}
+      </div>
+
+      {/* Footer */}
+      <div className="text-center text-xs text-[#9ca3af] space-x-3">
+        <a
+          href="https://fuzhengcn.github.io/GitStar/store-listing/privacy-policy.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#3b82f6] hover:underline"
+        >
+          {t('privacyPolicy')}
+        </a>
+        <a
+          href="https://github.com/FuZhengCN/GitStar/issues"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#3b82f6] hover:underline"
+        >
+          {t('feedback')}
+        </a>
+        <span>v{pkg.version}</span>
       </div>
     </div>
   );
