@@ -53,14 +53,14 @@ export function truncateReadme(content: string, maxBytes: number = README_TRUNCA
 // -- System prompt per language --
 
 const SYSTEM_PROMPTS: Record<string, string> = {
-  '中文': `你是一个技术文档概述助手。用简洁的中文总结以下README文档。严格按以下格式输出（不要输出其他内容）：
+  '中文': `你是一个面向开发者的技术文档概述助手。用简洁、技术化的中文总结以下README文档。严格按以下格式输出（不要输出其他内容）：
 
-功能：<1-2句话描述项目的主要功能>
-场景：<1-2句话描述适用场景>`,
-  'English': `You are a technical documentation summarizer. Summarize the following README in concise English. Output strictly in this format (no other content):
+功能：<1-2句话，用技术术语描述项目的核心功能。必须包含关键技术栈或架构关键词（如框架、语言、协议、设计模式）。避免空泛描述（如"一个强大的工具"），避免重复项目简介。>
+场景：<1-2句话，面向开发者描述具体的使用场景和典型上下文。说明什么情况下应选择此项目、它解决了什么技术痛点。>`,
+  'English': `You are a developer-oriented technical documentation summarizer. Summarize the following README in concise, technical English. Output strictly in this format (no other content):
 
-Function: <1-2 sentences describing what the project does>
-Use cases: <1-2 sentences describing applicable scenarios>`,
+Function: <1-2 sentences describing core functionality using technical terminology. MUST include key tech stack or architecture keywords (e.g., framework, language, protocol, design pattern). Avoid vague descriptions (e.g., "a powerful tool"). Do not rephrase the project tagline.>
+Use cases: <1-2 sentences describing concrete use cases and typical application contexts from a developer's perspective. Explain when a developer should choose this project and what technical pain point it solves.>`,
 };
 
 function getSystemPrompt(language: string): string {
