@@ -326,7 +326,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   };
 
   const handleAiSummary = useCallback(async () => {
-    if (isSummarizingRef.current) return;
+    if (isSummarizingRef.current || !readmeContent) return;
 
     // Load config
     let config: AIConfig | null = null;
@@ -380,7 +380,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   }, [owner, repo, readmeContent]);
 
   const handleAiRefresh = useCallback(async () => {
-    if (isSummarizingRef.current) return;
+    if (isSummarizingRef.current || !readmeContent) return;
 
     let config: AIConfig | null = null;
     try {
