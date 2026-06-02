@@ -591,7 +591,41 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
 
                     {aiState === 'success' && (
                       <>
-                        <p className="text-xs text-[#374151] leading-relaxed whitespace-pre-wrap">{aiText}</p>
+                        {(() => {
+                          const lines = aiText.split('\n').filter(l => l.trim());
+                          const sections: { label: string; text: string }[] = [];
+                          const chineseLabels = ['功能', '场景'];
+                          const englishLabels = ['Function', 'Use cases'];
+                          for (const line of lines) {
+                            for (const label of [...chineseLabels, ...englishLabels]) {
+                              const prefix = label + '：';
+                              const enPrefix = label + ': ';
+                              if (line.startsWith(prefix)) {
+                                sections.push({ label, text: line.slice(prefix.length).trim() });
+                                break;
+                              }
+                              if (line.startsWith(enPrefix)) {
+                                sections.push({ label, text: line.slice(enPrefix.length).trim() });
+                                break;
+                              }
+                            }
+                          }
+                          const displaySections = sections.length > 0 ? sections : [{ label: '', text: aiText }];
+                          return (
+                            <div className="space-y-2.5">
+                              {displaySections.map((s, i) => (
+                                <div key={i}>
+                                  {s.label && (
+                                    <div className="text-[10px] font-semibold text-[#3b82f6] mb-0.5">
+                                      {s.label}
+                                    </div>
+                                  )}
+                                  <p className="text-xs text-[#374151] leading-relaxed">{s.text}</p>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#f3f4f6]">
                           {aiCachedTs && (
                             <span className="text-[10px] text-[#9ca3af]">{aiCachedLabel(aiCachedTs)}</span>

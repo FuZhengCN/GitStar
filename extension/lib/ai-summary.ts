@@ -53,8 +53,14 @@ export function truncateReadme(content: string, maxBytes: number = README_TRUNCA
 // -- System prompt per language --
 
 const SYSTEM_PROMPTS: Record<string, string> = {
-  '中文': '你是一个技术文档概述助手。用简洁的中文总结以下README文档，包括：(1)项目的主要功能 (2)适用场景。控制在3-5句话以内。',
-  'English': 'You are a technical documentation summarizer. Summarize the following README in concise English, including: (1) what the project does, (2) applicable use cases. Keep it to 3-5 sentences.',
+  '中文': `你是一个技术文档概述助手。用简洁的中文总结以下README文档。严格按以下格式输出（不要输出其他内容）：
+
+功能：<1-2句话描述项目的主要功能>
+场景：<1-2句话描述适用场景>`,
+  'English': `You are a technical documentation summarizer. Summarize the following README in concise English. Output strictly in this format (no other content):
+
+Function: <1-2 sentences describing what the project does>
+Use cases: <1-2 sentences describing applicable scenarios>`,
 };
 
 function getSystemPrompt(language: string): string {
