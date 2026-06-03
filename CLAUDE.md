@@ -93,13 +93,18 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 | 项目体检 | 05-29 | — | `2026-05-29-gitstar-audit-backlog.md`（待处理问题清单） |
 | 发现模式 | 05-30 | `specs/2026-05-30-gitstar-discovery-modes-design.md` | `plans/2026-05-30-gitstar-discovery-modes-plan.md` |
 | 增长率排名 | 05-31 | — | — |
+| 详情页 | 05-31 | `specs/2026-05-31-gitstar-detail-page-design.md` | `plans/2026-05-31-gitstar-detail-page-plan.md` |
 | README 展开交互 | 06-01 | `specs/2026-06-01-gitstar-readme-expand-interaction-design.md` | `plans/2026-06-01-gitstar-readme-expand-interaction-plan.md` |
+| AI 概述 | 06-02 | `specs/2026-06-02-gitstar-ai-readme-summary-design.md` | `plans/2026-06-02-gitstar-ai-readme-summary-plan.md` |
+| AI 概述 Prompt | 06-02 | `specs/2026-06-02-gitstar-ai-summary-prompt-design.md` | `plans/2026-06-02-gitstar-ai-summary-prompt-plan.md` |
+| Options 重设计 | 06-02 | `specs/2026-06-02-gitstar-options-redesign-design.md` | — |
+| README 收起 UX | 06-02 | `specs/2026-06-02-gitstar-readme-collapse-ux-design.md` | — |
 
 新增功能时在此表追加一行，保持按日期排序。
 
 ## Chrome Web Store
 
-当前版本 `1.1.0`，已上架。上架资料在 `docs/store-listing/`：
+当前版本 `1.2.0`，已上架。上架资料在 `docs/store-listing/`：
 
 | 文件 | 用途 |
 |------|------|
@@ -160,9 +165,9 @@ Plasmo v0.90.5 使用根级入口文件，不是目录结构：
 |------|------|------|
 | Popup | `extension/popup.tsx` | 工具栏弹窗，wouter hash 路由 |
 | Content Script | `extension/contents/github-sidebar.tsx` | GitHub 页面注入推荐面板 |
-| Options | `extension/options.tsx` | Token + 语言配置页（`OptionsIndex` 外层 Provider + `OptionsForm` 内层） |
+| Options | `extension/options.tsx` | Token + Sidebar + AI 三卡片配置页（`OptionsIndex` 外层 Provider + `OptionsForm` 内层） |
 
-`extension/components/`（含 `ErrorState.tsx`、`GitStarIcon.tsx` 等）和 `extension/hooks/` 存放 UI 组件和 hooks。类型定义在 `extension/lib/types.ts`，共享常量在 `extension/lib/constants.ts`，缓存层在 `extension/lib/cache.ts`，SWR hook 在 `extension/hooks/useStaleCache.ts`，i18n 在 `extension/lib/i18n.tsx`（翻译字典在 `extension/locales/`），Worker 在 `extension/workers/markdown-worker.ts`。
+`extension/components/`（含 `ErrorState.tsx`、`GitStarIcon.tsx` 等）和 `extension/hooks/` 存放 UI 组件和 hooks。类型定义在 `extension/lib/types.ts`，共享常量在 `extension/lib/constants.ts`，缓存层在 `extension/lib/cache.ts`，SWR hook 在 `extension/hooks/useStaleCache.ts`，AI 摘要模块在 `extension/lib/ai-summary.ts`，i18n 在 `extension/lib/i18n.tsx`（翻译字典在 `extension/locales/`），Worker 在 `extension/workers/markdown-worker.ts`。
 
 ### Data Flow
 
@@ -177,14 +182,16 @@ extension/lib/cache.ts        ← chrome.storage.local 缓存读写，MAX_ENTRIE
 extension/hooks/useStaleCache.ts  ← SWR hook：缓存秒出 → 后台刷新 → 错误保留旧数据
   ↑ useStaleCache(cacheKey, fetcher, ttlMs)
 extension/lib/markdown.ts     ← Worker 通信 + DOMPurify 净化（<10KB 主线程解析，≥10KB Worker 解析）
-  ↑ parseMarkdown()
+  ↑ parseMarkdown()（也用于 AI 概述 text → HTML 渲染）
 extension/workers/markdown-worker.ts  ← Worker 线程执行 marked.parse()（不做净化，无 DOM）
+extension/lib/ai-summary.ts   ← 智能截断 + OpenAI 兼容 API 调用 + 独立缓存（v2 前缀，≤50 条）
+  ↑ truncateReadme() / fetchSummary() / getCachedSummary() / saveSummary()
 extension/lib/i18n.tsx      ← I18nProvider Context + useI18n hook（零依赖，JSON 字典导入）
   ↑ t('key') 查 locales/{lang}.json
 Popup (popup.tsx)             Content Script (contents/github-sidebar.tsx)
   ↑ React state + useI18n()      ↑ React state + useI18n()
 
-chrome.storage.local → githubToken + gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）+ gitstar-lang（语言偏好，设备级）+ gitstar-sidebar-enabled（Sidebar 开关，默认 true）
+chrome.storage.local → githubToken + gitstar-favorites（本地收藏）+ gitstar-cache:*（API 数据缓存）+ gitstar-lang（语言偏好，设备级）+ gitstar-sidebar-enabled（Sidebar 开关，默认 true）+ gitstar-ai-config（AI 配置）+ gitstar-ai:summary:v2:*（AI 概述缓存，独立前缀）
 sessionStorage        → 搜索参数（同一 popup 会话内导航恢复，关闭即清除）
 ```
 
@@ -223,6 +230,34 @@ README 首次只解析前 60KB（`README_PREVIEW_BYTES`，定义在 `extension/l
 | README | `readme:<owner>/<repo>` | 10min | 同上，cacheKey 为 null 直到 repo info 就绪 |
 
 缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中所有用户输入参数（`q`、`language`、`timeRange`、`sort`）用 `encodeURIComponent` 编码，避免参数字符（如 `:`、`>`）导致键冲突。
+
+### AI 概述
+
+`extension/lib/ai-summary.ts` 是独立的 AI 摘要模块。将截断后的 README（去图片/代码块，取前 8KB）发送到 OpenAI 兼容 API（默认 DeepSeek），由 LLM 生成三字段结构化概述。
+
+**输出格式（三点式）：**
+
+| 字段 | 形式 | 内容 |
+|------|------|------|
+| 功能 | 一句话（≤40 字） | 项目定位 + 关键技术栈关键词 |
+| 场景 | `- ` 要点列表 | 目标用户/团队类型，适合谁用 |
+| 特点 | `- ` 要点列表 | 技术亮点、与同类项目的差异化优势 |
+
+**数据流：**
+```
+README content → truncateReadme()（去图/去代码/截断 8KB）
+  → 读 gitstar-ai-config（endpoint/key/model/language）
+  → 查缓存 gitstar-ai:summary:v2:<owner>/<repo>（独立前缀，最多 50 条，无 TTL）
+  → miss: POST LLM API（temperature 0.3, max_tokens 500）
+  → parseAiSections() 按标签拆分 → parseMarkdown() 渲染每段为 HTML
+  → 三色卡片弹窗展示 + 写缓存
+```
+
+**弹窗 UI：** 宽度 310px，三张彩色卡片（功能=蓝 `#eff6ff`、场景=绿 `#f0fdf4`、特点=琥珀 `#fffbeb`），每张卡片内 Markdown 渲染。底部刷新按钮 + 缓存时间标签。未配置时引导跳转 Options 页。
+
+**缓存独立前缀：** AI 摘要缓存用 `gitstar-ai:summary:v2:` 前缀（注意版本号），与通用 `gitstar-cache:` 分离，避免被 LRU 淘汰（通用池 30 条）。自身最多 50 条，按时间戳淘汰旧条目。
+
+**配置入口：** Options 页第三张卡片"AI 摘要"，配置 Endpoint / API Key / Model / 概述语言，存 `chrome.storage.local` key `gitstar-ai-config`。
 
 ### 路由（关键约束）
 
@@ -316,6 +351,8 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 - **i18n — useStaleCache error 类型变更**：`error` 从 `string | null` 改为 `Error | null`。消费方需处理 `Error` 对象（`.message` 或 `errorMessageText()`），不能直接 `{error}` 渲染。
 - **i18n — `lib/i18n.ts` 是 `.tsx`**：文件含 JSX（`<I18nContext.Provider>`），必须是 `.tsx` 扩展名。如果在 `.ts` 文件中写 JSX 会编译失败。
 - **头像 PNA 控制台告警无害**：`<img src="https://avatars.githubusercontent.com/...">` 在 popup 中会触发 Chrome Private Network Access 告警（"Request had a target IP address space of `unknown` yet the resource is in address space `public`"）。这是 Chrome 对 `chrome-extension://` 来源的已知行为，**图片正常加载，不影响功能**。不要为了消除告警而引入额外的 `host_permissions` 或改用 `fetch()` 加载头像，Google 审核不会接受无实际用途的权限声明。
+- **AI 概述缓存前缀版本号**：`AI_SUMMARY_PREFIX` 含版本号（当前 `v2`）。每次 prompt 输出格式变化时必须升级版本号，否则旧格式缓存会导致解析器行为异常。旧版本缓存不迁移，靠自然淘汰。
+- **AI 概述 section 解析在 popup.tsx 中**：`parseAiSections()` 函数位于 `popup.tsx`（非 lib），因为解析逻辑与 UI 渲染紧耦合（三色卡片映射）。它同时处理全角冒号（`：`）和 ASCII 冒号（`: `），支持多行内容累积（LLM 输出的列表项）。
 
 ### 配色方案
 
@@ -326,7 +363,8 @@ Content Script 文件 `extension/contents/github-sidebar.tsx`。使用 `PlasmoCS
 | 浅蓝底 | `#eff6ff` | 筛选标签激活态、收藏按钮激活 |
 | 琥珀 | `#f59e0b` | Star 数量、图标星标、收藏星标激活态 |
 | 绿 | `#16a34a` | Starred 按钮文字、Token 已配置状态 |
-| 浅绿底 | `#f0fdf4` | Starred 按钮背景 |
+| 浅绿底 | `#f0fdf4` | Starred 按钮背景、AI 场景卡片 |
+| 浅琥珀底 | `#fffbeb` | AI 特点卡片 |
 | 灰白 | `#f3f4f6` | 卡片边框、icon 底色 |
 | 浅灰底 | `#f9fafb` | README 标题栏、Star 信息块背景 |
 | 深色文字 | `#1e1b4b` | 标题 |
