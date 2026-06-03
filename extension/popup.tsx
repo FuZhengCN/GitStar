@@ -163,7 +163,7 @@ function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: Disc
 
 // -- AI summary section parser --
 
-const SECTION_LABELS = ['功能', '场景', '特点', 'Function', 'Use cases', 'Highlights'];
+const SECTION_LABELS = ['功能', '特点', '场景', 'Function', 'Highlights', 'Use cases'];
 
 interface ParsedSection {
   label: string;

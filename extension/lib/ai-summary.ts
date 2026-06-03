@@ -56,24 +56,21 @@ const SYSTEM_PROMPTS: Record<string, string> = {
   '中文': `你是一个面向开发者的技术文档概述助手。用简洁、技术化的中文总结以下README文档。严格按以下格式输出（不要输出其他内容）：
 
 功能：<一句话描述这是什么项目，必须包含关键技术栈或架构关键词，不超过40字。避免空泛描述。>
-场景：
-- <一条目标用户描述，说明适合哪类开发者或团队使用>
-- <另一条适用角色或团队类型>
 特点：
 - <一条技术亮点或与同类项目的差异化优势>
-- <另一条特点要点>`,
+- <另一条特点要点>
+场景：
+- <一条目标用户描述，说明适合哪类开发者或团队使用>
+- <另一条适用角色或团队类型>`,
   'English': `You are a developer-oriented technical documentation summarizer. Summarize the following README in concise, technical English. Output strictly in this format (no other content):
 
 Function: <A one-sentence summary of what this project is. MUST include key tech stack or architecture keywords. Keep within 25 words. Avoid vague descriptions.>
-Use cases:
-- <A target audience description — which type of developer or team should use this>
-- <Another applicable role or team type>
-Highlights:
-- <A concrete developer-facing use case explaining what pain point it solves>
-- <Another use case point>
 Highlights:
 - <A technical highlight or differentiator from similar projects>
-- <Another highlight point>`,
+- <Another highlight point>
+Use cases:
+- <A target audience description — which type of developer or team should use this>
+- <Another applicable role or team type>`,
 };
 
 function getSystemPrompt(language: string): string {
