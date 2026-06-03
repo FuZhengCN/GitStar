@@ -109,4 +109,4 @@ export const DEFAULT_AI_MODEL = 'deepseek-chat';
 export const MAX_SUMMARY_CACHE_ENTRIES = 50;
 // Byte limit for README content sent to LLM (not rendered content)
 export const README_TRUNCATE_BYTES = 8192;
-export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:v1:';
+export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:v2:';

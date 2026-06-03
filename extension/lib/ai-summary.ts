@@ -55,12 +55,25 @@ export function truncateReadme(content: string, maxBytes: number = README_TRUNCA
 const SYSTEM_PROMPTS: Record<string, string> = {
   '中文': `你是一个面向开发者的技术文档概述助手。用简洁、技术化的中文总结以下README文档。严格按以下格式输出（不要输出其他内容）：
 
-功能：<1-2句话，用技术术语描述项目的核心功能。必须包含关键技术栈或架构关键词（如框架、语言、协议、设计模式）。避免空泛描述（如"一个强大的工具"），避免重复项目简介。>
-场景：<1-2句话，面向开发者描述具体的使用场景和典型上下文。说明什么情况下应选择此项目、它解决了什么技术痛点。>`,
+功能：<一句话描述这是什么项目，必须包含关键技术栈或架构关键词，不超过40字。避免空泛描述。>
+场景：
+- <一条目标用户描述，说明适合哪类开发者或团队使用>
+- <另一条适用角色或团队类型>
+特点：
+- <一条技术亮点或与同类项目的差异化优势>
+- <另一条特点要点>`,
   'English': `You are a developer-oriented technical documentation summarizer. Summarize the following README in concise, technical English. Output strictly in this format (no other content):
 
-Function: <1-2 sentences describing core functionality using technical terminology. MUST include key tech stack or architecture keywords (e.g., framework, language, protocol, design pattern). Avoid vague descriptions (e.g., "a powerful tool"). Do not rephrase the project tagline.>
-Use cases: <1-2 sentences describing concrete use cases and typical application contexts from a developer's perspective. Explain when a developer should choose this project and what technical pain point it solves.>`,
+Function: <A one-sentence summary of what this project is. MUST include key tech stack or architecture keywords. Keep within 25 words. Avoid vague descriptions.>
+Use cases:
+- <A target audience description — which type of developer or team should use this>
+- <Another applicable role or team type>
+Highlights:
+- <A concrete developer-facing use case explaining what pain point it solves>
+- <Another use case point>
+Highlights:
+- <A technical highlight or differentiator from similar projects>
+- <Another highlight point>`,
 };
 
 function getSystemPrompt(language: string): string {

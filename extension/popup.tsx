@@ -161,6 +161,61 @@ function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: Disc
 
 
 
+// -- AI summary section parser --
+
+const SECTION_LABELS = ['功能', '场景', '特点', 'Function', 'Use cases', 'Highlights'];
+
+interface ParsedSection {
+  label: string;
+  text: string;
+}
+
+function parseAiSections(rawText: string): ParsedSection[] {
+  const sections: ParsedSection[] = [];
+  let currentLabel = '';
+  let currentLines: string[] = [];
+
+  for (const rawLine of rawText.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    let matchedLabel = '';
+    let matchedPrefix = '';
+    for (const label of SECTION_LABELS) {
+      if (line.startsWith(label + '：')) {
+        matchedLabel = label;
+        matchedPrefix = label + '：';
+        break;
+      }
+      if (line.startsWith(label + ': ')) {
+        matchedLabel = label;
+        matchedPrefix = label + ': ';
+        break;
+      }
+    }
+
+    if (matchedLabel) {
+      if (currentLabel && currentLines.length > 0) {
+        sections.push({ label: currentLabel, text: currentLines.join('\n') });
+      }
+      currentLabel = matchedLabel;
+      currentLines = [line.slice(matchedPrefix.length).trim()];
+    } else if (currentLabel) {
+      currentLines.push(line);
+    }
+  }
+
+  if (currentLabel && currentLines.length > 0) {
+    sections.push({ label: currentLabel, text: currentLines.join('\n') });
+  }
+
+  return sections;
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function DetailPage({ params, hasToken }: { params: { owner: string; repo: string }; hasToken: boolean }) {
   const { owner, repo } = params;
   const { t } = useI18n();
@@ -181,6 +236,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
   const [aiVisible, setAiVisible] = useState(false);
   const [aiCachedTs, setAiCachedTs] = useState<number | null>(null);
   const [aiModel, setAiModel] = useState('');
+  const [aiSectionHtmls, setAiSectionHtmls] = useState<{ label: string; html: string }[]>([]);
   const isSummarizingRef = useRef(false);
   const repoHeaderRef = useRef<HTMLDivElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
@@ -273,6 +329,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     setAiVisible(false);
     setAiCachedTs(null);
     setAiModel('');
+    setAiSectionHtmls([]);
     window.scrollTo(0, 0);
   }, [owner, repo]);
 
@@ -438,6 +495,37 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
     return t('aiSummaryCached').replace('{n}', String(mins));
   }, [t]);
 
+  // Async markdown rendering for AI summary sections
+  useEffect(() => {
+    if (aiState !== 'success' || !aiText || !detail) {
+      setAiSectionHtmls([]);
+      return;
+    }
+
+    const sections = parseAiSections(aiText);
+    const displaySections = sections.length > 0
+      ? sections
+      : [{ label: '', text: aiText }];
+
+    let cancelled = false;
+    const branch = detail.default_branch || 'main';
+
+    Promise.all(
+      displaySections.map(async (s) => {
+        try {
+          const html = await parseMarkdown(s.text, owner, repo, branch);
+          return { label: s.label, html };
+        } catch {
+          return { label: s.label, html: `<p>${escapeHtml(s.text)}</p>` };
+        }
+      })
+    ).then((results) => {
+      if (!cancelled) setAiSectionHtmls(results);
+    });
+
+    return () => { cancelled = true; };
+  }, [aiText, aiState, owner, repo, detail]);
+
   // Extracted README rendering (shared between preview and reading modes)
   const readmeSection = readmeContent ? (
     <ReadmeViewer
@@ -549,7 +637,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                 <div className="fixed inset-0 z-40" onClick={() => setAiVisible(false)} />
                 <div
                   className="fixed z-50 bg-white rounded-lg shadow-[0_6px_20px_rgba(0,0,0,0.15)] border border-[#e5e7eb] overflow-hidden"
-                  style={{ right: '56px', bottom: '72px', width: '260px', maxHeight: '310px', display: 'flex', flexDirection: 'column' }}
+                  style={{ right: '56px', bottom: '72px', width: '310px', maxHeight: '390px', display: 'flex', flexDirection: 'column' }}
                   role="dialog"
                   aria-label={t('aiSummaryButtonLabel')}
                 >
@@ -569,7 +657,7 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
                     </div>
 
                     {/* Body */}
-                    <div className="overflow-y-auto px-3 py-2.5" style={{ maxHeight: '262px' }}>
+                    <div className="overflow-y-auto px-3 py-2.5" style={{ maxHeight: '340px' }}>
                     {aiState === 'loading' && (
                       <div className="text-center py-1" aria-busy="true">
                         <p className="text-[11px] text-[#3b82f6] font-semibold mb-3">⏳ 正在分析 README...</p>
@@ -617,43 +705,38 @@ function DetailPage({ params, hasToken }: { params: { owner: string; repo: strin
 
                     {aiState === 'success' && (
                       <>
-                        {(() => {
-                          const lines = aiText.split('\n').filter(l => l.trim());
-                          const sections: { label: string; text: string }[] = [];
-                          const iconMap: Record<string, string> = { '功能': '📌', '场景': '🎯', 'Function': '📌', 'Use cases': '🎯' };
-                          const chineseLabels = ['功能', '场景'];
-                          const englishLabels = ['Function', 'Use cases'];
-                          for (const line of lines) {
-                            for (const label of [...chineseLabels, ...englishLabels]) {
-                              const prefix = label + '：';
-                              const enPrefix = label + ': ';
-                              if (line.startsWith(prefix)) {
-                                sections.push({ label, text: line.slice(prefix.length).trim() });
-                                break;
-                              }
-                              if (line.startsWith(enPrefix)) {
-                                sections.push({ label, text: line.slice(enPrefix.length).trim() });
-                                break;
-                              }
-                            }
-                          }
-                          const displaySections = sections.length > 0 ? sections : [{ label: '', text: aiText }];
-                          return (
-                            <div className="space-y-2">
-                              {displaySections.map((s, i) => (
-                                <div key={i} className="bg-[#eff6ff] rounded-md px-3 py-2.5">
+                        <div className="space-y-2">
+                          {aiSectionHtmls.length > 0 ? (
+                            aiSectionHtmls.map((s, i) => {
+                              const isFunc = s.label === '功能' || s.label === 'Function';
+                              const isScene = s.label === '场景' || s.label === 'Use cases';
+                              const isHigh = s.label === '特点' || s.label === 'Highlights';
+                              const bgColor = isHigh ? 'bg-[#fffbeb]' : isScene ? 'bg-[#f0fdf4]' : 'bg-[#eff6ff]';
+                              const icon = isFunc ? '📌' : isScene ? '🎯' : isHigh ? '💡' : '';
+
+                              return (
+                                <div key={i} className={`${bgColor} rounded-md px-3 py-2.5`}>
                                   {s.label && (
                                     <div className="text-[11px] font-bold text-[#1e1b4b] mb-1 flex items-center gap-1.5">
-                                      <span>{iconMap[s.label] || ''}</span>
+                                      <span>{icon}</span>
                                       <span>{s.label}</span>
                                     </div>
                                   )}
-                                  <p className="text-[12px] text-[#374151] leading-relaxed">{s.text}</p>
+                                  <div
+                                    className="text-[12px] text-[#374151] leading-relaxed prose prose-sm max-w-none prose-a:text-[#3b82f6]"
+                                    dangerouslySetInnerHTML={{ __html: s.html }}
+                                  />
                                 </div>
-                              ))}
+                              );
+                            })
+                          ) : (
+                            <div className="text-center py-1">
+                              <div className="h-2.5 bg-[#e5e7eb] rounded w-full mb-2" />
+                              <div className="h-2.5 bg-[#e5e7eb] rounded w-5/6 mb-2" />
+                              <div className="h-2.5 bg-[#e5e7eb] rounded w-4/6" />
                             </div>
-                          );
-                        })()}
+                          )}
+                        </div>
                         <button
                           onClick={handleAiRefresh}
                           className="w-full mt-2.5 py-1.5 text-[11px] font-semibold text-[#3b82f6] bg-[#eff6ff] hover:bg-[#dbeafe] rounded-md transition-colors"
