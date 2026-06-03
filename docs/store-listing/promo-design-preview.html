@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitStar 宣传图设计稿预览</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    background: #f1f5f9;
+    color: #1e1b4b;
+    padding: 32px 16px;
+  }
+  .container { max-width: 1540px; margin: 0 auto; }
+
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  header h1 {
+    font-size: 28px; font-weight: 700; color: #1e1b4b; margin-bottom: 6px;
+  }
+  header .subtitle {
+    font-size: 14px; color: #6b7280;
+  }
+
+  .palette {
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    flex-wrap: wrap; margin-bottom: 40px; padding: 10px 20px;
+    background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    max-width: 700px; margin-left: auto; margin-right: auto;
+  }
+  .palette strong { font-size: 13px; color: #374151; }
+  .palette .dot { display: inline-block; width: 13px; height: 13px; border-radius: 3px; margin-right: 3px; vertical-align: -2px; }
+  .palette span { font-size: 12px; color: #4b5563; white-space: nowrap; }
+
+  .section { margin-bottom: 56px; }
+  .section-head { margin-bottom: 18px; }
+  .section-head h2 { font-size: 19px; font-weight: 700; color: #1e1b4b; }
+  .section-head .dims {
+    display: inline-block; background: #eff6ff; color: #3b82f6;
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+    font-family: 'JetBrains Mono', 'Consolas', monospace; margin-left: 8px;
+  }
+  .section-head p { font-size: 13px; color: #6b7280; margin-top: 2px; }
+
+  .designs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+    gap: 24px;
+  }
+
+  .card {
+    background: #fff; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s, outline 0.15s;
+  }
+  .card:hover { box-shadow: 0 2px 5px rgba(0,0,0,0.09), 0 6px 18px rgba(0,0,0,0.05); }
+  .card.picked { outline: 3px solid #3b82f6; outline-offset: -3px; }
+
+  .card-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 15px; background: #f8fafc; border-bottom: 1px solid #e5e7eb;
+  }
+  .card-top .name { font-weight: 600; font-size: 14px; }
+  .card-top .tag {
+    font-size: 10px; padding: 2px 10px; border-radius: 12px; font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+  .tag-brand   { background: #eff6ff; color: #2563eb; }
+  .tag-tech    { background: #1e293b; color: #e2e8f0; }
+  .tag-product { background: #f0fdf4; color: #16a34a; }
+  .tag-feature { background: #fffbeb; color: #d97706; }
+  .tag-creative{ background: #f3e8ff; color: #7c3aed; }
+
+  .canvas-box {
+    display: flex; align-items: center; justify-content: center;
+    background: #e5e7eb;
+    background-image:
+      linear-gradient(45deg, #d1d5db 25%, transparent 25%),
+      linear-gradient(-45deg, #d1d5db 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #d1d5db 75%),
+      linear-gradient(-45deg, transparent 75%, #d1d5db 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  .canvas-box.tile { min-height: 200px; }
+  .canvas-box.banner { min-height: 230px; }
+  .canvas-box canvas { display: block; max-width: 100%; height: auto; }
+
+  .card-desc { padding: 10px 15px; font-size: 12.5px; color: #6b7280; line-height: 1.5; }
+  .card-actions { display: flex; gap: 6px; padding: 10px 15px; border-top: 1px solid #e5e7eb; }
+  .btn {
+    padding: 6px 14px; border-radius: 6px; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; border: 1px solid #e5e7eb; background: #fff; color: #374151;
+    transition: all 0.12s;
+  }
+  .btn:hover { background: #f9fafb; border-color: #d1d5db; }
+  .btn-pick { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+  .btn-pick:hover { background: #2563eb; border-color: #2563eb; }
+
+  .dock {
+    position: fixed; bottom: 22px; right: 22px; z-index: 999;
+    background: #fff; border-radius: 12px; padding: 15px 18px;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.14);
+    min-width: 220px; display: none;
+  }
+  .dock.on { display: block; }
+  .dock h4 { font-size: 13px; margin-bottom: 8px; }
+  .dock .row { font-size: 12px; color: #6b7280; margin-bottom: 3px; }
+  .dock .btn { margin-top: 10px; width: 100%; }
+
+  .footer-hint {
+    text-align: center; font-size: 12px; color: #94a3b8; margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>GitStar 宣传图设计稿预览</h1>
+  <p class="subtitle">Chrome Web Store — 小型宣传图 440×280 + 顶部宣传图 1400×560 · 点击「选用」确认，右下角汇总导出 PNG</p>
+</header>
+
+<div class="palette">
+  <strong>品牌色：</strong>
+  <span><span class="dot" style="background:#3b82f6;"></span>主蓝 #3b82f6</span>
+  <span><span class="dot" style="background:#2563eb;"></span>深蓝 #2563eb</span>
+  <span><span class="dot" style="background:#f59e0b;"></span>琥珀金 #f59e0b</span>
+  <span><span class="dot" style="background:#eff6ff;"></span>浅蓝底 #eff6ff</span>
+  <span><span class="dot" style="background:#1e1b4b;"></span>深色字 #1e1b4b</span>
+  <span><span class="dot" style="background:#f0fdf4;"></span>浅绿底 #f0fdf4</span>
+</div>
+
+<!-- ===== SMALL TILES ===== -->
+<div class="section">
+  <div class="section-head">
+    <h2>小型宣传图块 <span class="dims">440 × 280</span></h2>
+    <p>与顶部大图「星探望远镜」风格统一 — 暗夜星空 + 星座连线 + 透镜隐喻。</p>
+  </div>
+  <div class="designs-grid" id="tile-grid"></div>
+</div>
+
+<!-- ===== MARQUEES ===== -->
+<div class="section">
+  <div class="section-head">
+    <h2>顶部宣传图块 <span class="dims">1400 × 560</span></h2>
+    <p>详情页顶部大图。空间宽裕，可分层展示品牌、功能和高保真产品截图。</p>
+  </div>
+  <div class="designs-grid" id="banner-grid"></div>
+</div>
+
+<p class="footer-hint">所有方案均使用真实 GitStar 图标（蓝色圆角方块 + 白色 G + 金色五角星）</p>
+</div>
+
+<div class="dock" id="dock">
+  <h4>已选方案</h4>
+  <div class="row" id="dock-tile">小图：—</div>
+  <div class="row" id="dock-banner">大图：—</div>
+  <button class="btn btn-pick" onclick="exportPicked()">确认选择，导出 PNG</button>
+</div>
+
+<script>
+// ============================================================
+// Real GitStar Icon — canvas renderer from actual SVG data
+// ============================================================
+
+// Star polygon from icon.svg (10 points, 5 outer + 5 inner vertices)
+// Original coords in 128x128 viewBox
+const STAR_PTS_128 = [
+  101,13,  106.5,25.5, 120,27.5, 109.5,37.5, 112,51,
+  101,45,  90,51,      92.5,37.5, 82,27.5,   95.5,25.5
+];
+
+function drawRealIcon(ctx, x, y, size) {
+  const s = size / 128;
+  const r = 28 * s; // corner radius
+
+  // Blue rounded rect background
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + size - r, y);
+  ctx.arcTo(x + size, y, x + size, y + r, r);
+  ctx.lineTo(x + size, y + size - r);
+  ctx.arcTo(x + size, y + size, x + size - r, y + size, r);
+  ctx.lineTo(x + r, y + size);
+  ctx.arcTo(x, y + size, x, y + size - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+  ctx.fillStyle = '#3b82f6';
+  ctx.fill();
+
+  // White G — matches SVG: text-anchor=middle, x=54, y=104, font-size=88, weight=900
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  const gFontSize = 88 * s;
+  ctx.font = `900 ${gFontSize}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('G', x + 54 * s, y + 104 * s);
+
+  // Gold star — exact polygon from SVG
+  ctx.beginPath();
+  ctx.moveTo(x + STAR_PTS_128[0] * s, y + STAR_PTS_128[1] * s);
+  for (let i = 1; i < 10; i++) {
+    ctx.lineTo(x + STAR_PTS_128[i * 2] * s, y + STAR_PTS_128[i * 2 + 1] * s);
+  }
+  ctx.closePath();
+  ctx.fillStyle = '#f59e0b';
+  ctx.fill();
+}
+
+// ============================================================
+// Helper: rounded rect
+// ============================================================
+function rrect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+// ============================================================
+// SMALL TILE 440×280 — 3 concepts
+// ============================================================
+
+// ============================================================
+// SMALL TILE — "星探望远镜" 系列（与 banner-D 统一风格）
+// ============================================================
+
+function tileD1() {
+  // D1: "星空透镜" — compact telescope lens motif, icon + text right
+  const W = 440, H = 280;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Deep space gradient
+  const bg = ctx.createRadialGradient(W * 0.25, H * 0.5, 20, W * 0.5, H * 0.5, 450);
+  bg.addColorStop(0, '#1e3a5f');
+  bg.addColorStop(0.6, '#0f172a');
+  bg.addColorStop(1, '#020617');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Starfield
+  for (let i = 0; i < 160; i++) {
+    const sx = (i * 137 + 41) % W, sy = (i * 89 + 23) % H;
+    const b = 0.2 + ((i * 73) % 100) / 100 * 0.7;
+    ctx.fillStyle = `rgba(255,255,255,${b})`;
+    ctx.beginPath(); ctx.arc(sx, sy, 0.3 + (i % 3) * 0.4, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Constellation lines (left area)
+  const pts = [[40,50],[100,30],[160,70],[200,120],[140,170],[80,200]];
+  ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+  ctx.stroke();
+
+  // Lens circle (left side — compact telescope)
+  const lx = 115, ly = 140, lr = 82;
+  const lg = ctx.createRadialGradient(lx, ly, lr * 0.2, lx, ly, lr);
+  lg.addColorStop(0, 'rgba(59,130,246,0.1)');
+  lg.addColorStop(0.8, 'rgba(59,130,246,0.03)');
+  lg.addColorStop(1, 'rgba(59,130,246,0)');
+  ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(59,130,246,0.25)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(59,130,246,0.1)'; ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.arc(lx, ly, lr * 0.45, 0, Math.PI * 2); ctx.stroke();
+
+  // Icon inside lens
+  drawRealIcon(ctx, lx - 34, ly - 34, 68);
+
+  // Glowing highlight stars
+  [[40,50],[160,70]].forEach(([hx, hy]) => {
+    const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 18);
+    g.addColorStop(0, 'rgba(245,158,11,0.35)');
+    g.addColorStop(1, 'rgba(245,158,11,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, 18, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    const sc = 10 / 128;
+    ctx.moveTo(hx + STAR_PTS_128[0] * sc, hy + STAR_PTS_128[1] * sc);
+    for (let j = 1; j < 10; j++) ctx.lineTo(hx + STAR_PTS_128[j * 2] * sc, hy + STAR_PTS_128[j * 2 + 1] * sc);
+    ctx.closePath();
+    ctx.fillStyle = '#f59e0b'; ctx.fill();
+  });
+
+  // Brand text (right of lens)
+  ctx.fillStyle = '#f1f5f9';
+  ctx.font = '700 34px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', 220, 130);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(220, 143, 44, 2.5);
+
+  ctx.font = '400 14px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('你的 GitHub 星探', 220, 170);
+
+  ctx.font = '400 11px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillStyle = '#64748b';
+  ctx.fillText('发现下一个值得关注的开源项目', 220, 194);
+
+  return c;
+}
+
+function tileD2() {
+  // D2: "星座连线" — constellation network across full canvas, brand bottom
+  const W = 440, H = 280;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Deep space
+  const bg = ctx.createRadialGradient(W * 0.4, H * 0.45, 30, W * 0.5, H * 0.5, 500);
+  bg.addColorStop(0, '#1a365d');
+  bg.addColorStop(0.5, '#0f172a');
+  bg.addColorStop(1, '#020617');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Dense starfield
+  for (let i = 0; i < 200; i++) {
+    const sx = (i * 173 + 41) % W, sy = (i * 91 + 19) % H;
+    const b = 0.18 + ((i * 61) % 100) / 100 * 0.75;
+    ctx.fillStyle = `rgba(255,255,255,${b})`;
+    ctx.beginPath(); ctx.arc(sx, sy, 0.3 + (i % 4) * 0.35, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Multiple constellation paths forming a network
+  const constellations = [
+    [[30,30],[70,55],[120,35],[180,60],[150,110],[90,100],[40,140]],
+    [[280,30],[320,70],[370,50],[410,90],[380,140],[330,130],[290,170]],
+    [[160,150],[210,140],[260,155],[300,200],[250,230],[190,220]],
+    [[50,180],[100,210],[140,195],[180,230],[130,250],[70,240]],
+  ];
+  constellations.forEach(pts => {
+    ctx.strokeStyle = 'rgba(59,130,246,0.1)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.stroke();
+  });
+
+  // Cross-connections between constellations
+  ctx.strokeStyle = 'rgba(59,130,246,0.06)'; ctx.lineWidth = 0.3;
+  ctx.beginPath();
+  ctx.moveTo(120,35); ctx.lineTo(280,30);
+  ctx.moveTo(150,110); ctx.lineTo(160,150);
+  ctx.moveTo(90,100); ctx.lineTo(50,180);
+  ctx.moveTo(330,130); ctx.lineTo(300,200);
+  ctx.stroke();
+
+  // Golden highlighted stars at key nodes
+  const hStars = [[120,35],[280,30],[150,110],[330,130],[180,230],[380,140]];
+  hStars.forEach(([hx, hy]) => {
+    const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 16);
+    g.addColorStop(0, 'rgba(245,158,11,0.3)');
+    g.addColorStop(1, 'rgba(245,158,11,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath();
+    const sc = 8 / 128;
+    ctx.moveTo(hx + STAR_PTS_128[0] * sc, hy + STAR_PTS_128[1] * sc);
+    for (let j = 1; j < 10; j++) ctx.lineTo(hx + STAR_PTS_128[j * 2] * sc, hy + STAR_PTS_128[j * 2 + 1] * sc);
+    ctx.closePath();
+    ctx.fillStyle = '#f59e0b'; ctx.fill();
+  });
+
+  // Brand bar at bottom with subtle backdrop
+  ctx.fillStyle = 'rgba(2,6,23,0.75)';
+  ctx.fillRect(0, H - 72, W, 72);
+  ctx.fillStyle = 'rgba(59,130,246,0.1)';
+  ctx.fillRect(0, H - 72, W, 1);
+
+  drawRealIcon(ctx, 30, H - 64, 52);
+
+  ctx.fillStyle = '#f1f5f9';
+  ctx.font = '700 28px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', 95, H - 34);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(95, H - 22, 30, 2);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '400 12px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('你的 GitHub 星探  ·  发现优质开源项目', 140, H - 34);
+
+  return c;
+}
+
+function tileD3() {
+  // D3: "暗夜聚焦" — one prominent glowing discovery star, minimal and bold
+  const W = 440, H = 280;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Dark gradient with blue tint towards center
+  const bg = ctx.createRadialGradient(W * 0.55, H * 0.42, 30, W * 0.5, H * 0.5, 400);
+  bg.addColorStop(0, '#1a365d');
+  bg.addColorStop(0.7, '#0f172a');
+  bg.addColorStop(1, '#020617');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Sparse starfield
+  for (let i = 0; i < 120; i++) {
+    const sx = (i * 151 + 53) % W, sy = (i * 97 + 17) % H;
+    const b = 0.15 + ((i * 47) % 100) / 100 * 0.6;
+    ctx.fillStyle = `rgba(255,255,255,${b})`;
+    ctx.beginPath(); ctx.arc(sx, sy, 0.3 + (i % 3) * 0.3, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Subtle concentric rings (discovery radar/scope)
+  for (let r = 50; r <= 170; r += 40) {
+    ctx.strokeStyle = `rgba(59,130,246,${0.04 + (170 - r) / 300})`;
+    ctx.lineWidth = 0.6;
+    ctx.beginPath(); ctx.arc(240, 115, r, 0, Math.PI * 2); ctx.stroke();
+  }
+
+  // Central glowing discovery star — big and dramatic
+  const cx = 240, cy = 115;
+  // Large ambient glow
+  const glow1 = ctx.createRadialGradient(cx, cy, 5, cx, cy, 100);
+  glow1.addColorStop(0, 'rgba(245,158,11,0.2)');
+  glow1.addColorStop(0.5, 'rgba(245,158,11,0.06)');
+  glow1.addColorStop(1, 'rgba(245,158,11,0)');
+  ctx.fillStyle = glow1; ctx.fillRect(cx - 120, cy - 120, 240, 240);
+
+  // Inner bright glow
+  const glow2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+  glow2.addColorStop(0, 'rgba(245,158,11,0.45)');
+  glow2.addColorStop(1, 'rgba(245,158,11,0)');
+  ctx.fillStyle = glow2; ctx.fillRect(cx - 35, cy - 35, 70, 70);
+
+  // The star itself
+  const starSize = 32;
+  const sc = starSize * 2 / 128;
+  ctx.beginPath();
+  ctx.moveTo(cx + STAR_PTS_128[0] * sc, cy + STAR_PTS_128[1] * sc);
+  for (let j = 1; j < 10; j++) ctx.lineTo(cx + STAR_PTS_128[j * 2] * sc, cy + STAR_PTS_128[j * 2 + 1] * sc);
+  ctx.closePath();
+  ctx.fillStyle = '#f59e0b'; ctx.fill();
+
+  // Icon top-left (same layout system as banner-D: font-relative gaps, optical centering)
+  const t3IconX = 28, t3IconY = 26, t3IconSz = 52;
+  const t3FontSize = 30, t3SubFontSize = 12;
+  drawRealIcon(ctx, t3IconX, t3IconY, t3IconSz);
+
+  const t3TextX  = t3IconX + t3IconSz + t3IconSz * 0.20;              // gap ∝ icon
+  const t3IconMid = t3IconY + t3IconSz / 2;
+  const t3TextY   = t3IconMid + t3FontSize * 0.30;                     // optical center
+  // Subtitle then line: line sits exactly between text bottom (baseline, no descenders) and sub top (baseline − cap height)
+  const t3SubY    = t3TextY   + t3FontSize * 0.805;                    // subtitle baseline
+  const t3SubTop  = t3SubY    - t3SubFontSize * 0.85;                  // CJK character top (~85% of em)
+  const t3LineY   = (t3TextY + t3SubTop) / 2;                          // dead center
+
+  ctx.fillStyle = '#f1f5f9';
+  ctx.font = `700 ${t3FontSize}px -apple-system, "Inter", "Segoe UI", sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', t3TextX, t3TextY);
+
+  const t3GitW = ctx.measureText('Git').width;
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(t3TextX, t3LineY, t3GitW, 2);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = `400 ${t3SubFontSize}px -apple-system, "Inter", "Segoe UI", sans-serif`;
+  ctx.fillText('你的 GitHub 星探', t3TextX, t3SubY);
+
+  // Tagline bottom-center — aligns with star
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = '600 16px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('发现下一个值得关注的开源项目', W / 2, 220);
+
+  ctx.fillStyle = '#64748b';
+  ctx.font = '400 11px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('热门 · 新星 · 活跃   |   Chrome 浏览器扩展   |   免费安装', W / 2, 245);
+
+  return c;
+}
+
+// ============================================================
+// MARQUEE 1400×560 — 4 concepts
+// ============================================================
+
+function bannerA() {
+  // A: Classic CWS style — blue gradient, icon left, feature pills, screenshot right
+  const W = 1400, H = 560;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  const grad = ctx.createLinearGradient(0, 0, W * 0.8, H);
+  grad.addColorStop(0, '#1e3a5f');
+  grad.addColorStop(0.5, '#2563eb');
+  grad.addColorStop(1, '#3b82f6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Very subtle ambient stars
+  ctx.globalAlpha = 0.04;
+  for (let i = 0; i < 40; i++) {
+    const sx = (i * 173 + 41) % W, sy = (i * 89 + 23) % H;
+    const sr = 5 + (i % 4) * 4, sc = sr * 2 / 128;
+    ctx.beginPath();
+    ctx.moveTo(sx + STAR_PTS_128[0] * sc, sy + STAR_PTS_128[1] * sc);
+    for (let j = 1; j < 10; j++) ctx.lineTo(sx + STAR_PTS_128[j * 2] * sc, sy + STAR_PTS_128[j * 2 + 1] * sc);
+    ctx.closePath();
+    ctx.fillStyle = '#ffffff'; ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  const LX = 90;
+
+  // Icon
+  drawRealIcon(ctx, LX, 115, 130);
+
+  // Brand
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '700 62px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', LX + 155, 205);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(LX + 155, 222, 74, 3);
+
+  ctx.font = '400 22px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fillText('在浏览器中轻松发现 GitHub 优质开源项目', LX + 155, 265);
+
+  // Feature pills
+  const pills = [
+    { icon: '★', t: '三种发现模式', sub: '热门·新星·活跃', bg: '#ffffff', fg: '#2563eb' },
+    { icon: '📖', t: '即时 README 预览', sub: 'Markdown 渲染', bg: '#ffffff', fg: '#16a34a' },
+    { icon: '⭐', t: '一键 Star & 收藏', sub: '本地 + GitHub', bg: '#ffffff', fg: '#d97706' },
+  ];
+  pills.forEach((p, i) => {
+    const px = LX + 155 + i * 218;
+    const py = 298;
+    ctx.fillStyle = p.bg;
+    rrect(ctx, px, py, 200, 64, 10); ctx.fill();
+    ctx.fillStyle = p.bg;
+    // Left accent dot
+    ctx.fillStyle = p.fg;
+    rrect(ctx, px, py, 4, 64, 4); ctx.fill();
+
+    ctx.fillStyle = p.fg;
+    ctx.font = '600 15px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(p.icon + ' ' + p.t, px + 18, py + 28);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '400 12px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(p.sub, px + 18, py + 48);
+  });
+
+  // Right side: popup mockup
+  const mw = 380, mh = 440, mx = W - mw - 70, my = 60;
+  ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 30; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 8;
+  ctx.fillStyle = '#ffffff';
+  rrect(ctx, mx, my, mw, mh, 12); ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+  // Header
+  ctx.fillStyle = '#3b82f6';
+  ctx.beginPath();
+  ctx.moveTo(mx + 12, my); ctx.lineTo(mx + mw - 12, my);
+  ctx.arcTo(mx + mw, my, mx + mw, my + 12, 12);
+  ctx.lineTo(mx + mw, my + 44); ctx.lineTo(mx, my + 44);
+  ctx.lineTo(mx, my + 12); ctx.arcTo(mx, my, mx + 12, my, 12);
+  ctx.closePath(); ctx.fill();
+  drawRealIcon(ctx, mx + 12, my + 6, 32);
+  ctx.fillStyle = '#fff'; ctx.font = '600 12px -apple-system, "Inter", sans-serif';
+  ctx.fillText('GitStar', mx + 50, my + 28);
+
+  // Repo cards
+  const repoData = [
+    { n: 'facebook / react', s: '198k', d: 'The library for web and native user interfaces.' },
+    { n: 'tensorflow / tensorflow', s: '175k', d: 'An Open Source Machine Learning Framework.' },
+    { n: 'microsoft / vscode', s: '152k', d: 'Visual Studio Code - Open Source.' },
+    { n: 'twbs / bootstrap', s: '165k', d: 'The most popular HTML, CSS, and JS library.' },
+    { n: 'ohmyzsh / ohmyzsh', s: '163k', d: 'A delightful community-driven framework.' },
+  ];
+  repoData.forEach((r, i) => {
+    const ry = my + 58 + i * 72;
+    ctx.fillStyle = '#f9fafb';
+    rrect(ctx, mx + 14, ry, mw - 28, 63, 7); ctx.fill();
+    ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 0.8;
+    rrect(ctx, mx + 14, ry, mw - 28, 63, 7); ctx.stroke();
+    ctx.fillStyle = '#e5e7eb';
+    ctx.beginPath(); ctx.arc(mx + 36, ry + 31, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1e1b4b'; ctx.font = '600 13px -apple-system, "Inter", sans-serif';
+    ctx.fillText(r.n, mx + 62, ry + 24);
+    ctx.fillStyle = '#9ca3af'; ctx.font = '11px -apple-system, "Inter", sans-serif';
+    ctx.fillText(r.d.substring(0, 42), mx + 62, ry + 44);
+    ctx.fillStyle = '#f59e0b'; ctx.font = '600 12px -apple-system, "Inter", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('★ ' + r.s, mx + mw - 24, ry + 24);
+    ctx.textAlign = 'left';
+  });
+
+  // Bottom tagline
+  ctx.fillStyle = 'rgba(255,255,255,0.65)';
+  ctx.font = '400 13px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('Chrome 浏览器扩展 · 免费安装 · 无需注册 · 中英文双语', LX, H - 36);
+
+  return c;
+}
+
+function bannerB() {
+  // B: Split layout — left white brand, right blue with layered screenshots
+  const W = 1400, H = 560;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Left panel
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, 680, H);
+  // Subtle blue ring decoration
+  ctx.strokeStyle = 'rgba(59,130,246,0.08)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(80, H - 80, 200, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(80, H - 80, 260, 0, Math.PI * 2); ctx.stroke();
+
+  // Right panel
+  const rgrad = ctx.createLinearGradient(680, 0, W, 0);
+  rgrad.addColorStop(0, '#3b82f6');
+  rgrad.addColorStop(1, '#2563eb');
+  ctx.fillStyle = rgrad;
+  ctx.fillRect(680, 0, 720, H);
+
+  // Divider
+  ctx.fillStyle = '#e5e7eb';
+  ctx.fillRect(678, 0, 2, H);
+
+  const LX = 80;
+
+  // Icon
+  drawRealIcon(ctx, LX, 100, 140);
+
+  // Brand
+  ctx.fillStyle = '#1e1b4b';
+  ctx.font = '700 56px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', LX + 170, 185);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(LX + 170, 202, 60, 3);
+
+  ctx.font = '400 20px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillStyle = '#475569';
+  ctx.fillText('发现 GitHub 优质开源项目', LX + 170, 242);
+
+  // Stats row
+  const stats = [
+    { v: '3 种', l: '发现模式', c: '#3b82f6' },
+    { v: '100+', l: '编程语言', c: '#16a34a' },
+    { v: '即时', l: 'README 预览', c: '#f59e0b' },
+  ];
+  stats.forEach((s, i) => {
+    const sx = LX + 170 + i * 140;
+    ctx.fillStyle = s.c;
+    ctx.font = '700 26px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(s.v, sx, 295);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '400 13px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(s.l, sx, 318);
+  });
+
+  // CTA text
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = '600 16px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('免费安装 · 无需注册 · 中英文双语', LX + 170, 370);
+
+  // Right side: 3 layered product cards
+  const cardW = 340, cardH = 420;
+  const layers = [
+    { x: 710, y: 80, rot: -0.05, z: 0 },
+    { x: 760, y: 60, rot: -0.025, z: 1 },
+    { x: 810, y: 40, rot: 0, z: 2 },
+  ];
+  layers.forEach(ly => {
+    ctx.save();
+    const cx = ly.x + cardW / 2, ccy = ly.y + cardH / 2;
+    ctx.translate(cx, ccy);
+    ctx.rotate(ly.rot);
+    const bx = -cardW / 2, by = -cardH / 2;
+
+    ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 20; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 6;
+    ctx.fillStyle = ly.z === 2 ? '#ffffff' : '#f1f5f9';
+    rrect(ctx, bx, by, cardW, cardH, 10); ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 0.8;
+    rrect(ctx, bx, by, cardW, cardH, 10); ctx.stroke();
+
+    if (ly.z === 2) {
+      ctx.fillStyle = '#3b82f6';
+      ctx.beginPath();
+      ctx.moveTo(bx + 10, by); ctx.lineTo(bx + cardW - 10, by);
+      ctx.arcTo(bx + cardW, by, bx + cardW, by + 10, 10);
+      ctx.lineTo(bx + cardW, by + 36); ctx.lineTo(bx, by + 36);
+      ctx.lineTo(bx, by + 10); ctx.arcTo(bx, by, bx + 10, by, 10);
+      ctx.closePath(); ctx.fill();
+      drawRealIcon(ctx, bx + 10, by + 4, 28);
+      ctx.fillStyle = '#fff'; ctx.font = '600 10px -apple-system, "Inter", sans-serif';
+      ctx.fillText('GitStar', bx + 44, by + 23);
+
+      for (let i = 0; i < 5; i++) {
+        const ry = by + 48 + i * 70;
+        ctx.fillStyle = '#f9fafb';
+        rrect(ctx, bx + 12, ry, cardW - 24, 62, 6); ctx.fill();
+        ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 0.6;
+        rrect(ctx, bx + 12, ry, cardW - 24, 62, 6); ctx.stroke();
+        ctx.fillStyle = '#e5e7eb';
+        ctx.beginPath(); ctx.arc(bx + 32, ry + 31, 14, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#1e1b4b'; ctx.font = '600 11px -apple-system, "Inter", sans-serif';
+        ctx.fillText(['facebook/react','tensorflow/tensorflow','twbs/bootstrap','microsoft/vscode','ohmyzsh/ohmyzsh'][i], bx + 54, ry + 23);
+        ctx.fillStyle = '#9ca3af'; ctx.font = '9px -apple-system, "Inter", sans-serif';
+        ctx.fillText('The library for web and native...', bx + 54, ry + 40);
+        ctx.fillStyle = '#f59e0b'; ctx.font = '600 10px -apple-system, "Inter", sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('★ 198k', bx + cardW - 22, ry + 23);
+        ctx.textAlign = 'left';
+      }
+    }
+    ctx.restore();
+  });
+
+  return c;
+}
+
+function bannerC() {
+  // C: Feature card grid — light bg, icon top-left, 6 feature cards grid, shows full capability
+  const W = 1400, H = 560;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Soft gradient bg
+  const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+  bgGrad.addColorStop(0, '#eff6ff');
+  bgGrad.addColorStop(0.4, '#f8fafc');
+  bgGrad.addColorStop(1, '#f0fdf4');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Decorative circles
+  [{x:100,y:480,r:260,c:'rgba(59,130,246,0.05)'},{x:1280,y:100,r:200,c:'rgba(245,158,11,0.05)'},{x:700,y:520,r:170,c:'rgba(22,163,74,0.03)'}]
+  .forEach(circ => { ctx.fillStyle = circ.c; ctx.beginPath(); ctx.arc(circ.x, circ.y, circ.r, 0, Math.PI*2); ctx.fill(); });
+
+  const LX = 70, TY = 55;
+
+  // Icon + brand row
+  drawRealIcon(ctx, LX, TY, 90);
+
+  ctx.fillStyle = '#1e1b4b';
+  ctx.font = '700 48px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', LX + 115, TY + 52);
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(LX + 115, TY + 62, 50, 3);
+
+  ctx.fillStyle = '#475569';
+  ctx.font = '400 18px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('发现 GitHub 优质开源项目 — 热门 · 新星 · 活跃 三种模式', LX + 115, TY + 90);
+
+  // Feature cards grid
+  const cards = [
+    { icon:'★', t:'三种发现模式', d:'热门 / 新星 / 活跃', c:'#3b82f6', bg:'#eff6ff' },
+    { icon:'🔍', t:'智能搜索筛选', d:'语言 · 时间 · 排序', c:'#16a34a', bg:'#f0fdf4' },
+    { icon:'📖', t:'即时 README 预览', d:'Markdown + 目录导航', c:'#f59e0b', bg:'#fffbeb' },
+    { icon:'⭐', t:'一键 Star & 收藏', d:'本地收藏夹 + GitHub', c:'#7c3aed', bg:'#f3e8ff' },
+    { icon:'📌', t:'侧边栏智能推荐', d:'同类项目自动发现', c:'#ec4899', bg:'#fdf2f8' },
+    { icon:'🌐', t:'中英文双语界面', d:'语言实时同步切换', c:'#0891b2', bg:'#ecfeff' },
+  ];
+
+  const cardW = 230, cardH = 140, gapX = 20, gapY = 18;
+  const gridStartX = 70, gridStartY = 170;
+
+  cards.forEach((cd, i) => {
+    const col = i % 3, row = Math.floor(i / 3);
+    const cx = gridStartX + col * (cardW + gapX);
+    const cy = gridStartY + row * (cardH + gapY);
+
+    // Card
+    ctx.fillStyle = '#ffffff';
+    rrect(ctx, cx, cy, cardW, cardH, 12); ctx.fill();
+    ctx.strokeStyle = cd.c + '30'; ctx.lineWidth = 1;
+    rrect(ctx, cx, cy, cardW, cardH, 12); ctx.stroke();
+
+    // Icon square
+    ctx.fillStyle = cd.bg;
+    rrect(ctx, cx + 18, cy + 22, 44, 44, 10); ctx.fill();
+    ctx.fillStyle = cd.c;
+    ctx.font = '22px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(cd.icon, cx + 40, cy + 51);
+    ctx.textAlign = 'left';
+
+    // Title + desc
+    ctx.fillStyle = '#1e1b4b';
+    ctx.font = '600 14px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(cd.t, cx + 76, cy + 38);
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '400 12px -apple-system, "Inter", "Segoe UI", sans-serif';
+    ctx.fillText(cd.d, cx + 76, cy + 56);
+  });
+
+  // Right side: floating icon (enlarged brand mark)
+  drawRealIcon(ctx, 1100, 270, 180);
+
+  // Bottom tag
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = '500 14px -apple-system, "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('Chrome 浏览器扩展 · 免费安装 · 无需注册', LX, H - 32);
+
+  return c;
+}
+
+function bannerD() {
+  // D: "Star Discovery" — dark space theme, telescope metaphor, artistic
+  const W = 1400, H = 560;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+
+  // Deep space gradient
+  const bgGrad = ctx.createRadialGradient(W * 0.38, H * 0.42, 30, W * 0.5, H * 0.5, 900);
+  bgGrad.addColorStop(0, '#1e3a5f');
+  bgGrad.addColorStop(0.6, '#0f172a');
+  bgGrad.addColorStop(1, '#020617');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Starfield (seeded pseudo-random for consistency)
+  for (let i = 0; i < 350; i++) {
+    const sx = (i * 137.508 + 50) % W, sy = (i * 271.828 + 30) % H;
+    const b = 0.25 + ((i * 73) % 100) / 100 * 0.7;
+    ctx.fillStyle = `rgba(255,255,255,${b})`;
+    ctx.beginPath(); ctx.arc(sx, sy, 0.4 + (i % 3) * 0.5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Constellation lines
+  const conn = [[180,130],[270,80],[370,160],[440,110],[510,190],[590,140],[690,210],[770,160],[840,240]];
+  ctx.strokeStyle = 'rgba(59,130,246,0.1)'; ctx.lineWidth = 0.6;
+  ctx.beginPath(); ctx.moveTo(conn[0][0], conn[0][1]);
+  for (let i = 1; i < conn.length; i++) ctx.lineTo(conn[i][0], conn[i][1]);
+  ctx.stroke();
+
+  // Glowing highlight stars (the "discoveries")
+  const hStars = [[270,80],[510,190],[770,160]];
+  hStars.forEach(([hx, hy]) => {
+    const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, 50);
+    g.addColorStop(0, 'rgba(245,158,11,0.35)');
+    g.addColorStop(1, 'rgba(245,158,11,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, 50, 0, Math.PI * 2); ctx.fill();
+    const sc = 24 / 128;
+    ctx.beginPath();
+    ctx.moveTo(hx + STAR_PTS_128[0]*sc, hy + STAR_PTS_128[1]*sc);
+    for (let j = 1; j < 10; j++) ctx.lineTo(hx + STAR_PTS_128[j*2]*sc, hy + STAR_PTS_128[j*2+1]*sc);
+    ctx.closePath();
+    ctx.fillStyle = '#f59e0b'; ctx.fill();
+  });
+
+  // Lens circle
+  const lx = 340, ly = 280, lr = 190;
+  const lg = ctx.createRadialGradient(lx, ly, lr * 0.25, lx, ly, lr);
+  lg.addColorStop(0, 'rgba(59,130,246,0.12)');
+  lg.addColorStop(0.7, 'rgba(59,130,246,0.04)');
+  lg.addColorStop(1, 'rgba(59,130,246,0)');
+  ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = 'rgba(59,130,246,0.25)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(lx, ly, lr, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = 'rgba(59,130,246,0.12)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(lx, ly, lr * 0.48, 0, Math.PI * 2); ctx.stroke();
+
+  // Brand bottom-left
+  // Layout system: text baseline optically centered on icon; line & sub gaps scale with font size
+  const bdIconX = 70, bdIconY = 340, bdIconSz = 110;
+  const bdFontSize = 54, bdSubFontSize = 20;
+  drawRealIcon(ctx, bdIconX, bdIconY, bdIconSz);
+
+  const bdTextX   = bdIconX + bdIconSz + bdIconSz * 0.20;              // gap ∝ icon
+  const bdIconMid  = bdIconY + bdIconSz / 2;
+  const bdTextY    = bdIconMid + bdFontSize * 0.30;                     // optical center
+  // Subtitle then line: line sits exactly between text bottom (baseline, no descenders) and sub top (baseline − cap height)
+  const bdSubY     = bdTextY   + bdFontSize * 0.805;                    // subtitle baseline
+  const bdSubTop   = bdSubY    - bdSubFontSize * 0.85;                  // CJK character top (~85% of em)
+  const bdLineY    = (bdTextY + bdSubTop) / 2;                          // dead center
+
+  ctx.fillStyle = '#f1f5f9';
+  ctx.font = `700 ${bdFontSize}px -apple-system, "Inter", "Segoe UI", sans-serif`;
+  ctx.textAlign = 'left';
+  ctx.fillText('GitStar', bdTextX, bdTextY);
+
+  const bdGitW = ctx.measureText('Git').width;
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(bdTextX, bdLineY, bdGitW, 3);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = `400 ${bdSubFontSize}px -apple-system, "Inter", "Segoe UI", sans-serif`;
+  ctx.fillText('你的 GitHub 星探 — 发现下一个值得关注的开源项目', bdTextX, bdSubY);
+
+  // Floating repo cards (right side)
+  const repos = [
+    { n:'facebook / react', s:'198k', x:920, y:80, sc:1.1 },
+    { n:'tensorflow / tensorflow', s:'175k', x:1100, y:160, sc:1.0 },
+    { n:'microsoft / vscode', s:'152k', x:980, y:270, sc:0.95 },
+    { n:'twbs / bootstrap', s:'165k', x:1120, y:360, sc:0.9 },
+    { n:'ohmyzsh / ohmyzsh', s:'163k', x:1000, y:440, sc:0.85 },
+  ];
+  repos.forEach(r => {
+    const rw = 230 * r.sc, rh = 48 * r.sc;
+    const g = ctx.createRadialGradient(r.x + rw / 2, r.y + rh / 2, 0, r.x + rw / 2, r.y + rh / 2, rw * 0.5);
+    g.addColorStop(0, 'rgba(59,130,246,0.08)');
+    g.addColorStop(1, 'rgba(59,130,246,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(r.x + rw / 2, r.y + rh / 2, rw * 0.5, 0, Math.PI * 2); ctx.fill();
+
+    ctx.fillStyle = 'rgba(15,23,42,0.88)';
+    rrect(ctx, r.x, r.y, rw, rh, 8); ctx.fill();
+    ctx.strokeStyle = 'rgba(59,130,246,0.25)'; ctx.lineWidth = 0.8;
+    rrect(ctx, r.x, r.y, rw, rh, 8); ctx.stroke();
+
+    ctx.fillStyle = '#e2e8f0';
+    ctx.font = `600 ${12*r.sc}px -apple-system, "Inter", sans-serif`;
+    ctx.fillText(r.n, r.x + 12, r.y + rh / 2 + 4);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = `${11*r.sc}px -apple-system, "Inter", sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText('★ ' + r.s, r.x + rw - 12, r.y + rh / 2 + 4);
+    ctx.textAlign = 'left';
+  });
+
+  return c;
+}
+
+// ============================================================
+// Render all
+// ============================================================
+
+const tileDefs = [
+  { id:'tile-D1', name:'方案 D1 — 星空透镜', tag:'tag-creative', tagT:'星探主题', draw:tileD1,
+    desc:'透镜圆环 + 图标居中 + 星座连线 + 浮动仓库标签。方案 D 的紧凑版，隐喻"透过镜头发现好项目"。' },
+  { id:'tile-D2', name:'方案 D2 — 星座网络', tag:'tag-creative', tagT:'星探主题', draw:tileD2,
+    desc:'满天星场 + 多重星座连线 + 金色节点 + 底部品牌栏。强调"连接"与"发现"的网络感。' },
+  { id:'tile-D3', name:'方案 D3 — 暗夜聚焦', tag:'tag-creative', tagT:'星探主题', draw:tileD3,
+    desc:'单颗超大金色发现之星 + 同心雷达环 + 居中标语。极简大胆，视觉冲击力最强。' },
+];
+
+const bannerDefs = [
+  { id:'banner-A', name:'方案 A — 全景蓝', tag:'tag-brand', tagT:'专业经典', draw:bannerA,
+    desc:'蓝色全宽 + 左品牌右产品截图 + 功能胶囊标签。经典 Chrome Web Store 风格，稳妥大气。' },
+  { id:'banner-B', name:'方案 B — 双栏展示', tag:'tag-brand', tagT:'品牌冲击', draw:bannerB,
+    desc:'左白右蓝分割 + 关键数字 + 三层叠卡片。视觉冲击力强，信息层次分明。' },
+  { id:'banner-C', name:'方案 C — 功能矩阵', tag:'tag-feature', tagT:'功能全面', draw:bannerC,
+    desc:'浅色渐变 + 六大功能卡片网格 + 大图标。完整传达功能矩阵，清晰直观。' },
+  { id:'banner-D', name:'方案 D — 星探望远镜', tag:'tag-creative', tagT:'艺术创意', draw:bannerD,
+    desc:'星空 + 星座连线 + 透镜 + 浮动仓库卡片。用"望远镜发现星星"隐喻产品。' },
+];
+
+function buildSection(gridId, defs) {
+  const grid = document.getElementById(gridId);
+  defs.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'card'; card.id = d.id;
+    card.innerHTML = `
+      <div class="card-top"><span class="name">${d.name}</span><span class="tag ${d.tag}">${d.tagT}</span></div>
+      <div class="canvas-box ${d.id.startsWith('tile') ? 'tile' : 'banner'}"></div>
+      <div class="card-desc">${d.desc}</div>
+      <div class="card-actions">
+        <button class="btn btn-pick" data-id="${d.id}">选用此方案</button>
+      </div>`;
+    grid.appendChild(card);
+    const wrap = card.querySelector('.canvas-box');
+    wrap.appendChild(d.draw());
+  });
+}
+
+buildSection('tile-grid', tileDefs);
+buildSection('banner-grid', bannerDefs);
+
+// ============================================================
+// Selection logic
+// ============================================================
+
+let pickTile = null, pickBanner = 'banner-D';
+
+// Auto-select banner-D (user preference)
+setTimeout(() => {
+  document.getElementById('banner-D').classList.add('picked');
+  updateDock();
+}, 50);
+
+document.querySelectorAll('.btn-pick').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const id = this.dataset.id;
+    const isTile = id.startsWith('tile');
+    const defs = isTile ? tileDefs : bannerDefs;
+    const gridId = isTile ? 'tile-grid' : 'banner-grid';
+
+    if (isTile) pickTile = id; else pickBanner = id;
+
+    document.querySelectorAll('#' + gridId + ' .card').forEach(c => c.classList.remove('picked'));
+    document.getElementById(id).classList.add('picked');
+
+    updateDock();
+  });
+});
+
+function updateDock() {
+  const dock = document.getElementById('dock');
+  const dt = document.getElementById('dock-tile');
+  const db = document.getElementById('dock-banner');
+  if (pickTile) {
+    const d = tileDefs.find(x => x.id === pickTile);
+    dt.textContent = '小图：' + (d ? d.name : pickTile);
+  }
+  if (pickBanner) {
+    const d = bannerDefs.find(x => x.id === pickBanner);
+    db.textContent = '大图：' + (d ? d.name : pickBanner);
+  }
+  if (pickTile || pickBanner) dock.classList.add('on');
+}
+
+function exportPicked() {
+  if (!pickTile || !pickBanner) {
+    alert('请分别选择一个小型宣传图和一个顶部宣传图方案');
+    return;
+  }
+  const td = tileDefs.find(x => x.id === pickTile);
+  const bd = bannerDefs.find(x => x.id === pickBanner);
+
+  downloadPNG(td.draw(), `gitstar-promo-small-${td.id}.png`);
+  setTimeout(() => downloadPNG(bd.draw(), `gitstar-promo-marquee-${bd.id}.png`), 250);
+
+  alert(`已导出：\n小图 — ${td.name}\n大图 — ${bd.name}\n\nPNG 已加入浏览器下载队列。`);
+}
+
+function downloadPNG(canvas, filename) {
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
+</script>
+
+</body>
+</html>
