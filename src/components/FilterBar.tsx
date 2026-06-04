@@ -34,25 +34,13 @@ const SORTS = [
   { value: 'updated', label: '最近更新' },
 ];
 
-function Select({ value, onChange, options, label }: {
-  value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; label: string;
-}) {
+const selectClass = 'w-full text-[11px] border border-[#e5e7eb] rounded-md px-2 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] appearance-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.03)]';
+
+function Chevron() {
   return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        aria-label={label}
-        className="appearance-none px-3 py-2 pr-8 border border-[#e5e7eb] rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6366f1] cursor-pointer"
-      >
-        {options.map(o => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-      <svg className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
+    <svg className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" width="8" height="5" viewBox="0 0 8 5" fill="none">
+      <path d="M1 1l3 3 3-3" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
   );
 }
 
@@ -69,10 +57,31 @@ export default function FilterBar({ language, onLanguageChange, timeRange, onTim
   const timeRanges = useMemo(() => getTimeRanges(), []);
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <Select value={language} onChange={onLanguageChange} options={LANGUAGES} label="语言筛选" />
-      <Select value={timeRange} onChange={onTimeRangeChange} options={timeRanges} label="时间范围" />
-      <Select value={sort} onChange={onSortChange} options={SORTS} label="排序方式" />
+    <div className="flex gap-2">
+      <div className="relative flex-1">
+        <select value={language} onChange={e => onLanguageChange(e.target.value)} className={selectClass}>
+          {LANGUAGES.map(l => (
+            <option key={l.value} value={l.value}>{l.label}</option>
+          ))}
+        </select>
+        <Chevron />
+      </div>
+      <div className="relative flex-1">
+        <select value={timeRange} onChange={e => onTimeRangeChange(e.target.value)} className={selectClass}>
+          {timeRanges.map(tr => (
+            <option key={tr.value} value={tr.value}>{tr.label}</option>
+          ))}
+        </select>
+        <Chevron />
+      </div>
+      <div className="relative flex-1">
+        <select value={sort} onChange={e => onSortChange(e.target.value)} className={selectClass}>
+          {SORTS.map(s => (
+            <option key={s.value} value={s.value}>{s.label}</option>
+          ))}
+        </select>
+        <Chevron />
+      </div>
     </div>
   );
 }

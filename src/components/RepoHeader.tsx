@@ -12,7 +12,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
   return (
     <div>
       <nav className="flex items-center gap-1.5 text-xs mb-4 pb-3 border-b border-[#f3f4f6]">
-        <Link href="/" className="text-[#4f46e5] hover:underline">← 首页</Link>
+        <Link href="/" className="text-[#3b82f6] hover:underline">← 首页</Link>
         <span className="text-[#9ca3af]">/</span>
         <span className="text-[#1e1b4b] font-semibold">{repo.owner}</span>
         <span className="text-[#9ca3af]">/</span>
@@ -35,7 +35,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#6366f1] text-white text-sm rounded-lg hover:bg-[#4f46e5] transition-colors"
+              className="inline-flex items-center gap-1 px-4 py-1.5 bg-[#3b82f6] text-white text-sm rounded-lg hover:bg-[#2563eb] transition-colors"
             >
               ⭐ Star
             </a>
@@ -49,7 +49,7 @@ export default function RepoHeader({ repo, isFavorite, onToggleFavorite }: Props
             </a>
             <button
               onClick={() => onToggleFavorite(repo.full_name)}
-              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#6366f1] bg-[#eef2ff] text-[#4338ca]' : 'border-[#e5e7eb] hover:bg-gray-50'}`}
+              className={`inline-flex items-center gap-1 px-4 py-1.5 border text-sm rounded-lg transition-colors ${isFavorite ? 'border-[#f59e0b] bg-[#fffbeb] text-[#f59e0b]' : 'border-[#e5e7eb] hover:bg-gray-50'}`}
             >
               {isFavorite ? '★ 已收藏' : '☆ 收藏'}
             </button>

@@ -2,8 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 body {
-  @apply bg-[#fafafa] text-[#1e1b4b] antialiased;
+  @apply bg-[#0a0a1a] text-[#e2e8f0] antialiased;
+  font-family: 'Open Sans', sans-serif;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(245,158,11,0.03) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Star field */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 40% 10%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1.5px 1.5px at 85% 55%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 60% 75%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 45% 60%, rgba(245,158,11,0.5), transparent),
+    radial-gradient(1px 1px at 75% 30%, rgba(245,158,11,0.4), transparent);
+  background-size: 200px 200px;
+  animation: starDrift 120s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+@keyframes starDrift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-200px); }
 }
 
 @keyframes loadingBar {

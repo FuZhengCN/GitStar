@@ -7,7 +7,6 @@ import SearchBar from '@/components/SearchBar';
 import FilterBar from '@/components/FilterBar';
 import RepoList from '@/components/RepoList';
 import Pagination from '@/components/Pagination';
-import LoadingBar from '@/components/LoadingBar';
 
 interface Props {
   initialRepos: Repo[];
@@ -32,13 +31,13 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
 
   const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
 
-  const totalPages = Math.min(Math.ceil(total / 30), 34);
+  const totalPages = Math.min(Math.ceil(total / 10), 34);
 
   const fetchRepos = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ sort, order: 'desc', page: String(page), per_page: '30' });
+      const params = new URLSearchParams({ sort, order: 'desc', page: String(page), per_page: '10' });
       if (search) params.set('q', search);
       if (language) params.set('language', language);
       if (timeRange) params.set('created', timeRange);
@@ -90,8 +89,7 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
   const handleSort = useCallback((v: string) => { setSort(v); setPage(1); }, []);
 
   return (
-    <div className="space-y-4">
-      <LoadingBar loading={loading} />
+    <div className="space-y-3 pb-14">
       <SearchBar value={search} onChange={handleSearch} />
       <FilterBar
         language={language} onLanguageChange={handleLanguage}
@@ -99,7 +97,7 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
         sort={sort} onSortChange={handleSort}
       />
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">
           {error}
         </div>
       )}
@@ -108,7 +106,9 @@ export default function HomePageClient({ initialRepos, totalCount, error: server
       ) : (
         <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={favLoaded} />
       )}
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <div className="sticky bottom-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1 -mx-4 px-4">
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
     </div>
   );
 }

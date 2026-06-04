@@ -3,18 +3,27 @@ import Header from '@/components/Header';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'GitStar - 发现优质开源项目',
-  description: '浏览 GitHub 上最受欢迎的开源项目，按语言、时间筛选，查看项目详情',
+  title: 'GitStar — 星探 · 发现 GitHub 优质开源项目',
+  description: 'Chrome 扩展，像望远镜一样在 GitHub 星空中发现高 Star 优质项目。三种发现模式、AI 概述、弹窗看 README。',
+  keywords: 'GitHub,开源项目,Chrome扩展,项目发现,开发者工具,开源,星探',
+  openGraph: {
+    title: 'GitStar — 星探 · 发现 GitHub 优质开源项目',
+    description: '像望远镜一样在 GitHub 星空中发现好项目',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-CN">
-      <body>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body className="relative">
         <Header />
-        <main className="max-w-6xl mx-auto px-4 py-6">
+        <div className="relative z-[1]">
           {children}
-        </main>
+        </div>
       </body>
     </html>
   );
