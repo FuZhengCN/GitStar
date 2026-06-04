@@ -103,15 +103,17 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Chrome Web Store
 
-当前版本 `1.2.0`，已上架。上架资料在 `docs/store-listing/`：
+当前版本 `1.2.1`，已上架。上架资料在 `docs/store-listing/`：
 
 | 文件 | 用途 |
 |------|------|
 | `description.md` | 中英文产品说明 |
 | `privacy-policy.html` | 中英文隐私权政策，GitHub Pages 托管 |
 | `screenshots/` | 9 张 1280x800 JPEG 截图（原始 PNG 也在目录中但未提交） |
-| `promo-small.jpg` | 440x280 小型宣传图 |
-| `promo-marquee.jpg` | 1400x560 顶部宣传图（marquee） |
+| `promo-small.jpg` | 440x280 小型宣传图（星空望远镜主题） |
+| `promo-marquee.jpg` | 1400x560 顶部宣传图（星空望远镜主题） |
+| `zhihu-article.md` | 知乎推广文案 |
+| `screenshots/landingPage/` | Landing Page 专用截图（发现页/详情页/README展开/AI概述） |
 
 隐私政策 URL：`https://fuzhengcn.github.io/GitStar/store-listing/privacy-policy.html`
 
@@ -127,6 +129,43 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 ## Non-Goals
 
 无用户系统、无数据库、无个性化推荐。
+
+## Landing Page
+
+Web 应用同时作为扩展的 Landing Page（`https://git-star-eight.vercel.app`），星空望远镜主题暗色设计。
+
+### 页面结构
+
+```
+Header（Logo + 品牌名，无 CTA）
+  ↓
+Hero（标题 + 望远镜插图 + CTA 按钮，唯一安装入口）
+  ↓
+Features（6 功能卡片 3×2 网格，每张独立微光边框色）
+  ↓
+Screenshots（4 组左右对照：截图 + 功能亮点列表，交替排列）
+  ↓
+Footer（GitHub / Releases / 隐私政策 / 反馈 / 版本号）
+```
+
+### 设计要点
+
+- **背景**：`#0a0a1a` + CSS 星点动画 + 三色星云渐变（蓝/紫/金）
+- **字体**：Poppins（标题）+ Open Sans（正文）
+- **CTA**：整个页面仅 Hero 一处安装按钮，Header 无 CTA
+- **截图**：4 张 PNG 存 `public/screenshot-*.png`，源文件在 `docs/store-listing/screenshots/landingPage/`
+- **动画**：`prefers-reduced-motion` 时关闭星空漂移和脉冲
+- **可访问性**：文字对比度 ≥ 4.5:1（`text-white/55` 以上），截图有 `alt` 和 `aspect-[400/600]` 防 CLS
+
+### Landing Page 专用组件 vs 共享组件
+
+**专用（`src/components/`）：** `Hero.tsx`、`Features.tsx`、`Screenshots.tsx` — 仅用于首页，硬编码文案
+
+**共享：** `Header.tsx`、`SearchBar.tsx`、`FilterBar.tsx`、`RepoCard.tsx`、`RepoList.tsx`、`Pagination.tsx`、`RepoHeader.tsx`、`ReadmeViewer.tsx` — 详情页和首页 Demo 共用，配色统一为蓝色 `#3b82f6`（非 indigo）
+
+### 部署
+
+Vercel 零配置部署，关联 GitHub 仓库 `FuZhengCN/GitStar`。`GITHUB_TOKEN` 环境变量需在 Vercel Dashboard 配置，否则 API 限流 60 次/小时。
 
 ## Extension
 
