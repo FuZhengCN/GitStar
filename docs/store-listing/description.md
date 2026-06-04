@@ -40,9 +40,8 @@ What you can do:
 • Read README instantly — View rendered README directly in the popup with a table of contents overlay. Large files load progressively so the UI stays responsive.
 • Star directly — Star or unstar repositories with one click from the detail page (requires GitHub personal access token).
 • Bookmark locally — Save projects to your local favorites, completely independent of GitHub's star system. Your bookmarks stay private on your device.
-• Sidebar recommendations — When browsing any GitHub repository page, GitStar injects a sidebar panel showing similar popular projects based on topic similarity. Collapsible, draggable, dark-mode aware.
 • AI-powered overview — Generate a structured three-section summary (Features · Highlights · Use Cases) of any project's README with one click. Understand a project at a glance. Configurable API endpoint, model, and output language.
-• Bilingual UI — Full Chinese and English support, with language preference synced across popup, options, and sidebar.
+• Bilingual UI — Full Chinese and English support, with language preference synced across popup and options.
 
 Who is this for?
 

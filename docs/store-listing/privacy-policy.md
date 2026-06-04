@@ -18,9 +18,8 @@ All data is stored on your device using Chrome's built-in storage APIs:
 | Favorite projects list | `chrome.storage.local` | Your locally bookmarked repositories. Never leaves your device. |
 | API response cache | `chrome.storage.local` | Improve loading speed by caching search results and repository info. Automatically expires and evicted (max 30 entries). |
 | Language preference | `chrome.storage.local` | Remember your UI language choice (Chinese / English). |
-| Sidebar toggle preference | `chrome.storage.local` | Remember whether the sidebar recommendation panel is enabled. |
+| AI config | `chrome.storage.local` | Store AI API endpoint, key, model, and summary language preferences. |
 | Discovery mode preference | `chrome.storage.local` | Remember your selected discovery mode (Hot / Rising / Active). |
-| Sidebar collapse state | `chrome.storage.local` | Remember whether the sidebar panel is collapsed on GitHub pages. |
 
 ### Network Requests
 
@@ -70,9 +69,8 @@ For questions about this privacy policy, please open an issue at the project's r
 | 收藏项目列表 | `chrome.storage.local` | 你本地收藏的仓库。绝不离开你的设备。 |
 | API 响应缓存 | `chrome.storage.local` | 缓存搜索结果和仓库信息以提升加载速度。自动过期淘汰（最多 30 条）。 |
 | 语言偏好 | `chrome.storage.local` | 记住你的界面语言选择（中文 / 英文）。 |
-| 侧边栏开关偏好 | `chrome.storage.local` | 记住侧边栏推荐面板是否启用。 |
+| AI 配置 | `chrome.storage.local` | 存储 AI API 地址、Key、模型和概述语言偏好。 |
 | 发现模式偏好 | `chrome.storage.local` | 记住你选择的发现模式（热门 / 新星 / 活跃）。 |
-| 侧边栏折叠状态 | `chrome.storage.local` | 记住 GitHub 页面上侧边栏面板是否已折叠。 |
 
 ### 网络请求
 

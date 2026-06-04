@@ -18,14 +18,6 @@ function OptionsForm() {
     });
   }, []);
 
-  const [sidebarEnabled, setSidebarEnabled] = useState(true);
-
-  useEffect(() => {
-    chrome.storage.local.get('gitstar-sidebar-enabled').then(result => {
-      setSidebarEnabled(result['gitstar-sidebar-enabled'] !== false);
-    }).catch(() => {});
-  }, []);
-
   // AI Summary config
   const [aiEndpoint, setAiEndpoint] = useState('https://api.deepseek.com/v1/chat/completions');
   const [aiKey, setAiKey] = useState('');
@@ -118,12 +110,6 @@ function OptionsForm() {
     setMessage(t('tokenCleared'));
   }
 
-  function handleSidebarToggle() {
-    const next = !sidebarEnabled;
-    setSidebarEnabled(next);
-    chrome.storage.local.set({ 'gitstar-sidebar-enabled': next }).catch(() => {});
-  }
-
   return (
     <div className="max-w-lg mx-auto p-6 bg-slate-50 min-h-screen">
       <h1 className="text-xl font-bold text-[#1e1b4b] mb-5">GitStar 配置</h1>
@@ -144,29 +130,6 @@ function OptionsForm() {
             <option value="zh">中文</option>
             <option value="en">English</option>
           </select>
-        </div>
-        <div className="border-t border-[#f3f4f6] my-3" />
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-medium text-[#1e1b4b]">{t('sidebarToggle')}</div>
-            <div className="text-[10px] text-[#6b7280] mt-0.5">{t('sidebarToggleDesc')}</div>
-          </div>
-          <button
-            role="switch"
-            aria-checked={sidebarEnabled}
-            onClick={handleSidebarToggle}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleSidebarToggle();
-              }
-            }}
-            className={`w-[38px] h-[22px] rounded-full transition-colors cursor-pointer flex items-center px-0.5 flex-shrink-0 ${sidebarEnabled ? 'bg-[#3b82f6]' : 'bg-gray-300'}`}
-          >
-            <div
-              className={`w-[18px] h-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform ${sidebarEnabled ? 'translate-x-[16px]' : 'translate-x-0'}`}
-            />
-          </button>
         </div>
       </div>
 

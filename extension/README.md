@@ -14,14 +14,6 @@ GitHub 高星项目发现与管理的 Chrome 浏览器扩展。
 - **搜索状态恢复**：从详情页返回时自动恢复搜索结果
 - **模式持久化**：发现模式偏好自动保存，下次打开 popup 恢复上次选择
 
-### Content Script 侧边栏
-
-- 自动注入 GitHub 仓库页面右侧栏
-- 基于当前仓库的 **topic 相似度**推荐同类热门项目
-- 支持**拖拽**面板位置，可**折叠**为悬浮按钮
-- 适配 GitHub **深色模式**
-- 自动检测 GitHub SPA 页面导航，无需手动刷新
-
 ### 选项页
 
 - 配置 GitHub Personal Access Token（提升 API 限额从 60 次/小时 到 5000 次/小时）
@@ -50,6 +42,7 @@ GitHub 高星项目发现与管理的 Chrome 浏览器扩展。
 - [wouter](https://github.com/molefrog/wouter) — 轻量 hash 路由
 - [marked](https://marked.js.org/) + [DOMPurify](https://github.com/cure53/DOMPurify) — Markdown 解析与安全净化
 - Web Worker — 后台线程解析大型 README，避免阻塞 UI
+- OpenAI 兼容 API — AI 概述（可配 DeepSeek / OpenAI / 任意端点）
 - GitHub REST API v3
 
 ## 项目结构
@@ -58,8 +51,6 @@ GitHub 高星项目发现与管理的 Chrome 浏览器扩展。
 extension/
 ├── popup.tsx                  # Popup 入口（wouter hash 路由）
 ├── options.tsx                # 选项页入口（Token + 语言配置）
-├── contents/
-│   └── github-sidebar.tsx     # Content Script（GitHub 页面侧边栏推荐）
 ├── components/
 │   ├── RepoCard.tsx           # 仓库卡片
 │   ├── RepoList.tsx           # 仓库列表
