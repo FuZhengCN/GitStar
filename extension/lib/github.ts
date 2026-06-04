@@ -48,8 +48,8 @@ function buildSearchQuery(params: SearchParams): string {
   if (params.q) parts.push(params.q);
   if (params.language) parts.push(`language:"${params.language.replace(/"/g, '\\"')}"`);
   if (params.created && /^>\d{4}-\d{2}-\d{2}$/.test(params.created)) parts.push(`created:${params.created}`);
-  // 过滤掉 <=100 stars 的低热度仓库，减少噪音
-  parts.push('stars:>100');
+  // 用户有主动搜索词时不限制 Star 数，无搜索词浏览时过滤低星项目保证质量
+  if (!params.q) parts.push('stars:>100');
   return parts.join(' ');
 }
 
