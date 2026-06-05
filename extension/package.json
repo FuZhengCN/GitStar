@@ -1,7 +1,7 @@
 {
   "name": "gitstar-extension",
   "displayName": "GitStar · GitHub 热门项目发现",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "发现 GitHub 高星开源项目 · Discover trending GitHub repositories",
   "author": "fuzheng",
   "scripts": {
