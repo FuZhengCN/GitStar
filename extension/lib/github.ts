@@ -47,7 +47,8 @@ function buildSearchQuery(params: SearchParams): string {
   const parts: string[] = [];
   if (params.q) parts.push(params.q);
   if (params.language) parts.push(`language:"${params.language.replace(/"/g, '\\"')}"`);
-  if (params.created && /^>\d{4}-\d{2}-\d{2}$/.test(params.created)) parts.push(`created:${params.created}`);
+  // 浏览模式保留创建时间过滤，主动搜索时移除 created 限制——老仓也能被搜到
+  if (!params.q && params.created && /^>\d{4}-\d{2}-\d{2}$/.test(params.created)) parts.push(`created:${params.created}`);
   // 用户有主动搜索词时不限制 Star 数，无搜索词浏览时过滤低星项目保证质量
   if (!params.q) parts.push('stars:>100');
   return parts.join(' ');
