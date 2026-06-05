@@ -33,7 +33,6 @@ npm run start    # 生产服务（需先 build）
 - **项目详情**：仓库信息 + README 查看（大文件分段加载，Web Worker 后台解析 marked + DOMPurify 净化）
 - **GitHub Star**：直接在详情页 Star/Unstar 仓库（需配置 Token）
 - **本地收藏**：独立于 GitHub Star 的本地收藏，`chrome.storage.local` 存储
-- **侧边栏推荐**：在 GitHub 仓库页面注入推荐面板，基于 topic 相似度匹配同类热门项目，支持拖拽/折叠/深色模式
 - **选项页**：Token 配置与验证、中/英文切换
 - **模式持久化**：发现模式偏好自动保存，下次打开 popup 恢复
 
@@ -60,7 +59,7 @@ npm run package  # 打包 .zip 用于发布
 ├── extension/                # Chrome 扩展（Plasmo）
 │   ├── popup.tsx             # Popup 入口
 │   ├── options.tsx           # 选项页入口
-│   ├── contents/             # Content Script（GitHub 侧边栏推荐）
+
 │   ├── components/           # 共享 UI 组件
 │   ├── hooks/                # useFavorites / useStaleCache / useDebounce
 │   ├── lib/                  # github.ts / cache.ts / markdown.ts / i18n.tsx / types.ts

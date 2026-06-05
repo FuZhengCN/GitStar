@@ -128,7 +128,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Non-Goals
 
-无用户系统、无数据库、无个性化推荐。
+无用户系统、无数据库、无个性化推荐。GitHub 侧边栏推荐（Contents Script 注入）已移除。
 
 ## Landing Page
 
@@ -268,6 +268,20 @@ README 首次只解析前 60KB（`README_PREVIEW_BYTES`，定义在 `extension/l
 
 缓存存储在 `chrome.storage.local`，key 前缀 `gitstar-cache:`。所有 chrome.storage 调用包裹 try/catch，缓存失败静默降级（不影响功能）。`useStaleCache` 内部用 `cancelled` 标记防止组件卸载后 setState。缓存键中所有用户输入参数（`q`、`language`、`timeRange`、`sort`）用 `encodeURIComponent` 编码，避免参数字符（如 `:`、`>`）导致键冲突。
 
+### 发现模式（Discovery Modes）
+
+三种模式定义在 `extension/lib/constants.ts` 的 `DISCOVERY_MODES` 中，对应不同的 GitHub API 参数组合：
+
+| 模式 | sort | created 过滤 | 特殊逻辑 |
+|------|------|-------------|---------|
+| 热门 (hot) | `stars` | 无 | 经典高星排行 |
+| 新星 (rising) | `stars` | `week`（7天内创建） | `calcStarsPerDay()` 计算日均涨星速率，按速率降序重排，显示 `★/天` badge |
+| 活跃 (active) | `updated` | `month`（30天内更新） | 近期频繁更新的项目 |
+
+**新星模式速率计算（`calcStarsPerDay`）：** 受 github-discover 启发，使用双重阈值过滤噪音——总星数门槛（周 500/月 4000/年 10000）+ 日均速率门槛（≥10 ★/天）。`AGE_SMOOTHING=1` 防止当天创建的项目除零。不满足阈值的项目返回 `null`，不在列表中显示。
+
+**模式持久化：** 用户选择的模式存入 `chrome.storage.local`（key `gitstar-discovery-mode`），下次打开 popup 时恢复。FilterBar 中的时间下拉框在 "新星" 和 "活跃" 模式下会自动设置对应 created 参数。
+
 ### AI 概述
 
 `extension/lib/ai-summary.ts` 是独立的 AI 摘要模块。将截断后的 README（去图片/代码块，取前 8KB）发送到 OpenAI 兼容 API（默认 DeepSeek），由 LLM 生成三字段结构化概述。
@@ -374,7 +388,7 @@ Popup 宽度固定 400px（`POPUP_WIDTH`），外层 `min-h-[720px]` + `flex fle
 - **i18n — useStaleCache error 类型变更**：`error` 从 `string | null` 改为 `Error | null`。消费方需处理 `Error` 对象（`.message` 或 `errorMessageText()`），不能直接 `{error}` 渲染。
 - **i18n — `lib/i18n.ts` 是 `.tsx`**：文件含 JSX（`<I18nContext.Provider>`），必须是 `.tsx` 扩展名。如果在 `.ts` 文件中写 JSX 会编译失败。
 - **头像 PNA 控制台告警无害**：`<img src="https://avatars.githubusercontent.com/...">` 在 popup 中会触发 Chrome Private Network Access 告警（"Request had a target IP address space of `unknown` yet the resource is in address space `public`"）。这是 Chrome 对 `chrome-extension://` 来源的已知行为，**图片正常加载，不影响功能**。不要为了消除告警而引入额外的 `host_permissions` 或改用 `fetch()` 加载头像，Google 审核不会接受无实际用途的权限声明。
-- **AI 概述缓存前缀版本号**：`AI_SUMMARY_PREFIX` 含版本号（当前 `v2`）。每次 prompt 输出格式变化时必须升级版本号，否则旧格式缓存会导致解析器行为异常。旧版本缓存不迁移，靠自然淘汰。
+- **AI 概述缓存前缀版本号**：`AI_SUMMARY_PREFIX` 含版本号（当前 `v3`）。每次 prompt 输出格式变化时必须升级版本号，否则旧格式缓存会导致解析器行为异常。旧版本缓存不迁移，靠自然淘汰。
 - **AI 概述 section 解析在 popup.tsx 中**：`parseAiSections()` 函数位于 `popup.tsx`（非 lib），因为解析逻辑与 UI 渲染紧耦合（三色卡片映射）。它同时处理全角冒号（`：`）和 ASCII 冒号（`: `），支持多行内容累积（LLM 输出的列表项）。
 
 ### 配色方案
