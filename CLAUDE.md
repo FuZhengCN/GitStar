@@ -103,7 +103,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Chrome Web Store
 
-当前版本 `1.2.1`，已上架。上架资料在 `docs/store-listing/`：
+当前版本 `1.2.2`，已上架。上架资料在 `docs/store-listing/`：
 
 | 文件 | 用途 |
 |------|------|
