@@ -22,6 +22,7 @@ import TocOverlay from './components/TocOverlay';
 import ErrorState from './components/ErrorState';
 import GitStarIcon from './components/GitStarIcon';
 import RepoCard from './components/RepoCard';
+import HomePage from './components/HomePage';
 import { getCache, setCache, isFresh } from './lib/cache';
 import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue } from './lib/constants';
 import type { DiscoveryMode } from './lib/types';
@@ -30,103 +31,6 @@ import type { AIConfig } from './lib/types';
 import './assets/tailwind.css';
 
 import { POPUP_WIDTH } from './lib/constants';
-
-function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: DiscoveryMode; flashMode: DiscoveryMode | null }) {
-  const [search, setSearch] = useState(() => {
-    try { return sessionStorage.getItem('gs-search') || ''; } catch { return ''; }
-  });
-  const [language, setLanguage] = useState(() => {
-    try { return sessionStorage.getItem('gs-language') || ''; } catch { return ''; }
-  });
-  const [timeRange, setTimeRange] = useState(() => {
-    try { return sessionStorage.getItem('gs-timerange') || ''; } catch { return ''; }
-  });
-  const [sort, setSort] = useState(() => {
-    try { return sessionStorage.getItem('gs-sort') || 'stars'; } catch { return 'stars'; }
-  });
-  const [page, setPage] = useState(() => {
-    try { return parseInt(sessionStorage.getItem('gs-page') || '1', 10); } catch { return 1; }
-  });
-
-  const { favorites, toggle: toggleFavorite, loaded: favLoaded } = useFavorites();
-
-  const saveSearchState = useCallback((s: string, l: string, t: string, so: string, p: number) => {
-    try {
-      sessionStorage.setItem('gs-search', s);
-      sessionStorage.setItem('gs-language', l);
-      sessionStorage.setItem('gs-timerange', t);
-      sessionStorage.setItem('gs-sort', so);
-      sessionStorage.setItem('gs-page', String(p));
-    } catch { /* ignore */ }
-  }, []);
-
-  const { t } = useI18n();
-
-  // 'growth' sort is client-side only — normalize to 'stars' for API and cache key
-  const apiSort = sort === 'growth' ? 'stars' : sort;
-
-  const cacheKey = `search:${encodeURIComponent(search)}:${encodeURIComponent(language)}:${encodeURIComponent(timeRange)}:${encodeURIComponent(apiSort)}:${page}`;
-
-  const fetcher = useCallback(async () => {
-    try {
-      const params: SearchParams = { sort: apiSort as SearchParams['sort'], order: 'desc', page, per_page: 10 };
-      if (search) params.q = search;
-      if (language) params.language = language;
-      if (timeRange) params.created = timeRange;
-      return await searchRepos(params);
-    } catch (err: unknown) {
-      const e = err as { message?: string; status?: number };
-      if (e.status === 403) throw new AppError('RATE_LIMIT');
-      throw err;
-    }
-  }, [search, language, timeRange, apiSort, page]);
-
-  const { data: result, loading, error } = useStaleCache(cacheKey, fetcher, 2 * 60 * 1000);
-  const repos = result?.items ?? [];
-  const total = result?.total_count ?? 0;
-  const totalPages = Math.min(Math.ceil(total / 10), 100);
-
-  useEffect(() => {
-    saveSearchState(search, language, timeRange, sort, page);
-  }, [search, language, timeRange, sort, page, saveSearchState]);
-
-  useEffect(() => { window.scrollTo(0, 0); }, [page]);
-
-  // Sync sort/timeRange when discovery mode changes
-  useEffect(() => {
-    const config = DISCOVERY_MODES[mode];
-    // Rising mode defaults to client-side growth rate ranking
-    setSort(mode === 'rising' ? 'growth' : config.sort);
-    setTimeRange(config.created ? getTimeRangeValue(config.created as 'week' | 'month') : '');
-    setPage(1);
-  }, [mode]);
-
-  return (
-    <div className="space-y-3 pb-14">
-      <LoadingBar loading={loading} />
-      <SearchBar value={search} onChange={v => { setSearch(v); setPage(1); }} />
-      <FilterBar
-        language={language} onLanguageChange={v => { setLanguage(v); setPage(1); }}
-        timeRange={timeRange} onTimeRangeChange={v => { setTimeRange(v); setPage(1); }}
-        sort={sort} onSortChange={v => { setSort(v); setPage(1); }}
-        flashMode={flashMode}
-        mode={mode}
-      />
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-xs">{errorMessageText(error, t)}</div>
-      )}
-      <RepoList repos={repos} favorites={favorites} onToggleFavorite={toggleFavorite} loaded={!loading && favLoaded} mode={mode} timeRange={timeRange} sort={sort} />
-      <div className="fixed bottom-0 left-0 right-0 bg-slate-50 z-20 border-t border-gray-100 pt-2 pb-1">
-        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
-        <div className="text-center text-[10px] text-gray-400 pt-0.5">
-          {hasToken ? <span className="text-[#16a34a]">{t('tokenConfigured')}</span> : t('tokenNotConfigured')}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 
 function DetailPage({ params, hasToken }: { params: { owner: string; repo: string }; hasToken: boolean }) {
   const { owner, repo } = params;
@@ -971,7 +875,7 @@ function PopupIndexInner() {
   const { favorites, loaded: favLoaded } = useFavorites();
   const favCount = favLoaded ? (favorites || []).length : 0;
   const isFavPage = hash === '#/favorites';
-  const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} mode={mode} flashMode={flashMode} />, [hasToken, mode, flashMode]);
+  const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} mode={mode} flashMode={flashMode} layout="popup" />, [hasToken, mode, flashMode]);
 
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
