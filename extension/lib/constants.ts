@@ -110,3 +110,10 @@ export const MAX_SUMMARY_CACHE_ENTRIES = 50;
 // Byte limit for README content sent to LLM (not rendered content)
 export const README_TRUNCATE_BYTES = 8192;
 export const AI_SUMMARY_PREFIX = 'gitstar-ai:summary:v3:';
+
+// Popup layout width — shared constant for popup shell and skeleton screens
+export const POPUP_WIDTH = '400px';
+
+// Open mode preference key (Options → background.ts → popup/tab routing)
+export const OPEN_MODE_STORAGE_KEY = 'gitstar-open-mode';
+export type OpenMode = 'popup' | 'tab';
