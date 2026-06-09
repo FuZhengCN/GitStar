@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, type ReactNode } from 'react';
 import zh from '../locales/zh.json';
 import en from '../locales/en.json';
+import { AppError } from './types';
 
 type Lang = 'zh' | 'en';
 
@@ -85,4 +86,17 @@ export function useI18n(): I18nContextValue {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error('useI18n must be used within I18nProvider');
   return ctx;
+}
+
+export function errorMessageText(e: Error, t: (key: string) => string): string {
+  if (e instanceof AppError) {
+    const map: Record<string, string> = {
+      RATE_LIMIT: 'rateLimitError',
+      REPO_NOT_FOUND: 'repoNotFound',
+      NETWORK_ERROR: 'tokenNetworkError',
+      LOAD_FAILED: 'loadFailed',
+    };
+    return t(map[e.code] || 'loadFailed');
+  }
+  return e.message;
 }

@@ -8,7 +8,7 @@ import { searchRepos, getRepoInfo, getRepoReadme, loadToken, setToken, getToken,
 import { parseMarkdown } from './lib/markdown';
 import { useFavorites } from './hooks/useFavorites';
 import { useStaleCache } from './hooks/useStaleCache';
-import { I18nProvider, useI18n } from './lib/i18n';
+import { I18nProvider, useI18n, errorMessageText } from './lib/i18n';
 import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
 import RepoList from './components/RepoList';
@@ -29,19 +29,6 @@ import type { AIConfig } from './lib/types';
 import './assets/tailwind.css';
 
 const POPUP_WIDTH = '400px';
-
-function errorMessageText(e: Error, t: (key: string) => string): string {
-  if (e instanceof AppError) {
-    const map: Record<string, string> = {
-      RATE_LIMIT: 'rateLimitError',
-      REPO_NOT_FOUND: 'repoNotFound',
-      NETWORK_ERROR: 'tokenNetworkError',
-      LOAD_FAILED: 'loadFailed',
-    };
-    return t(map[e.code] || 'loadFailed');
-  }
-  return e.message;
-}
 
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
   constructor(props: { children: React.ReactNode }) {
