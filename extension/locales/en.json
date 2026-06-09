@@ -89,5 +89,10 @@
   "aiOptionLanguage": "Summary Language",
   "securityNotice": "⚠️ Security Notice: Tokens and API Keys are stored in plaintext locally. Use minimal-permission credentials and revoke unused ones regularly.",
   "aiSecurityTitle": "⚠️ Security Notice",
-  "aiSecurityDesc": "Your API Key is stored in plaintext in your browser's local profile and can be read by any program with filesystem access. Please use a key with minimal permissions and revoke unused keys regularly."
+  "aiSecurityDesc": "Your API Key is stored in plaintext in your browser's local profile and can be read by any program with filesystem access. Please use a key with minimal permissions and revoke unused keys regularly.",
+  "openModeSectionTitle": "Open Mode",
+  "openModeSectionDesc": "When clicking the toolbar icon",
+  "openModePopup": "Popup window",
+  "openModeTab": "Open new tab",
+  "openModeHint": "Takes effect on next toolbar icon click"
 }
