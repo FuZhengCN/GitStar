@@ -18,9 +18,9 @@ chrome.storage.onChanged.addListener((changes) => {
 
 chrome.runtime.onStartup.addListener(syncActionBehavior);
 chrome.runtime.onInstalled.addListener(syncActionBehavior);
-// Not called at top-level: classic SW does not guarantee async completion
-// without an event listener keeping it alive. onStartup + onInstalled + onChanged
-// cover all wake-up scenarios.
+// Stored promise keeps SW alive until async setPopup completes.
+// Without this, classic SW may terminate before setPopup finishes.
+const _init = syncActionBehavior();
 
 chrome.action.onClicked.addListener(async () => {
   const result = await chrome.storage.local.get(STORAGE_KEY);
