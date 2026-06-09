@@ -5,20 +5,14 @@ import type { DiscoveryMode } from './lib/types';
 import { loadToken, setToken, getToken } from './lib/github';
 import { useFavorites } from './hooks/useFavorites';
 import { I18nProvider, useI18n } from './lib/i18n';
-import SearchBar from './components/SearchBar';
-import FilterBar from './components/FilterBar';
-import RepoList from './components/RepoList';
-import Pagination from './components/Pagination';
 import LoadingBar from './components/LoadingBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import GitStarIcon from './components/GitStarIcon';
 import HomePage from './components/HomePage';
 import DetailPage from './components/DetailPage';
 import FavoritesPage, { useCurrentHash } from './components/FavoritesPage';
-import { DISCOVERY_MODES, MODE_EMOJI, getTimeRangeValue } from './lib/constants';
+import { MODE_EMOJI, POPUP_WIDTH } from './lib/constants';
 import './assets/tailwind.css';
-
-import { POPUP_WIDTH } from './lib/constants';
 
 export default function PopupIndex() {
   return (
