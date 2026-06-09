@@ -79,6 +79,7 @@ function TabIndexInner() {
             <h1 className="text-base font-bold text-white flex items-center gap-2">
               <GitStarIcon />
               <span className="translate-y-[-1px]">GitStar</span>
+              <span className="text-white/50 font-normal text-xs ml-0.5 hidden sm:inline">{t('discoverProjects')}</span>
             </h1>
             <div className="flex items-center gap-2.5">
               <span className="text-[11px] text-white/85 font-medium">{t('discoverProjects')}</span>
@@ -110,6 +111,7 @@ function TabIndexInner() {
             <h1 className="text-base font-bold text-white flex items-center gap-2">
               <GitStarIcon />
               <span className="translate-y-[-1px]">GitStar</span>
+              <span className="text-white/50 font-normal text-xs ml-0.5 hidden sm:inline">{t('discoverProjects')}</span>
             </h1>
             <div className="flex items-center gap-2.5">
               {/* Mode switcher */}
