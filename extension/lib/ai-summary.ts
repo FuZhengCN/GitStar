@@ -190,3 +190,58 @@ export async function removeSummary(owner: string, repo: string): Promise<void> 
     // silent degrade
   }
 }
+
+// -- AI summary section parser (shared by DetailPage) --
+
+const SECTION_LABELS = ['功能', '特点', '场景', 'Function', 'Highlights', 'Use cases'];
+
+export interface ParsedSection {
+  label: string;
+  text: string;
+}
+
+export function parseAiSections(rawText: string): ParsedSection[] {
+  const sections: ParsedSection[] = [];
+  let currentLabel = '';
+  let currentLines: string[] = [];
+
+  for (const rawLine of rawText.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    let matchedLabel = '';
+    let matchedPrefix = '';
+    for (const label of SECTION_LABELS) {
+      if (line.startsWith(label + '：')) {
+        matchedLabel = label;
+        matchedPrefix = label + '：';
+        break;
+      }
+      if (line.startsWith(label + ': ')) {
+        matchedLabel = label;
+        matchedPrefix = label + ': ';
+        break;
+      }
+    }
+
+    if (matchedLabel) {
+      if (currentLabel && currentLines.length > 0) {
+        sections.push({ label: currentLabel, text: currentLines.join('\n') });
+      }
+      currentLabel = matchedLabel;
+      currentLines = [line.slice(matchedPrefix.length).trim()];
+    } else if (currentLabel) {
+      currentLines.push(line);
+    }
+  }
+
+  if (currentLabel && currentLines.length > 0) {
+    sections.push({ label: currentLabel, text: currentLines.join('\n') });
+  }
+
+  return sections;
+}
+
+export function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
