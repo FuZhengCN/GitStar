@@ -25,6 +25,7 @@ function OptionsForm() {
   const [aiLang, setAiLang] = useState('中文');
   const [aiStatus, setAiStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   const [aiMessage, setAiMessage] = useState('');
+  const [openMode, setOpenMode] = useState<'popup' | 'tab'>('popup');
 
   // Load AI config on mount
   useEffect(() => {
@@ -36,6 +37,12 @@ function OptionsForm() {
         if (cfg.model) setAiModel(cfg.model);
         if (cfg.summaryLanguage) setAiLang(cfg.summaryLanguage);
       }
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    chrome.storage.local.get('gitstar-open-mode').then(result => {
+      if (result['gitstar-open-mode'] === 'tab') setOpenMode('tab');
     }).catch(() => {});
   }, []);
 
@@ -130,6 +137,39 @@ function OptionsForm() {
             <option value="zh">中文</option>
             <option value="en">English</option>
           </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-[#1e1b4b] mb-2">{t('openModeSectionTitle')}</label>
+          <p className="text-[10px] text-[#6b7280] mb-2">{t('openModeSectionDesc')}</p>
+          <label className="flex items-center gap-2 mb-1.5 cursor-pointer">
+            <input
+              type="radio"
+              name="openMode"
+              value="popup"
+              checked={openMode === 'popup'}
+              onChange={() => {
+                setOpenMode('popup');
+                chrome.storage.local.set({ 'gitstar-open-mode': 'popup' }).catch(() => {});
+              }}
+              className="accent-[#3b82f6]"
+            />
+            <span className="text-xs text-[#1e1b4b]">{t('openModePopup')}</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="radio"
+              name="openMode"
+              value="tab"
+              checked={openMode === 'tab'}
+              onChange={() => {
+                setOpenMode('tab');
+                chrome.storage.local.set({ 'gitstar-open-mode': 'tab' }).catch(() => {});
+              }}
+              className="accent-[#3b82f6]"
+            />
+            <span className="text-xs text-[#1e1b4b]">{t('openModeTab')}</span>
+          </label>
+          <p className="text-[10px] text-[#9ca3af] mt-1.5">{t('openModeHint')}</p>
         </div>
       </div>
 
