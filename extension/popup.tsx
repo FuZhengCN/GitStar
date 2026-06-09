@@ -45,6 +45,18 @@ function PopupIndexInner() {
   const renderHomePage = useCallback(() => <HomePage hasToken={hasToken} mode={mode} flashMode={flashMode} layout="popup" />, [hasToken, mode, flashMode]);
   const renderFavoritesPage = useCallback(() => <FavoritesPage layout="popup" />, []);
 
+  // Safety net: if background.ts failed to disable popup for tab mode
+  // (e.g., classic SW terminated before setPopup completed after browser restart),
+  // redirect to tab immediately before rendering any content
+  useEffect(() => {
+    chrome.storage.local.get('gitstar-open-mode').then(r => {
+      if (r['gitstar-open-mode'] === 'tab') {
+        chrome.tabs.create({ url: 'tabs/tab.html' });
+        window.close();
+      }
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     loadToken().then(() => { setHasToken(!!getToken()); setTokenReady(true); });
     // Load persisted discovery mode

@@ -16,8 +16,11 @@ chrome.storage.onChanged.addListener((changes) => {
   if (changes[STORAGE_KEY]) syncActionBehavior();
 });
 
+chrome.runtime.onStartup.addListener(syncActionBehavior);
 chrome.runtime.onInstalled.addListener(syncActionBehavior);
-syncActionBehavior();
+// Not called at top-level: classic SW does not guarantee async completion
+// without an event listener keeping it alive. onStartup + onInstalled + onChanged
+// cover all wake-up scenarios.
 
 chrome.action.onClicked.addListener(async () => {
   const result = await chrome.storage.local.get(STORAGE_KEY);
