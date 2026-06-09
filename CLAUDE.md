@@ -104,7 +104,7 @@ Client Components（`'use client'`）：`HomePageClient.tsx`、`DetailPageClient
 
 ## Chrome Web Store
 
-当前版本 `1.2.2`，已上架。上架资料在 `docs/store-listing/`：
+当前版本 `1.3.0`，已上架。v1.3.0 新增：新标签页打开模式（Options 可切换），全宽响应式布局。上架资料在 `docs/store-listing/`：
 
 | 文件 | 用途 |
 |------|------|
