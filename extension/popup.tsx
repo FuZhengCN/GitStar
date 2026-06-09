@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect, useCallback, useRef, Component } from 'react';
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { Router, Route } from 'wouter';
 import { useHashLocation } from 'wouter/use-hash-location';
 import type { Repo, RepoDetail, SearchParams } from './lib/types';
@@ -14,6 +14,7 @@ import FilterBar from './components/FilterBar';
 import RepoList from './components/RepoList';
 import Pagination from './components/Pagination';
 import LoadingBar from './components/LoadingBar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import RepoHeader from './components/RepoHeader';
 import ReadmeViewer from './components/ReadmeViewer';
 import MiniBar from './components/MiniBar';
@@ -28,28 +29,7 @@ import { fetchSummary, getCachedSummary, saveSummary, AISummaryError, parseAiSec
 import type { AIConfig } from './lib/types';
 import './assets/tailwind.css';
 
-const POPUP_WIDTH = '400px';
-
-class ErrorBoundary extends Component<{ children: React.ReactNode }, { error: Error | null }> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { error: null };
-  }
-  static getDerivedStateFromError(error: Error) {
-    return { error };
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ width: POPUP_WIDTH, padding: 20, color: 'red', fontSize: 12, fontFamily: 'monospace' }}>
-          <strong>Render Error:</strong>
-          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{this.state.error.message}</pre>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
+import { POPUP_WIDTH } from './lib/constants';
 
 function HomePage({ hasToken, mode, flashMode }: { hasToken: boolean; mode: DiscoveryMode; flashMode: DiscoveryMode | null }) {
   const [search, setSearch] = useState(() => {
